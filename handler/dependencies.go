@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/vkhichar/asset-management/repository"
 	"github.com/vkhichar/asset-management/service"
 )
 
@@ -11,6 +12,9 @@ type dependencies struct {
 var deps dependencies
 
 func InitDependencies() {
-	userService := service.NewUserService()
+	userRepo := repository.NewUserRepository()
+	plainTokenService := service.NewPlainTokenService()
+
+	userService := service.NewUserService(userRepo, plainTokenService)
 	deps.userService = userService
 }

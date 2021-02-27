@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/vkhichar/asset-management/config"
 	"github.com/vkhichar/asset-management/handler"
+	"github.com/vkhichar/asset-management/repository"
 	"net/http"
 )
 
@@ -13,6 +14,9 @@ func main() {
 		fmt.Printf("main: error while initialising config: %s", err.Error())
 		return
 	}
+
+	// initialise db connection
+	repository.InitDB()
 
 	handler.InitDependencies()
 	handler.Routes()
