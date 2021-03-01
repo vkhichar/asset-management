@@ -1,15 +1,20 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/service"
-	"net/http"
 )
 
 func LoginHandler(userService service.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, "XYZ", "123")
 
 		// Set Content-Type for response
 		w.Header().Set("Content-Type", "application/json")
@@ -35,7 +40,7 @@ func LoginHandler(userService service.UserService) http.HandlerFunc {
 			return
 		}
 
-		user, token, err := userService.Login(r.Context(), req.Email, req.Password)
+		user, token, err := userService.Login(ctx, req.Email, req.Password)
 		if err == service.ErrInvalidEmailPassword {
 			fmt.Printf("handler: invalid email or password for email: %s", req.Email)
 

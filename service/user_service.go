@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/repository"
 )
@@ -25,8 +26,8 @@ func NewUserService(repo repository.UserRepository, ts TokenService) UserService
 	}
 }
 
-func (service *userService) Login(ctx context.Context, email, password string) (*domain.User, string, error) {
-	user, err := service.userRepo.FindUser(ctx, email)
+func (s *userService) Login(ctx context.Context, email, password string) (*domain.User, string, error) {
+	user, err := s.userRepo.FindUser(ctx, email)
 	if err != nil {
 		return nil, "", err
 	}
@@ -40,7 +41,7 @@ func (service *userService) Login(ctx context.Context, email, password string) (
 	}
 
 	claims := &Claims{UserID: user.ID, IsAdmin: user.IsAdmin}
-	token, err := service.tokenSvc.GenerateToken(claims)
+	token, err := s.tokenSvc.GenerateToken(claims)
 	if err != nil {
 		return nil, "", err
 	}
