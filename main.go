@@ -1,29 +1,24 @@
 package main
 
 import (
-	"fmt"
-	"github.com/vkhichar/asset-management/config"
-	"github.com/vkhichar/asset-management/handler"
-	"github.com/vkhichar/asset-management/repository"
-	"net/http"
+	"os"
+
+	"github.com/vkhichar/asset-management/server"
 )
 
 func main() {
-	err := config.Init()
-	if err != nil {
-		fmt.Printf("main: error while initialising config: %s", err.Error())
-		return
-	}
+	key := os.Args[1]
 
-	// initialise db connection
-	repository.InitDB()
-
-	handler.InitDependencies()
-	handler.Routes()
-
-	err = http.ListenAndServe(":"+config.GetAppPort(), nil)
-	if err != nil {
-		fmt.Printf("main: error while starting server: %s", err.Error())
-		return
+	switch key {
+	case "start":
+		server.Start()
+	case "seed":
+		return server.Insert_data()
+		// case "migrate":
+		// 	return db.RunMigrations()
+		// case "rollback":
+		//  return db.RollbackMigrations(os.Args().Get(0))
+	default:
+		server.Start()
 	}
 }
