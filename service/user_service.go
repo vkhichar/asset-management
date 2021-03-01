@@ -26,8 +26,8 @@ func NewUserService(repo repository.UserRepository, ts TokenService) UserService
 	}
 }
 
-func (s *userService) Login(ctx context.Context, email, password string) (*domain.User, string, error) {
-	user, err := s.userRepo.FindUser(ctx, email)
+func (service *userService) Login(ctx context.Context, email, password string) (*domain.User, string, error) {
+	user, err := service.userRepo.FindUser(ctx, email)
 	if err != nil {
 		return nil, "", err
 	}
@@ -41,7 +41,7 @@ func (s *userService) Login(ctx context.Context, email, password string) (*domai
 	}
 
 	claims := &Claims{UserID: user.ID, IsAdmin: user.IsAdmin}
-	token, err := s.tokenSvc.GenerateToken(claims)
+	token, err := service.tokenSvc.GenerateToken(claims)
 	if err != nil {
 		return nil, "", err
 	}
