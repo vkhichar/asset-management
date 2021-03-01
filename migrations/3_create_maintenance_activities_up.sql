@@ -1,7 +1,10 @@
 CREATE TABLE maintenance_activities(
-    SERIAL PRIMARY KEY(maintenance_id),
-    FOREIGN KEY(asset_id),
-    description varchar(100) NOT NULL,
+    maintenance_id SERIAL PRIMARY KEY,
+    asset_id varchar(100) NOT NULL,
+   CONSTRAINT fk_asset
+      FOREIGN KEY(asset_id) 
+	  REFERENCES assets(asset_id),
+    maintenance_description varchar(100) NOT NULL,
     cost varchar(100) NOT NULL,
     admission_date Date NOT NULL,
     discharge_date DATE NOT NULL

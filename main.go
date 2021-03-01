@@ -13,7 +13,8 @@ func main() {
 	case "start":
 		server.Start()
 	case "seed":
-		return server.Insert_data()
+		return server.Insertdata()
+
 		// case "migrate":
 		// 	return db.RunMigrations()
 		// case "rollback":
