@@ -9,7 +9,7 @@ import (
 
 
 
-func Insert_data(){
+func InsertData(){
 	err := config.Init()
 	if err != nil {
 		fmt.Printf("main: error while initialising config: %s", err.Error())
