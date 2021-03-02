@@ -1,3 +1,5 @@
+CREATE EXTENSION "uuid-ossp";
+
 CREATE TABLE users (
   id  SERIAL PRIMARY KEY,
   name varchar(100) NOT NULL,
