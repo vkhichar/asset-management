@@ -9,4 +9,4 @@ CREATE TABLE maintenance_activities(
     cost decimal(10,2) NOT NULL,
     started_at TIMESTAMP DEFAULT NOW(),
     ended_at timestamp
-); 
+);    
