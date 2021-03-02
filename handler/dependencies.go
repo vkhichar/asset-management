@@ -14,10 +14,10 @@ var deps dependencies
 
 func InitDependencies() {
 	userRepo := repository.NewUserRepository()
-	plainTokenService := service.NewPlainTokenService()
+
 	assetRepo := repository.NewAssetRepository()
 	assetService := service.NewAssetService(assetRepo)
-	userService := service.NewUserService(userRepo, plainTokenService)
-	deps.userService = userService
 	deps.assetService = assetService
+	jwtTokenService := service.NewJwtService()
+	deps.userService = service.NewUserService(userRepo, jwtTokenService)
 }
