@@ -1,9 +1,13 @@
+CREATE TYPE status AS ENUM ('active', 'retired','undermaintenance');
+
+
 CREATE TABLE assets(
-        asset_id varchar(100) PRIMARY KEY,
-        status_asset varchar(100) NOT NULL,
+        id uuid DEFAULT uuid_generate_v4 (),
+        status status,
         category varchar (100) NOT NULL,
-        purchase_date Date NOT NULL,
-        inital_cost varchar(100) NOT NULL,
-        asset_name varchar(100) NOT NULL,
-        specification json NOT NULL
+        purchase_at timestamp NOT NULL,
+        purchase_cost decimal(10,2) NOT NULL,
+        name varchar(100) NOT NULL,
+        specifications json NOT NULL,
+        PRIMARY KEY(id)
 );

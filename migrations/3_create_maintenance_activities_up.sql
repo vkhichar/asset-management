@@ -1,11 +1,12 @@
 CREATE TABLE maintenance_activities(
-    maintenance_id SERIAL PRIMARY KEY,
-    asset_id varchar(100) NOT NULL,
-   CONSTRAINT fk_asset
+    id SERIAL PRIMARY KEY,
+    asset_id uuid NOT NULL,
+   CONSTRAINT FK_ASSET
       FOREIGN KEY(asset_id) 
-	  REFERENCES assets(asset_id),
-    maintenance_description varchar(100) NOT NULL,
-    cost varchar(100) NOT NULL,
-    admission_date Date NOT NULL,
-    discharge_date DATE NOT NULL
+	  REFERENCES assets(id) 
+      ON DELETE SET NULL,
+    description varchar(100) NOT NULL,
+    cost decimal(10,2) NOT NULL,
+    started_at TIMESTAMP DEFAULT NOW(),
+    ended_at timestamp
 ); 
