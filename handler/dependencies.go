@@ -6,7 +6,8 @@ import (
 )
 
 type dependencies struct {
-	userService service.UserService
+	userService  service.UserService
+	assetService service.AssetService
 }
 
 var deps dependencies
