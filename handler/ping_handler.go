@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func PingHandler() http.HandlerFunc {
+func PingHandler() http.HandlerFunc { //
 	return func(w http.ResponseWriter, r *http.Request) {
 		_, err := w.Write([]byte("pong"))
 		if err != nil {
