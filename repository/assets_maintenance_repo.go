@@ -8,7 +8,7 @@ import (
 )
 
 type AssetMaintenanceRepo interface {
-	InsertMaintenanceActivity(ctx context.Context, asset_id domain.UUID, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error)
+	InsertMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error)
 }
 
 type assetMaintainRepo struct {
@@ -19,4 +19,8 @@ func NewAssetMaintainRepository() AssetMaintenanceRepo {
 	return &assetMaintainRepo{
 		db: GetDB(),
 	}
+}
+
+func (repo *assetMaintainRepo) InsertMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
+	return nil, nil
 }
