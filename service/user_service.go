@@ -14,7 +14,8 @@ var NoUsersExist = errors.New("No users exist at present")
 
 type UserService interface {
 	Login(ctx context.Context, email, password string) (user *domain.User, token string, err error)
-	ListUser(ctx context.Context) (users []domain.User, err error)
+	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
+	ListUsers(ctx context.Context) (users []domain.User, err error)
 }
 
 type userService struct {
@@ -52,6 +53,7 @@ func (service *userService) Login(ctx context.Context, email, password string) (
 	return user, token, nil
 }
 
+<<<<<<< HEAD
 func (service *userService) ListUser(ctx context.Context) ([]domain.User, error) {
 	user, err := service.userRepo.ListUsers(ctx)
 	if err != nil {
@@ -63,4 +65,12 @@ func (service *userService) ListUser(ctx context.Context) ([]domain.User, error)
 	}
 
 	return user, nil
+=======
+func (service *userService) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
+	return nil, nil
+}
+
+func (service *userService) ListUsers(ctx context.Context) ([]domain.User, error) {
+	return nil, nil
+>>>>>>> a5591a3f4381c2750a8ae4cf1cd8709e2d7c0b87
 }

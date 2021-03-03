@@ -16,6 +16,7 @@ const (
 
 type UserRepository interface {
 	FindUser(ctx context.Context, email string) (*domain.User, error)
+	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
 }
 
@@ -44,7 +45,6 @@ func (repo *userRepo) FindUser(ctx context.Context, email string) (*domain.User,
 
 	return &user, nil
 }
-
 func (repo *userRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 	var user []domain.User
 	err := repo.db.Select(&user, selectAllUsers)
