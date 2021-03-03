@@ -90,7 +90,7 @@ func ListUsersHandler(userService service.UserService) http.HandlerFunc {
 			//write a loop to convert domain object to contract object
 
 			w.WriteHeader(http.StatusOK)
-			responsebytes, _ := json.Marshal(contract.User{Id: user.Id})
+			responsebytes, _ := json.Marshal(user)
 			w.Write(responsebytes)
 		}
 	}
