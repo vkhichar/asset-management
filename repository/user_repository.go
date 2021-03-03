@@ -11,11 +11,12 @@ import (
 
 const (
 	getUserByEmailQuery = "SELECT id, name, email, password, is_admin FROM users WHERE email= $1"
+	selectAllUsers      = "select ID,Name,Email,IsAdmin,CreatedAt,UpdatedAt from users"
 )
 
 type UserRepository interface {
 	FindUser(ctx context.Context, email string) (*domain.User, error)
-	ShowUsers(ctx context.Context) ([]domain.User, error)
+	ListUsers(ctx context.Context) ([]domain.User, error)
 }
 
 type userRepo struct {
@@ -42,4 +43,21 @@ func (repo *userRepo) FindUser(ctx context.Context, email string) (*domain.User,
 	}
 
 	return &user, nil
+}
+
+func (repo *userRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
+	var user []domain.User
+	err := repo.db.Select(&user, selectAllUsers)
+
+	if err == sql.ErrNoRows {
+		fmt.Printf("repository: No users present")
+
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

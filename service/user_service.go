@@ -10,6 +10,8 @@ import (
 
 var ErrInvalidEmailPassword = errors.New("invalid email or password")
 
+var NoUsersExist = errors.New("No users exist at present")
+
 type UserService interface {
 	Login(ctx context.Context, email, password string) (user *domain.User, token string, err error)
 	ListUser(ctx context.Context) (users []domain.User, err error)
@@ -48,4 +50,17 @@ func (service *userService) Login(ctx context.Context, email, password string) (
 	}
 
 	return user, token, nil
+}
+
+func (service *userService) ListUser(ctx context.Context) ([]domain.User, error) {
+	user, err := service.userRepo.ListUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, NoUsersExist
+	}
+
+	return user, nil
 }
