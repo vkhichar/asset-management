@@ -8,14 +8,14 @@ import (
 )
 
 type AssetMaintenanceService interface {
-	CreateAssetMaintenance(ctx context.Context, assets_id string) (user *domain.Maintenance, err error)
+	CreateAssetMaintenance(ctx context.Context, assets_id domain.UUID, req domain.MaintenanceActivity) (user *domain.MaintenanceActivity, err error)
 }
 
 type assetMaintenanceService struct {
 	assetMaintainRepo repository.AssetMaintenanceRepo
 }
 
-func NewAssetMaintenance(repo repository.AssetMaintenanceRepo) AssetMaintenanceService {
+func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo) AssetMaintenanceService {
 	return &assetMaintenanceService{
 		assetMaintainRepo: repo,
 	}

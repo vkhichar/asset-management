@@ -5,7 +5,7 @@ import (
 )
 
 type UUID [16]byte
-type Maintenance struct {
+type MaintenanceActivity struct {
 	ID          int       `db:"id"`
 	AssetsID    UUID      `db:"assets_id"`
 	Cost        int       `db:"cost"`
