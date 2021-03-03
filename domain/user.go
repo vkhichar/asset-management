@@ -9,5 +9,5 @@ type User struct {
 	Password  string    `db:"password"`
 	IsAdmin   bool      `db:"is_admin"`
 	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
