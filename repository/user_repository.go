@@ -11,12 +11,12 @@ import (
 
 const (
 	getUserByEmailQuery = "SELECT id, name, email, password, is_admin FROM users WHERE email= $1"
-	createUserByQuery   = "INSERT INTO users (name, email, password,is_admin) VALUES ($1, $2, $3, $4)"
 )
 
 type UserRepository interface {
 	FindUser(ctx context.Context, email string) (*domain.User, error)
 	CreateUserQuery(ctx context.Context, name, email, password string, isAdmin bool) (*domain.User, error)
+	ShowUsersQuery(ctx context.Context) ([]domain.User, error)
 }
 
 type userRepo struct {
