@@ -15,7 +15,7 @@ const (
 
 type UserRepository interface {
 	FindUser(ctx context.Context, email string) (*domain.User, error)
-	ShowUsers(ctx context.Context) (*domain.UserList, error)
+	ShowUsers(ctx context.Context) ([]domain.User, error)
 }
 
 type userRepo struct {

@@ -12,7 +12,7 @@ var ErrInvalidEmailPassword = errors.New("invalid email or password")
 
 type UserService interface {
 	Login(ctx context.Context, email, password string) (user *domain.User, token string, err error)
-	ListUser(ctx context.Context) (users *domain.UserList, err error)
+	ListUser(ctx context.Context) (users []domain.User, err error)
 }
 
 type userService struct {

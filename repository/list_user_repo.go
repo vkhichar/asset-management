@@ -6,13 +6,13 @@ import (
 	"github.com/vkhichar/asset-management/domain"
 )
 
-func (repo *userRepo) ShowUsers(ctx context.Context) (*domain.UserList, error) {
-	var user []domain.UserList
+func (repo *userRepo) ShowUsers(ctx context.Context) ([]domain.User, error) {
+	var user []domain.User
 	err := repo.db.Select(&user, "Select * from users")
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }
