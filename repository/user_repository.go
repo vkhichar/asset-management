@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/vkhichar/asset-management/domain"
 )
@@ -14,6 +15,8 @@ const (
 
 type UserRepository interface {
 	FindUser(ctx context.Context, email string) (*domain.User, error)
+	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
+	ListUsers(ctx context.Context) ([]domain.User, error)
 }
 
 type userRepo struct {
@@ -40,4 +43,12 @@ func (repo *userRepo) FindUser(ctx context.Context, email string) (*domain.User,
 	}
 
 	return &user, nil
+}
+
+func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
+	return nil, nil
+}
+
+func (repo *userRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
+	return nil, nil
 }
