@@ -15,8 +15,8 @@ const (
 
 type UserRepository interface {
 	FindUser(ctx context.Context, email string) (*domain.User, error)
-	CreateUserQuery(ctx context.Context, name, email, password string, isAdmin bool) (*domain.User, error)
-	ShowUsersQuery(ctx context.Context) ([]domain.User, error)
+	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
+	ListUsers(ctx context.Context) ([]domain.User, error)
 }
 
 type userRepo struct {
@@ -39,19 +39,6 @@ func (repo *userRepo) FindUser(ctx context.Context, email string) (*domain.User,
 	}
 
 	if err != nil {
-		return nil, err
-	}
-
-	return &user, nil
-}
-
-func (repo *userRepo) CreateUserQuery(ctx context.Context, name, email, password string, isAdmin bool) (*domain.User, error) {
-	var user domain.User
-
-	err := repo.db.Get(&user, createUserByQuery, name, email, password, isAdmin)
-
-	if err != nil {
-		fmt.Printf("cannot create user for this email: %s", email)
 		return nil, err
 	}
 

@@ -12,7 +12,7 @@ var ErrInvalidEmailPassword = errors.New("invalid email or password")
 
 type UserService interface {
 	Login(ctx context.Context, email, password string) (user *domain.User, token string, err error)
-	CreateUser(ctx context.Context, name, email, password string, isAdmin bool) (user *domain.User, err error)
+	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) (users []domain.User, err error)
 }
 
