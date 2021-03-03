@@ -9,7 +9,7 @@ import (
 	"github.com/vkhichar/asset-management/service"
 )
 
-func LoginHandler(userService service.UserService) http.HandlerFunc { //
+func LoginHandler(userService service.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		// Set Content-Type for response
