@@ -3,9 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/service"
-	"net/http"
 )
 
 func LoginHandler(userService service.UserService) http.HandlerFunc {
@@ -57,5 +58,40 @@ func LoginHandler(userService service.UserService) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		responseBytes, _ := json.Marshal(contract.LoginResponse{IsAdmin: user.IsAdmin, Token: token})
 		w.Write(responseBytes)
+	}
+}
+
+func ListUsersHandler(userService service.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Content-Type", "application/json")
+
+		if r.Method == "GET" {
+			user, err := userService.ListUser(r.Context())
+
+			if err == service.NoUsersExist {
+				fmt.Println("handler: No users exist")
+
+				w.WriteHeader(http.StatusNoContent)
+				responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "no user found"})
+				w.Write(responseBytes)
+				return
+
+			}
+
+			if err != nil {
+				fmt.Printf("handler: error while searching for user")
+
+				w.WriteHeader(http.StatusInternalServerError)
+				responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+				w.Write(responseBytes)
+				return
+			}
+			//write a loop to convert domain object to contract object
+
+			w.WriteHeader(http.StatusOK)
+			responsebytes, _ := json.Marshal(contract.User{Id: user.Id})
+			w.Write(responsebytes)
+		}
 	}
 }
