@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/vkhichar/asset-management/domain"
 )
@@ -14,6 +15,7 @@ const (
 
 type UserRepository interface {
 	FindUser(ctx context.Context, email string) (*domain.User, error)
+	ShowUsers(ctx context.Context) (*domain.UserList, error)
 }
 
 type userRepo struct {

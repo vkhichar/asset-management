@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/repository"
 )
@@ -11,6 +12,7 @@ var ErrInvalidEmailPassword = errors.New("invalid email or password")
 
 type UserService interface {
 	Login(ctx context.Context, email, password string) (user *domain.User, token string, err error)
+	ListUser(ctx context.Context) (users *domain.UserList, err error)
 }
 
 type userService struct {
