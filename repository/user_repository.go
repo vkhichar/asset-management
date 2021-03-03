@@ -4,16 +4,19 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/vkhichar/asset-management/domain"
 )
 
 const (
 	getUserByEmailQuery = "SELECT id, name, email, password, is_admin FROM users WHERE email= $1"
+	createUserByQuery   = "INSERT INTO users (name, email, password,is_admin) VALUES ($1, $2, $3, $4)"
 )
 
 type UserRepository interface {
 	FindUser(ctx context.Context, email string) (*domain.User, error)
+	CreateUserQuery(ctx context.Context, name, email, password string, isAdmin bool) (*domain.User, error)
 }
 
 type userRepo struct {
@@ -36,6 +39,19 @@ func (repo *userRepo) FindUser(ctx context.Context, email string) (*domain.User,
 	}
 
 	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (repo *userRepo) CreateUserQuery(ctx context.Context, name, email, password string, isAdmin bool) (*domain.User, error) {
+	var user domain.User
+
+	err := repo.db.Get(&user, createUserByQuery, name, email, password, isAdmin)
+
+	if err != nil {
+		fmt.Printf("cannot create user for this email: %s", email)
 		return nil, err
 	}
 
