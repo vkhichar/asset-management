@@ -8,7 +8,7 @@ import (
 )
 
 type AssetMaintenanceRepo interface {
-	InsertMaintenanceActivity(ctx context.Context, assets_id domain.UUID, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error)
+	InsertMaintenanceActivity(ctx context.Context, asset_id domain.UUID, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error)
 }
 
 type assetMaintainRepo struct {

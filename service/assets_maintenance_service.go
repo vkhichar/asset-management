@@ -8,7 +8,7 @@ import (
 )
 
 type AssetMaintenanceService interface {
-	CreateAssetMaintenance(ctx context.Context, assets_id domain.UUID, req domain.MaintenanceActivity) (user *domain.MaintenanceActivity, err error)
+	CreateAssetMaintenance(ctx context.Context, asset_id domain.UUID, req domain.MaintenanceActivity) (user *domain.MaintenanceActivity, err error)
 }
 
 type assetMaintenanceService struct {
