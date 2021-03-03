@@ -19,6 +19,10 @@ $ export DB_HOST=localhost
 Create a database with the following name: 'asset_management'
 Check migrations folder for creating db tables/indexes
 
-5. Run the server
+5. Run the shell script for inserting data in table
+$ chmod +x seed.sh
+$ ./seed.sh postgres 1234 asset_management
+
+6. Run the server
 $ ./asset-management
 ```
