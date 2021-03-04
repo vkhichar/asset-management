@@ -1,5 +1,9 @@
 package contract
 
+import (
+	"encoding/json"
+)
+
 type CreateAssetRequest struct {
 	//AssetID       int    `json:"id"`
 	Status         string  `json:"status"`
@@ -7,5 +11,5 @@ type CreateAssetRequest struct {
 	PurchaseAt     string  `json:"purchase_at"`
 	PurchaseCost   float64 `json:"purchase_cost"`
 	AssetName      string  `json:"name"`
-	Specifications string  `json:"specifications"`
+	Specifications json.RawMessage  `json:"specifications"`
 }
