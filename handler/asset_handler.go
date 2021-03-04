@@ -14,7 +14,6 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		asset, err := asset.ListAssets(r.Context())
-
 		if err == customerrors.NoAssetsExist {
 			fmt.Println("handler: No assets exist")
 
@@ -35,6 +34,7 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 
 		assetResp := make([]contract.Asset, 0)
 		for _, u := range asset {
