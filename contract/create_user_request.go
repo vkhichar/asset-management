@@ -24,14 +24,14 @@ func (req CreateUserRequest) Validate() error {
 
 	valid := emailRegex.MatchString(email)
 
+	if strings.TrimSpace(req.Email) == "" {
+		return errors.New("email is required")
+	}
+
 	if valid == false {
 
 		return errors.New("invalid email")
 
-	}
-
-	if strings.TrimSpace(req.Email) == "" {
-		return errors.New("email is required")
 	}
 
 	if strings.TrimSpace(req.Password) == "" {
