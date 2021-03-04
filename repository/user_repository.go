@@ -11,7 +11,7 @@ import (
 
 const (
 	getUserByEmailQuery = "SELECT id, name, email, password, is_admin FROM users WHERE email= $1"
-	selectAllUsers      = "select id,name,email,password,is_admin,created_at,updated_at from users"
+	selectAllUsers      = "SELECT id,name,email,password,is_admin,created_at,updated_at FROM users"
 )
 
 type UserRepository interface {

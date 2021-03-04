@@ -72,7 +72,7 @@ func ListUsersHandler(userService service.UserService) http.HandlerFunc {
 			if err == service.NoUsersExist {
 				fmt.Println("handler: No users exist")
 
-				w.WriteHeader(http.StatusNoContent)
+				w.WriteHeader(http.StatusNotFound)
 				responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "no user found"})
 				w.Write(responseBytes)
 				return
@@ -89,15 +89,13 @@ func ListUsersHandler(userService service.UserService) http.HandlerFunc {
 			}
 			//write a loop to convert domain object to contract object
 
-			var userResp = make([]contract.User, len(user))
+			userResp := make([]contract.User, 0)
 
-			w.WriteHeader(http.StatusOK)
-
-			for i := 0; i < len(user); i++ {
-				userResp[i] = contract.DomainToContract(&user[i])
+			for _, u := range user {
+				userResp = append(userResp, contract.DomainToContract(&u))
 			}
 			responsebytes, err := json.Marshal(userResp)
-
+			w.WriteHeader(http.StatusOK)
 			w.Write(responsebytes)
 		}
 	}

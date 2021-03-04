@@ -16,13 +16,13 @@ type User struct {
 }
 
 func DomainToContract(d *domain.User) User {
-	var u User
-	u.ID = d.ID
-	u.Name = d.Name
-	u.Email = d.Email
-	u.IsAdmin = d.IsAdmin
-	u.CreatedAt = d.CreatedAt
-	u.UpdatedAt = d.UpdatedAt
-
+	u := User{
+		ID:        d.ID,
+		Name:      d.Name,
+		Email:     d.Email,
+		IsAdmin:   d.IsAdmin,
+		CreatedAt: d.CreatedAt,
+		UpdatedAt: d.UpdatedAt,
+	}
 	return u
 }

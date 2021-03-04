@@ -2,15 +2,12 @@ package service
 
 import (
 	"context"
-	"errors"
+
+	"github.com/vkhichar/asset-management/errorspkg"
 
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/repository"
 )
-
-var ErrInvalidEmailPassword = errors.New("invalid email or password")
-
-var NoUsersExist = errors.New("No users exist at present")
 
 type UserService interface {
 	Login(ctx context.Context, email, password string) (user *domain.User, token string, err error)
@@ -37,11 +34,11 @@ func (service *userService) Login(ctx context.Context, email, password string) (
 	}
 
 	if user == nil {
-		return nil, "", ErrInvalidEmailPassword
+		return nil, "", errorspkg.ErrInvalidEmailPassword
 	}
 
 	if user.Password != password {
-		return nil, "", ErrInvalidEmailPassword
+		return nil, "", errorspkg.ErrInvalidEmailPassword
 	}
 
 	claims := &Claims{UserID: user.ID, IsAdmin: user.IsAdmin}
