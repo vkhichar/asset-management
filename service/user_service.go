@@ -10,13 +10,13 @@ import (
 	"github.com/vkhichar/asset-management/repository"
 )
 
+var ErrInvalidEmailPassword = errors.New("invalid email or password")
+
 type UserService interface {
 	Login(ctx context.Context, email, password string) (user *domain.User, token string, err error)
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
 }
-
-var ErrInvalidEmailPassword = errors.New("invalid email or password")
 
 var ExtraError = errors.New("invalid email")
 
@@ -70,10 +70,6 @@ func (service *userService) ListUsers(ctx context.Context) ([]domain.User, error
 func (service *userService) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
 
 	entry, err := service.userRepo.CreateUser(ctx, user)
-
-	if err == repository.EmailInvalid {
-		return nil, ExtraError
-	}
 
 	if err != nil {
 		return nil, err

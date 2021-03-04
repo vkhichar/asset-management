@@ -3,17 +3,11 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
-	"regexp"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/vkhichar/asset-management/domain"
 )
-
-var EmailInvalid = errors.New("Invalid email")
-
-var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 const (
 	getUserByEmailQuery = "SELECT id, name, email, password, is_admin FROM users WHERE email= $1"
@@ -72,15 +66,7 @@ func (repo *userRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 
 func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
 	var user1 domain.User
-	email := user.Email
 
-	valid := emailRegex.MatchString(email)
-
-	if valid == false {
-
-		return nil, EmailInvalid
-
-	}
 	err := repo.db.Get(&user1, createUserByQuery, user.Name, user.Email, user.Password, user.IsAdmin)
 
 	if err != nil {

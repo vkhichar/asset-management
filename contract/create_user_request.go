@@ -2,6 +2,7 @@ package contract
 
 import (
 	"errors"
+	"regexp"
 	"strings"
 )
 
@@ -12,9 +13,21 @@ type CreateUserRequest struct {
 	IsAdmin  bool   `json:"is_admin"`
 }
 
+var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
 func (req CreateUserRequest) Validate() error {
 	if strings.TrimSpace(req.Name) == "" {
 		return errors.New("Name is required")
+	}
+
+	email := req.Email
+
+	valid := emailRegex.MatchString(email)
+
+	if valid == false {
+
+		return errors.New("invalid email")
+
 	}
 
 	if strings.TrimSpace(req.Email) == "" {
