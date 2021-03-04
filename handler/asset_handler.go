@@ -13,7 +13,6 @@ import (
 func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-
 		asset, err := asset.ListAssets(r.Context())
 
 		if err == customerrors.NoAssetsExist {
@@ -28,6 +27,7 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 			}
 			w.Write(responseBytes)
 			return
+
 		}
 		if err != nil {
 			fmt.Printf("handler:Error while Searching for Assets, %s", err.Error())
@@ -39,7 +39,6 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 		for _, u := range asset {
 			assetResp = append(assetResp, contract.DomainToContractassets(&u))
 		}
-
 		responseBytes, err := json.Marshal(assetResp)
 
 		if err != nil {
