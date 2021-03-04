@@ -7,7 +7,7 @@ import (
 )
 
 type CreateAssetResponse struct {
-	Id             uuid.UUID       `json:"id"`
+	ID             uuid.UUID       `json:"id"`
 	Status         string          `json:"status"`
 	Category       string          `json:"category"`
 	PurchaseAt     string          `json:"purchase_at"`
