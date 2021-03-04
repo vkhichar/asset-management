@@ -36,19 +36,3 @@ func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, er
 	}
 	return asset, nil
 }
-
-func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, error) {
-
-	asset, err := service.assetRepo.ListAssets(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if asset == nil {
-		return nil, customerrors.NoAssetsExist
-	}
-
-	return asset, nil
-
-}
