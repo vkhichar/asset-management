@@ -144,17 +144,6 @@ func CreateUserHandler(userService service.UserService) http.HandlerFunc {
 			return
 		}
 
-		// if err == service.ExtraError {
-
-		// 	fmt.Printf("handler: invalid email %s", req.Email)
-
-		// 	w.WriteHeader(http.StatusUnauthorized)
-		// 	responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "handler:invalid email "})
-		// 	w.Write(responseBytes)
-
-		// 	return
-		// }
-
 		if err != nil {
 			fmt.Printf("handler: error while creating user for email: %s, error: %s", req.Email, err.Error())
 
