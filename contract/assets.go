@@ -9,8 +9,7 @@ import (
 )
 
 type Asset struct {
-	Id uuid.UUID `json:"id"` //uuid package read
-
+	Id             uuid.UUID       `json:"id"` //uuid package read
 	Status         string          `json:"status"`
 	Category       string          `json:"category"`
 	PurchaseAt     time.Time       `json:"purchase_at"`
@@ -20,7 +19,6 @@ type Asset struct {
 }
 
 func DomainToContractassets(d *domain.Asset) Asset {
-
 	u := Asset{
 		Id:             d.Id,
 		Status:         d.Status,
