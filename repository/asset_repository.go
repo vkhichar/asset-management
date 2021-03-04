@@ -41,5 +41,4 @@ func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 		return nil, err
 	}
 	return as, nil
-
 }
