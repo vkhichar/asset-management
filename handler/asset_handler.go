@@ -14,7 +14,10 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		asset, err := asset.ListAssets(r.Context())
+<<<<<<< HEAD
 
+=======
+>>>>>>> UPDATED ASSET MASTER R
 		if err == customerrors.NoAssetsExist {
 			fmt.Println("handler: No assets exist")
 
@@ -27,6 +30,7 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 			}
 			w.Write(responseBytes)
 			return
+<<<<<<< HEAD
 		}
 		if err != nil {
 			fmt.Printf("handler:Error while Searching for Assets, %s", err.Error())
@@ -34,11 +38,19 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 			return
 		}
 
+=======
+		}
+		if err != nil {
+			fmt.Printf("handler:Error while Searching for Assets, %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+>>>>>>> UPDATED ASSET MASTER R
 		assetResp := make([]contract.Asset, 0)
 		for _, u := range asset {
 			assetResp = append(assetResp, contract.DomainToContractassets(&u))
 		}
-
 		responseBytes, err := json.Marshal(assetResp)
 		if err != nil {
 			fmt.Printf("handler: Something Went Wrong while Marshaling assets: %s", err.Error())
