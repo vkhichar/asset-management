@@ -4,13 +4,14 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+	// _ "github.com/lib/pq"
 	"github.com/vkhichar/asset-management/config"
 )
 
 var sqlxDB *sqlx.DB
 
 func InitDB() {
+	fmt.Println(getConnectionString())
 	db, err := sqlx.Open("postgres", getConnectionString())
 	if err != nil {
 		panic(fmt.Sprintf("app: error while opening DB connection: %s", err.Error()))

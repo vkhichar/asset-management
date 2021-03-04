@@ -8,6 +8,7 @@ import (
 	"github.com/vkhichar/asset-management/customerrors"
 
 	"github.com/vkhichar/asset-management/contract"
+	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/service"
 )
 
@@ -83,13 +84,89 @@ func ListUsersHandler(userService service.UserService) http.HandlerFunc {
 			w.Write(responseBytes)
 			return
 		}
-
 		userResp := make([]contract.User, 0)
 		for _, u := range user {
 			userResp = append(userResp, contract.DomainToContract(&u))
 		}
-		responsebytes, err := json.Marshal(userResp)
+
+		responsebytes, _ := json.Marshal(userResp)
 		w.WriteHeader(http.StatusOK)
 		w.Write(responsebytes)
+	}
+
+}
+
+func CreateUserHandler(userService service.UserService) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Context-Type", "application/json")
+
+		var req contract.CreateUserRequest
+
+		err := json.NewDecoder(r.Body).Decode(&req)
+
+		if err != nil {
+
+			fmt.Printf("handler: error while decoding request for create user: %s", err.Error())
+
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "invalid request"})
+			w.Write(responseBytes)
+			return
+		}
+
+		err = req.Validate()
+		if err != nil {
+			fmt.Printf("handler: invalid request for email: %s", req.Email)
+
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+			w.Write(responseBytes)
+			return
+		}
+
+		user1 := domain.User{
+			Name:     req.Name,
+			Email:    req.Email,
+			Password: req.Password,
+			IsAdmin:  req.IsAdmin,
+		}
+
+		user, err := userService.CreateUser(r.Context(), user1)
+
+		if err == service.ErrInvalidEmailPassword {
+			fmt.Printf("handler: invalid email or password for email: %s", req.Email)
+
+			w.WriteHeader(http.StatusUnauthorized)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "invalid email or password"})
+			w.Write(responseBytes)
+			return
+		}
+
+		if err == service.ExtraError {
+
+			fmt.Printf("handler: invalid email %s", req.Email)
+
+			w.WriteHeader(http.StatusUnauthorized)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "handler:invalid email "})
+			w.Write(responseBytes)
+
+			return
+		}
+
+		if err != nil {
+			fmt.Printf("handler: error while creating user for email: %s, error: %s", req.Email, err.Error())
+
+			w.WriteHeader(http.StatusInternalServerError)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "handler:something went wrong"})
+
+			w.Write(responseBytes)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		responseBytes, _ := json.Marshal(contract.CreateUserResponse{Name: user.Name, Email: user.Email, Password: user.Password, IsAdmin: user.IsAdmin})
+		w.Write(responseBytes)
+
 	}
 }

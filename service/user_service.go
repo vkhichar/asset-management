@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/vkhichar/asset-management/customerrors"
 
@@ -14,6 +15,10 @@ type UserService interface {
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
 }
+
+var ErrInvalidEmailPassword = errors.New("invalid email or password")
+
+var ExtraError = errors.New("invalid email")
 
 type userService struct {
 	userRepo repository.UserRepository
@@ -63,6 +68,17 @@ func (service *userService) ListUsers(ctx context.Context) ([]domain.User, error
 }
 
 func (service *userService) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
-	//create user service
-	return nil, nil
+
+	entry, err := service.userRepo.CreateUser(ctx, user)
+
+	if err == repository.EmailInvalid {
+		return nil, ExtraError
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return entry, nil
+
 }
