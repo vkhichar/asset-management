@@ -28,19 +28,11 @@ func NewAssetService(repo repository.AssetRepository) AssetService {
 func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 
 	asset, err := service.assetRepo.ListAssets(ctx)
-
-	// if err == repository.NoUserExists {
-	// 	return nil, ErrNoUserExists
-	// }
-
 	if err != nil {
 		return nil, err
 	}
-
 	if asset == nil {
 		return nil, customerrors.NoAssetsExist
 	}
-
 	return asset, nil
-
 }

@@ -13,7 +13,6 @@ import (
 func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-
 		asset, err := asset.ListAssets(r.Context())
 
 		if err == customerrors.NoAssetsExist {
@@ -50,14 +49,12 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "no asset found"})
 			w.Write(responseBytes)
 			return
-
 		}
 
 		assetResp := make([]contract.Asset, 0)
 		for _, u := range asset {
 			assetResp = append(assetResp, contract.DomainToContractassets(&u))
 		}
-
 		responseBytes, err := json.Marshal(assetResp)
 		if err != nil {
 			fmt.Printf("handler: Something Went Wrong while Marshaling assets: %s", err.Error())
