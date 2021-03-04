@@ -32,4 +32,5 @@ func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, er
 		return nil, customerrors.NoAssetsExist
 	}
 	return asset, nil
+
 }

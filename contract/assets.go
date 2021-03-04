@@ -9,12 +9,14 @@ import (
 )
 
 type Asset struct {
-	Id             uuid.UUID       `json:"id"`
-	Status         string          `json:"status"`
-	Category       string          `json:"category"`
-	PurchaseAt     time.Time       `json:"purchase_at"`
-	PurchaseCost   float64         `json:"purchase_cost"`
-	Name           string          `json:"name"`
+	Id uuid.UUID `json:"id"`
+
+	Status       string    `json:"status"`
+	Category     string    `json:"category"`
+	PurchaseAt   time.Time `json:"purchase_at"`
+	PurchaseCost float64   `json:"purchase_cost"`
+	Name         string    `json:"name"`
+
 	Specifications json.RawMessage `json:"specifications"`
 }
 

@@ -13,6 +13,7 @@ import (
 func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+
 		asset, err := asset.ListAssets(r.Context())
 
 		if err == customerrors.NoAssetsExist {
@@ -40,6 +41,7 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 		}
 
 		responseBytes, err := json.Marshal(assetResp)
+
 		if err != nil {
 			fmt.Printf("handler: Something Went Wrong while Marshaling assets: %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
@@ -47,6 +49,7 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
+
 		w.Write(responseBytes)
 		return
 
