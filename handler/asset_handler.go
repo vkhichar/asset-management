@@ -40,7 +40,6 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 		for _, u := range asset {
 			assetResp = append(assetResp, contract.DomainToContractassets(&u))
 		}
-
 		responseBytes, err := json.Marshal(assetResp)
 
 		if err != nil {
