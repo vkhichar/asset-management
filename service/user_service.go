@@ -57,7 +57,7 @@ func (service *userService) ListUsers(ctx context.Context) ([]domain.User, error
 	}
 
 	if user == nil {
-		return user, NoUsersExist
+		return user, errorspkg.NoUsersExist
 	}
 
 	return user, nil

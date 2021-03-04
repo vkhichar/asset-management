@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/vkhichar/asset-management/errorspkg"
+
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/service"
 )
@@ -37,7 +39,7 @@ func LoginHandler(userService service.UserService) http.HandlerFunc {
 		}
 
 		user, token, err := userService.Login(r.Context(), req.Email, req.Password)
-		if err == service.ErrInvalidEmailPassword {
+		if err == errorspkg.ErrInvalidEmailPassword {
 			fmt.Printf("handler: invalid email or password for email: %s", req.Email)
 
 			w.WriteHeader(http.StatusUnauthorized)
@@ -66,37 +68,35 @@ func ListUsersHandler(userService service.UserService) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 
-		if r.Method == "GET" {
-			user, err := userService.ListUsers(r.Context())
+		user, err := userService.ListUsers(r.Context())
 
-			if err == service.NoUsersExist {
-				fmt.Println("handler: No users exist")
+		if err == errorspkg.NoUsersExist {
+			fmt.Println("handler: No users exist")
 
-				w.WriteHeader(http.StatusNotFound)
-				responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "no user found"})
-				w.Write(responseBytes)
-				return
+			w.WriteHeader(http.StatusNotFound)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "no user found"})
+			w.Write(responseBytes)
+			return
 
-			}
-
-			if err != nil {
-				fmt.Printf("handler: error while searching for user,error= %s", err.Error())
-
-				w.WriteHeader(http.StatusInternalServerError)
-				responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
-				w.Write(responseBytes)
-				return
-			}
-			//write a loop to convert domain object to contract object
-
-			userResp := make([]contract.User, 0)
-
-			for _, u := range user {
-				userResp = append(userResp, contract.DomainToContract(&u))
-			}
-			responsebytes, err := json.Marshal(userResp)
-			w.WriteHeader(http.StatusOK)
-			w.Write(responsebytes)
 		}
+
+		if err != nil {
+			fmt.Printf("handler: error while searching for user,error= %s", err.Error())
+
+			w.WriteHeader(http.StatusInternalServerError)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+			w.Write(responseBytes)
+			return
+		}
+		//write a loop to convert domain object to contract object
+
+		userResp := make([]contract.User, 0)
+
+		for _, u := range user {
+			userResp = append(userResp, contract.DomainToContract(&u))
+		}
+		responsebytes, err := json.Marshal(userResp)
+		w.WriteHeader(http.StatusOK)
+		w.Write(responsebytes)
 	}
 }
