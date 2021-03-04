@@ -22,5 +22,10 @@ func NewAssetMaintainRepository() AssetMaintenanceRepo {
 }
 
 func (repo *assetMaintainRepo) InsertMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
-	return nil, nil
+	var maintenance domain.MaintenanceActivity
+	err := repo.db.Get(&maintenance, "Insert into maintenance_activities (assets_id,cost,description) values ($1,$2,$3) returning *", req.AssetId, req.Cost, req.Description)
+	if err != nil {
+		return nil, err //error check
+	}
+	return &maintenance, nil
 }
