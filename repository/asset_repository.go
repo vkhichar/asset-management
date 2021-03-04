@@ -14,7 +14,6 @@ const (
 )
 
 type AssetRepository interface {
-	// CreateAsset(ctx context.Context, assetCategory string, assetStatus string, purchaseCost float64, assetName string) (domain.Asset, error)
 	ListAssets(ctx context.Context) ([]domain.Asset, error)
 }
 
@@ -28,22 +27,8 @@ func NewAssetRepository() AssetRepository {
 	}
 }
 
-// func (repo *assetRepo) UpdateAsset(ctx context.Context,Id domain.UUID) (*domain.Asset,error){
-
-// 	var asset domain.Asset
-// 	err:=repo.db.
-
-// }
-// func (repo *assetRepo) CreateAsset(ctx context.Context, assetCategory string, assetStatus string, purchaseCost float64, assetName string) (domain.Asset, error) {
-
-// 	var as domain.Asset
-
-// 	return as, nil
-// }
-
 func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 	var as []domain.Asset
-
 	err := repo.db.Select(&as, GetAssetDetails)
 	if err == sql.ErrNoRows {
 		fmt.Printf("repository: No asset present")
@@ -53,7 +38,6 @@ func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return as, nil
 
 }
