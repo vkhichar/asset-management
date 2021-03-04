@@ -126,14 +126,14 @@ func CreateUserHandler(userService service.UserService) http.HandlerFunc {
 			return
 		}
 
-		user1 := domain.User{
+		createdUser := domain.User{
 			Name:     req.Name,
 			Email:    req.Email,
 			Password: req.Password,
 			IsAdmin:  req.IsAdmin,
 		}
 
-		user, err := userService.CreateUser(r.Context(), user1)
+		user, err := userService.CreateUser(r.Context(), createdUser)
 
 		if err == service.ErrInvalidEmailPassword {
 			fmt.Printf("handler: invalid email or password for email: %s", req.Email)

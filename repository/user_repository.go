@@ -65,9 +65,9 @@ func (repo *userRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 }
 
 func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
-	var user1 domain.User
+	var newUser domain.User
 
-	err := repo.db.Get(&user1, createUserByQuery, user.Name, user.Email, user.Password, user.IsAdmin)
+	err := repo.db.Get(&newUser, createUserByQuery, user.Name, user.Email, user.Password, user.IsAdmin)
 
 	if err != nil {
 
@@ -75,5 +75,5 @@ func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain
 
 	}
 
-	return &user1, nil
+	return &newUser, nil
 }
