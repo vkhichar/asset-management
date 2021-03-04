@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	GetAssetDetails = "SELECT id,category,status,purchase_at,purchase_cost,name,specifications FROM assets"
+	getAssetDetails = "SELECT id,category,status,purchase_at,purchase_cost,name,specifications FROM assets"
 )
 
 type AssetRepository interface {
@@ -29,7 +29,7 @@ func NewAssetRepository() AssetRepository {
 
 func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 	var as []domain.Asset
-	err := repo.db.Select(&as, GetAssetDetails)
+	err := repo.db.Select(&as, getAssetDetails)
 	if err == sql.ErrNoRows {
 		fmt.Printf("repository: No asset present")
 
