@@ -15,7 +15,14 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (u User) DomainToContract(d *domain.User) User {
+func DomainToContract(d *domain.User) User {
 	var u User
-ID:
+	u.ID = d.ID
+	u.Name = d.Name
+	u.Email = d.Email
+	u.IsAdmin = d.IsAdmin
+	u.CreatedAt = d.CreatedAt
+	u.UpdatedAt = d.UpdatedAt
+
+	return u
 }

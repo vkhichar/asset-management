@@ -15,7 +15,7 @@ var NoUsersExist = errors.New("No users exist at present")
 type UserService interface {
 	Login(ctx context.Context, email, password string) (user *domain.User, token string, err error)
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
-	ListUsers(ctx context.Context) (users []domain.User, err error)
+	ListUsers(ctx context.Context) ([]domain.User, error)
 }
 
 type userService struct {
@@ -60,7 +60,7 @@ func (service *userService) ListUsers(ctx context.Context) ([]domain.User, error
 	}
 
 	if user == nil {
-		return nil, NoUsersExist
+		return user, NoUsersExist
 	}
 
 	return user, nil

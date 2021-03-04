@@ -80,7 +80,7 @@ func ListUsersHandler(userService service.UserService) http.HandlerFunc {
 			}
 
 			if err != nil {
-				fmt.Printf("handler: error while searching for user")
+				fmt.Printf("handler: error while searching for user,error= %s", err.Error())
 
 				w.WriteHeader(http.StatusInternalServerError)
 				responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
@@ -89,8 +89,15 @@ func ListUsersHandler(userService service.UserService) http.HandlerFunc {
 			}
 			//write a loop to convert domain object to contract object
 
+			var userResp = make([]contract.User, len(user))
+
 			w.WriteHeader(http.StatusOK)
-			responsebytes, _ := json.Marshal(user)
+
+			for i := 0; i < len(user); i++ {
+				userResp[i] = contract.DomainToContract(&user[i])
+			}
+			responsebytes, err := json.Marshal(userResp)
+
 			w.Write(responsebytes)
 		}
 	}
