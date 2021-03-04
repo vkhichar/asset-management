@@ -18,11 +18,10 @@ func main() {
 
 	// initialise db connection
 	repository.InitDB()
-
 	handler.InitDependencies()
-	handler.Routes()
 
-	err = http.ListenAndServe(":"+config.GetAppPort(), nil)
+	err = http.ListenAndServe(":"+config.GetAppPort(), handler.Routes())
+
 	if err != nil {
 		fmt.Printf("main: error while starting server: %s", err.Error())
 		return
