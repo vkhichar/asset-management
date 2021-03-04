@@ -20,7 +20,6 @@ type Asset struct {
 }
 
 func DomainToContractassets(d *domain.Asset) Asset {
-
 	u := Asset{
 		Id:             d.Id,
 		Status:         d.Status,
