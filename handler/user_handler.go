@@ -67,7 +67,7 @@ func ListUsersHandler(userService service.UserService) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		if r.Method == "GET" {
-			user, err := userService.ListUser(r.Context())
+			user, err := userService.ListUsers(r.Context())
 
 			if err == service.NoUsersExist {
 				fmt.Println("handler: No users exist")

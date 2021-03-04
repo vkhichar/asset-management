@@ -64,4 +64,5 @@ func (repo *userRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 
 func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
 	//create user method
+	return nil, nil
 }
