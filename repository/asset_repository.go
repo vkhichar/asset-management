@@ -29,11 +29,8 @@ func NewAssetRepository() AssetRepository {
 
 func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 	var as []domain.Asset
-<<<<<<< HEAD
+
 	err := repo.db.Select(&as, getAssetDetails)
-=======
-	err := repo.db.Select(&as, GetAssetDetails)
->>>>>>> UPDATED ASSET MASTER R
 	if err == sql.ErrNoRows {
 		fmt.Printf("repository: No asset present")
 
