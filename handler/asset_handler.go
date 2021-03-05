@@ -43,6 +43,7 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 		responseBytes, err := json.Marshal(assetResp)
 
 		if err != nil {
+
 			fmt.Printf("handler: Something Went Wrong while Marshaling assets: %s", err.Error())
 
 			w.WriteHeader(http.StatusInternalServerError)
