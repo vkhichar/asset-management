@@ -2,14 +2,11 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/repository"
 )
-
-var ErrNoUserExists = errors.New("No asset exists here")
 
 type AssetService interface {
 	ListAssets(ctx context.Context) ([]domain.Asset, error)
