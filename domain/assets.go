@@ -8,6 +8,7 @@ import (
 )
 
 type Asset struct {
+<<<<<<< HEAD
 	Id uuid.UUID `db:"id"`
 
 	Status       string    `db:"status"`
