@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/repository"
@@ -12,6 +13,8 @@ import (
 type AssetMaintenanceService interface {
 	CreateAssetMaintenance(ctx context.Context, req domain.MaintenanceActivity) (user *domain.MaintenanceActivity, err error)
 	DetailedMaintenanceActivity(ctx context.Context, activityId int) (user *domain.MaintenanceActivity, err error)
+	DeleteMaintenanceActivity(ctx context.Context, id int) (err error)
+	GetAllForAssetId(ctx context.Context, assetId uuid.UUID) ([]domain.MaintenanceActivity, error)
 }
 
 type assetMaintenanceService struct {
@@ -48,4 +51,12 @@ func (service *assetMaintenanceService) DetailedMaintenanceActivity(ctx context.
 	}
 
 	return assetsMaintenance, nil
+}
+
+func (service *assetMaintenanceService) DeleteMaintenanceActivity(ctx context.Context, activityId int) error {
+	return service.assetMaintainRepo.DeleteMaintenanceActivity(ctx, activityId)
+}
+
+func (service *assetMaintenanceService) GetAllForAssetId(ctx context.Context, assetId uuid.UUID) ([]domain.MaintenanceActivity, error) {
+	return service.assetMaintainRepo.GetAllByAssetId(ctx, assetId)
 }
