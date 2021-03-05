@@ -17,7 +17,7 @@ func Routes() *mux.Router {
 	router.HandleFunc("/assets/{Id}", DeleteAssetHandler(deps.assetService)).Methods("DELETE")
 	router.HandleFunc("/users/{id}", DeleteUserHandler(deps.userService)).Methods("DELETE")
 	router.HandleFunc("/maintenance_activities/{id:[0-9]+}", DeleteMaintenanceActivityHandler(deps.assetMaintenanceService)).Methods("DELETE")
-	router.HandleFunc("/assets/{asset_id}/maintenance", ListMaintenanceActivitiesForAsserId(deps.assetMaintenanceService)).Methods("GET")
+	router.HandleFunc("/assets/{asset_id}/maintenance", ListMaintenanceActivitiesByAsserId(deps.assetMaintenanceService)).Methods("GET")
 	return router
 
 }

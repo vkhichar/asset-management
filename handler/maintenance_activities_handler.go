@@ -150,7 +150,7 @@ func DeleteMaintenanceActivityHandler(service service.AssetMaintenanceService) h
 	}
 }
 
-func ListMaintenanceActivitiesForAsserId(service service.AssetMaintenanceService) http.HandlerFunc {
+func ListMaintenanceActivitiesByAsserId(service service.AssetMaintenanceService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, err := verifyToken(r, w, true)
