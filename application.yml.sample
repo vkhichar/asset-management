@@ -1,8 +1,8 @@
-export APP_PORT="9000"
+APP_PORT: 9000
 
-#Databaseconfig
-export DB_HOST="localhost"
-export DB_PORT="5432"
-export DB_USERNAME="postgres"
-export DB_PASSWORD="12345"
-export DB_NAME="asset_management"
+# Database config
+DB_HOST: "localhost"
+DB_PORT: 5432
+DB_USERNAME: "postgres"
+DB_PASSWORD: ""
+DB_NAME: "asset_management"
