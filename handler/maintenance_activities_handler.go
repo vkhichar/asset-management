@@ -10,7 +10,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/vkhichar/asset-management/contract"
+<<<<<<< HEAD
 	"github.com/vkhichar/asset-management/customerrors"
+=======
+	"github.com/vkhichar/asset-management/domain"
+	"github.com/vkhichar/asset-management/repository"
+>>>>>>> Added update activity Api
 	"github.com/vkhichar/asset-management/service"
 )
 
@@ -179,10 +184,73 @@ func ListMaintenanceActivitiesByAsserId(service service.AssetMaintenanceService)
 	}
 }
 
+func UpdateMaintenanceActivity(service service.AssetMaintenanceService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, err := verifyToken(r, w, true)
+		if err != nil {
+			WriteErrorResponse(w, err)
+			return
+		}
+		id, err := strconv.Atoi(mux.Vars(r)["id"])
+		if err != nil {
+			fmt.Println(err)
+			WriteErrorResponse(w, ErrBadRequest)
+			return
+		}
+		var updateReq contract.UpdateMaintenanceActivityReq
+		err = json.NewDecoder(r.Body).Decode(&updateReq)
+		if err != nil {
+			fmt.Println(err)
+			WriteErrorResponse(w, ErrBadRequest)
+			return
+		}
+
+		isValid := validateReq(updateReq)
+
+		if !isValid {
+			fmt.Println(err)
+			WriteErrorResponse(w, ErrBadRequest)
+			return
+		}
+
+		activityDomain := updateReq.ConvertToDomain()
+		activityDomain.ID = id
+
+		fmt.Println(activityDomain)
+
+		activity, err := service.UpdateMaintenanceActivity(r.Context(), activityDomain)
+
+		if err == repository.NoActivityRecordFound {
+			fmt.Println(err)
+			WriteErrorResponse(w, ErrNotFound)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		responseBytes, _ := json.Marshal(contract.NewMaintenanceActivityResp(*activity))
+		w.Write(responseBytes)
+
+	}
+}
+
 func convertAllActivities(all []domain.MaintenanceActivity) []contract.MaintenanceActivityResp {
 	res := make([]contract.MaintenanceActivityResp, len(all))
 	for index, value := range all {
 		res[index] = contract.NewMaintenanceActivityResp(value)
 	}
 	return res
+}
+
+/**
+Validates request body
+return true, if valid else false
+*/
+func validateReq(req contract.UpdateMaintenanceActivityReq) bool {
+	if req.Cost == 0.0 || req.EndedAt == "" || req.Description == "" {
+		return false
+	}
+
+	// ToDo validate date format
+	return true
 }

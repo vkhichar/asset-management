@@ -15,6 +15,7 @@ type AssetMaintenanceService interface {
 	DetailedMaintenanceActivity(ctx context.Context, activityId int) (user *domain.MaintenanceActivity, err error)
 	DeleteMaintenanceActivity(ctx context.Context, id int) (err error)
 	GetAllForAssetId(ctx context.Context, assetId uuid.UUID) ([]domain.MaintenanceActivity, error)
+	UpdateMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error)
 }
 
 type assetMaintenanceService struct {
@@ -59,4 +60,8 @@ func (service *assetMaintenanceService) DeleteMaintenanceActivity(ctx context.Co
 
 func (service *assetMaintenanceService) GetAllForAssetId(ctx context.Context, assetId uuid.UUID) ([]domain.MaintenanceActivity, error) {
 	return service.assetMaintainRepo.GetAllByAssetId(ctx, assetId)
+}
+
+func (service *assetMaintenanceService) UpdateMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
+	return service.assetMaintainRepo.UpdateMaintenanceActivity(ctx, req)
 }

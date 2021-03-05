@@ -16,6 +16,7 @@ var (
 	ErrInvalidToken = errors.New("invalid or expired token")
 	ErrForbidden    = errors.New("forbidden")
 	ErrBadRequest   = errors.New("bad request")
+	ErrNotFound     = errors.New("not Found")
 )
 
 func ReadTokenFromRequest(r *http.Request) (string, error) {
@@ -65,6 +66,8 @@ func WriteErrorResponse(w http.ResponseWriter, err error) {
 		statusCode = http.StatusForbidden
 	case ErrBadRequest:
 		statusCode = http.StatusBadRequest
+	case ErrNotFound:
+		statusCode = http.StatusNotFound
 	default:
 		statusCode = http.StatusInternalServerError
 

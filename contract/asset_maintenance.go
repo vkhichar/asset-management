@@ -17,6 +17,12 @@ type AssetMaintain struct {
 	Description string    `json:"description"`
 }
 
+type UpdateMaintenanceActivityReq struct {
+	Cost        float64 `json:"cost"`
+	EndedAt     string  `json:"ended_at"`
+	Description string  `json:"description"`
+}
+
 type MaintenanceActivityResp struct {
 	Id          int       `json:"id"`
 	Description string    `json:"description"`
@@ -34,5 +40,15 @@ func NewMaintenanceActivityResp(domain domain.MaintenanceActivity) MaintenanceAc
 		StartedAt:   domain.StartedAt.Format(DATE_FORMAT),
 		EndedAt:     domain.EndedAt.Format(DATE_FORMAT),
 		AssetId:     domain.AssetId,
+	}
+}
+
+func (activity UpdateMaintenanceActivityReq) ConvertToDomain() domain.MaintenanceActivity {
+	endedAt, _ := time.Parse(DATE_FORMAT, activity.EndedAt)
+
+	return domain.MaintenanceActivity{
+		Cost:        activity.Cost,
+		EndedAt:     endedAt,
+		Description: activity.Description,
 	}
 }
