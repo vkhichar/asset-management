@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
@@ -30,7 +31,15 @@ func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, er
 	}
 	if asset == nil {
 		return nil, customerrors.NoAssetsExist
+	}
+	return asset, nil
+}
 
+func (service *assetService) CreateAsset(ctx context.Context, asset_param domain.Asset) (domain.Asset, error) {
+	asset, err := service.assetRepo.CreateAsset(ctx, asset_param)
+	if err != nil {
+		fmt.Printf("asset_service error while creating asset", err.Error())
+		return domain.Asset{}, err
 	}
 	return asset, nil
 }

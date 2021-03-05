@@ -7,10 +7,17 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 )
 
-var checkStatus = [3]string{"active", "retired", "undermaintenance"}
+type assetStatus string
+
+const (
+	statusActive           assetStatus = "active"
+	statusRetired          assetStatus = "retired"
+	statusUnderMaintenance assetStatus = "undermaintenance"
+)
 
 type CreateAssetRequest struct {
 	//AssetID       int    `json:"id"`
@@ -66,10 +73,10 @@ func (req CreateAssetRequest) Validate() error {
 
 	contractStatus := req.Status
 
-	if contractStatus == checkStatus[0] || contractStatus == checkStatus[1] || contractStatus == checkStatus[2] {
+	if contractStatus == string(statusActive) || contractStatus == string(statusRetired) || contractStatus == string(statusUnderMaintenance) {
 		return nil
 	} else {
-		return errors.New("status invalid")
+		return customerrors.ErrInvalidAssetStatus
 	}
 
 }
