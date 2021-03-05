@@ -22,10 +22,7 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "no asset found"})
 			if err != nil {
 				fmt.Printf("handler: Something went wrong while Marshaling: %s", err.Error())
-<<<<<<< HEAD
 
-=======
->>>>>>> Fix print statement
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
