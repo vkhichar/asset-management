@@ -21,7 +21,9 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 			w.WriteHeader(http.StatusNotFound)
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "no asset found"})
 			if err != nil {
+
 				fmt.Printf("handler: Something went wrong while Marshaling: %s", err.Error())
+
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -39,10 +41,12 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 		for _, u := range asset {
 			assetResp = append(assetResp, contract.DomainToContractassets(&u))
 		}
+
 		responseBytes, err := json.Marshal(assetResp)
 
 		if err != nil {
 			fmt.Printf("handler: Something Went Wrong while Marshaling assets: %s", err.Error())
+
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

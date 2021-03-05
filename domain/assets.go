@@ -8,13 +8,11 @@ import (
 )
 
 type Asset struct {
-	Id uuid.UUID `db:"id"`
-
-	Status       string    `db:"status"`
-	Category     string    `db:"category"`
-	PurchaseAt   time.Time `db:"purchase_at"`
-	PurchaseCost float64   `db:"purchase_cost"`
-	Name         string    `db:"name"`
-
+	Id             uuid.UUID       `db:"id"`
+	Status         string          `db:"status"`
+	Category       string          `db:"category"`
+	PurchaseAt     time.Time       `db:"purchase_at"`
+	PurchaseCost   float64         `db:"purchase_cost"`
+	Name           string          `db:"name"`
 	Specifications json.RawMessage `db:"specifications"`
 }
