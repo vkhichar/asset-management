@@ -16,8 +16,8 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
-		AssetID, err1 := uuid.Parse(vars["assetId"])
-		if err1 != nil {
+		assetID, errors := uuid.Parse(vars["assetId"])
+		if errors != nil {
 			fmt.Printf("handler:incorrect asset id")
 			w.WriteHeader(http.StatusBadRequest)
 			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "invalid asset id"})
@@ -28,7 +28,7 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 		w.Header().Set("Content-Type", "application/json")
 
 		var req contract.AssetMaintenance
-		req.AssetId = AssetID
+		req.AssetId = assetID
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			fmt.Printf("handler: error while decoding request for creating maintenance activity for assets: %s", err.Error())
@@ -49,7 +49,7 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 			return
 		}
 		createassetmaintenance := domain.MaintenanceActivity{
-			AssetId:     AssetID,
+			AssetId:     assetID,
 			Cost:        req.Cost,
 			StartedAt:   req.StartedAt,
 			Description: req.Description,

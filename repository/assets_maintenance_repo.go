@@ -31,8 +31,8 @@ func (repo *assetMaintainRepo) InsertMaintenanceActivity(ctx context.Context, re
 
 	err := repo.db.Get(&maintenance, createMaintainActivityByQuery, req.AssetId, req.Cost, req.StartedAt, req.Description)
 	if err != nil {
-		fmt.Println("repolayer:%s", err.Error())
-		return nil, err //have to do error check
+		fmt.Printf("repolayer:%s", err.Error())
+		return nil, err
 	}
 	return &maintenance, nil
 }
