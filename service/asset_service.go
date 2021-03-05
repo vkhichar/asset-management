@@ -10,6 +10,7 @@ import (
 
 type AssetService interface {
 	ListAssets(ctx context.Context) ([]domain.Asset, error)
+	CreateAsset(ctx context.Context, asset domain.Asset) (domain.Asset, error)
 }
 
 type assetService struct {
@@ -23,13 +24,13 @@ func NewAssetService(repo repository.AssetRepository) AssetService {
 }
 
 func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, error) {
-
 	asset, err := service.assetRepo.ListAssets(ctx)
 	if err != nil {
 		return nil, err
 	}
 	if asset == nil {
 		return nil, customerrors.NoAssetsExist
+
 	}
 	return asset, nil
 }
