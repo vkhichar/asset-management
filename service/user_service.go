@@ -2,18 +2,17 @@ package service
 
 import (
 	"context"
-	"errors"
+
+	"github.com/vkhichar/asset-management/customerrors"
 
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/repository"
 )
 
-var ErrInvalidEmailPassword = errors.New("invalid email or password")
-
 type UserService interface {
 	Login(ctx context.Context, email, password string) (user *domain.User, token string, err error)
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
-	ListUsers(ctx context.Context) (users []domain.User, err error)
+	ListUsers(ctx context.Context) ([]domain.User, error)
 }
 
 type userService struct {
@@ -35,11 +34,11 @@ func (service *userService) Login(ctx context.Context, email, password string) (
 	}
 
 	if user == nil {
-		return nil, "", ErrInvalidEmailPassword
+		return nil, "", customerrors.ErrInvalidEmailPassword
 	}
 
 	if user.Password != password {
-		return nil, "", ErrInvalidEmailPassword
+		return nil, "", customerrors.ErrInvalidEmailPassword
 	}
 
 	claims := &Claims{UserID: user.ID, IsAdmin: user.IsAdmin}
@@ -51,10 +50,19 @@ func (service *userService) Login(ctx context.Context, email, password string) (
 	return user, token, nil
 }
 
-func (service *userService) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
-	return nil, nil
+func (service *userService) ListUsers(ctx context.Context) ([]domain.User, error) {
+	user, err := service.userRepo.ListUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return user, customerrors.NoUsersExist
+	}
+
+	return user, nil
 }
 
-func (service *userService) ListUsers(ctx context.Context) ([]domain.User, error) {
+func (service *userService) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
+	//create user service
 	return nil, nil
 }
