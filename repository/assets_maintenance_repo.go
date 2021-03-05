@@ -2,9 +2,14 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/vkhichar/asset-management/domain"
+)
+
+const (
+	createMaintainActivityByQuery = "INSERT INTO maintenance_activities (asset_id,cost,started_at,description) VALUES ($1,$2,$3,$4) RETURNING id,asset_id,cost,started_at,description"
 )
 
 type AssetMaintenanceRepo interface {
@@ -23,9 +28,11 @@ func NewAssetMaintainRepository() AssetMaintenanceRepo {
 
 func (repo *assetMaintainRepo) InsertMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
 	var maintenance domain.MaintenanceActivity
-	err := repo.db.Get(&maintenance, "Insert into maintenance_activities (assets_id,cost,description) values ($1,$2,$3) returning *", req.AssetId, req.Cost, req.Description)
+
+	err := repo.db.Get(&maintenance, createMaintainActivityByQuery, req.AssetId, req.Cost, req.StartedAt, req.Description)
 	if err != nil {
-		return nil, err //error check
+		fmt.Println("repolayer:%s", err.Error())
+		return nil, err //have to do error check
 	}
 	return &maintenance, nil
 }
