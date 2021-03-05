@@ -24,7 +24,12 @@ func LoginHandler(userService service.UserService) http.HandlerFunc {
 			fmt.Printf("handler: error while decoding request for login: %s", err.Error())
 
 			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "invalid request"})
+			responseBytes, decodingErr := json.Marshal(contract.ErrorResponse{Error: "invalid request"})
+
+			if decodingErr != nil {
+				fmt.Fprintf(w, "handler: error while marshaling decoding request for login")
+				return
+			}
 			w.Write(responseBytes)
 			return
 		}
@@ -33,7 +38,12 @@ func LoginHandler(userService service.UserService) http.HandlerFunc {
 		if err != nil {
 			fmt.Printf("handler: invalid request for email: %s", req.Email)
 			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+			responseBytes, validationErr := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+
+			if validationErr != nil {
+				fmt.Fprintf(w, "handler: error while marshaling invalid request for email")
+				return
+			}
 			w.Write(responseBytes)
 			return
 		}
@@ -42,7 +52,11 @@ func LoginHandler(userService service.UserService) http.HandlerFunc {
 		if err == customerrors.ErrInvalidEmailPassword {
 			fmt.Printf("handler: invalid email or password for email: %s", req.Email)
 			w.WriteHeader(http.StatusUnauthorized)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "invalid email or password"})
+			responseBytes, invalidErr := json.Marshal(contract.ErrorResponse{Error: "invalid email or password"})
+			if invalidErr != nil {
+				fmt.Fprint(w, "handler: error while marshaling invalid email or password for email")
+				return
+			}
 			w.Write(responseBytes)
 			return
 		}
@@ -50,13 +64,21 @@ func LoginHandler(userService service.UserService) http.HandlerFunc {
 		if err != nil {
 			fmt.Printf("handler: error while logging in for email: %s, error: %s", req.Email, err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+			responseBytes, loginErr := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+			if loginErr != nil {
+				fmt.Fprintf(w, "handler: error while marshaling logging in for email")
+				return
+			}
 			w.Write(responseBytes)
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		responseBytes, _ := json.Marshal(contract.LoginResponse{IsAdmin: user.IsAdmin, Token: token})
+		responseBytes, statusokErr := json.Marshal(contract.LoginResponse{IsAdmin: user.IsAdmin, Token: token})
+		if statusokErr != nil {
+			fmt.Fprintf(w, "handler: error while marshaling status ok")
+			return
+		}
 		w.Write(responseBytes)
 	}
 }
@@ -111,7 +133,12 @@ func CreateUserHandler(userService service.UserService) http.HandlerFunc {
 			fmt.Printf("handler: error while decoding request for create user: %s", err.Error())
 
 			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "invalid request"})
+			responseBytes, decodingErr := json.Marshal(contract.ErrorResponse{Error: "invalid request"})
+
+			if decodingErr != nil {
+				fmt.Fprintf(w, "handler: error while marshaling decoding request for create user")
+				return
+			}
 			w.Write(responseBytes)
 			return
 		}
@@ -121,7 +148,12 @@ func CreateUserHandler(userService service.UserService) http.HandlerFunc {
 			fmt.Printf("handler: invalid request for email: %s", req.Email)
 
 			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+			responseBytes, validationErr := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+
+			if validationErr != nil {
+				fmt.Fprintf(w, "handler: error while marshaling invalid request for email")
+				return
+			}
 			w.Write(responseBytes)
 			return
 		}
@@ -139,7 +171,12 @@ func CreateUserHandler(userService service.UserService) http.HandlerFunc {
 			fmt.Printf("handler: invalid email or password for email: %s", req.Email)
 
 			w.WriteHeader(http.StatusUnauthorized)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "invalid email or password"})
+			responseBytes, invalidErr := json.Marshal(contract.ErrorResponse{Error: "invalid email or password"})
+
+			if invalidErr != nil {
+				fmt.Fprintf(w, "handler: error while marshaling invalid email or password for email")
+				return
+			}
 			w.Write(responseBytes)
 			return
 		}
@@ -148,13 +185,25 @@ func CreateUserHandler(userService service.UserService) http.HandlerFunc {
 			fmt.Printf("handler: error while creating user for email: %s, error: %s", req.Email, err.Error())
 
 			w.WriteHeader(http.StatusInternalServerError)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "handler:something went wrong"})
 
+			responseBytes, createUsererr := json.Marshal(contract.ErrorResponse{Error: "handler:something went wrong"})
+
+			if createUsererr != nil {
+				fmt.Fprintf(w, "handler: error while marshaling create user for email error")
+				return
+			}
 			w.Write(responseBytes)
 			return
 		}
+
+		contractUser := contract.DomaintoContract(user)
+
 		w.WriteHeader(http.StatusOK)
-		responseBytes, _ := json.Marshal(contract.CreateUserResponse{Name: user.Name, Email: user.Email, Password: user.Password, IsAdmin: user.IsAdmin})
+		responseBytes, statusokErr := json.Marshal(contractUser)
+		if statusokErr != nil {
+			fmt.Fprintf(w, "handler: error while marshaling status ok")
+			return
+		}
 		w.Write(responseBytes)
 
 	}

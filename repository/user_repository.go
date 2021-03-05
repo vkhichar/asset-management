@@ -11,8 +11,9 @@ import (
 
 const (
 	getUserByEmailQuery = "SELECT id, name, email, password, is_admin FROM users WHERE email= $1"
-	selectAllUsers      = "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users"
-	createUserByQuery   = "INSERT INTO users (name, email, password,is_admin) VALUES ($1, $2, $3, $4) RETURNING id, name, email, password, is_admin"
+
+	selectAllUsers    = "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users"
+	createUserByQuery = "INSERT INTO users (name, email, password,is_admin) VALUES ($1, $2, $3, $4) RETURNING id, name, email, password, is_admin, created_at, updated_at"
 )
 
 type UserRepository interface {
