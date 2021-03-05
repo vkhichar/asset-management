@@ -11,6 +11,7 @@ type UpdateUserResponse struct {
 	IsAdmin   bool   `json:"is_admin"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
+	Password  string `json: "password"`
 }
 
 func DomainToContractUpdate(d *domain.User) UpdateUserResponse {
@@ -21,6 +22,7 @@ func DomainToContractUpdate(d *domain.User) UpdateUserResponse {
 		IsAdmin:   d.IsAdmin,
 		CreatedAt: d.CreatedAt.String(),
 		UpdatedAt: d.UpdatedAt.String(),
+		Password:  d.Password,
 	}
 	return u
 }
