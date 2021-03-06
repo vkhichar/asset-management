@@ -61,6 +61,7 @@ func (req CreateAssetRequest) Validate() error {
 	var checkSpec map[string]interface{}
 	if err := json.Unmarshal([]byte(req.Specifications), &checkSpec); err != nil {
 		fmt.Printf("contract:create asset request cannot unmarshal specifications")
+		return errors.New(err.Error())
 	}
 
 	if len(checkSpec) == 0 {
