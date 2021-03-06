@@ -62,8 +62,4 @@ func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param domain.Asset
 	}
 
 	return asset, nil
-<<<<<<< HEAD
-
-=======
->>>>>>> Adds create asset API
 }
