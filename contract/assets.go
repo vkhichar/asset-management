@@ -9,8 +9,7 @@ import (
 )
 
 type Asset struct {
-	Id uuid.UUID `json:"id"`
-
+	Id             uuid.UUID       `json:"id"`
 	Status         string          `json:"status"`
 	Category       string          `json:"category"`
 	PurchaseAt     time.Time       `json:"purchase_at"`
