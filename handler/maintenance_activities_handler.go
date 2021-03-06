@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/vkhichar/asset-management/contract"
-	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/service"
 )
 
@@ -16,7 +15,7 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
-		assetID, errors := uuid.Parse(vars["assetId"])
+		assetId, errors := uuid.Parse(vars["assetId"])
 		if errors != nil {
 			fmt.Printf("handler:incorrect asset id")
 			w.WriteHeader(http.StatusBadRequest)
@@ -27,9 +26,9 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 		// Set Content-Type for response
 		w.Header().Set("Content-Type", "application/json")
 
-		var req contract.AssetMaintenance
-		req.AssetId = assetID
+		var req contract.AssetMaintenanceReq
 		err := json.NewDecoder(r.Body).Decode(&req)
+
 		if err != nil {
 			fmt.Printf("handler: error while decoding request for creating maintenance activity for assets: %s", err.Error())
 
@@ -48,14 +47,17 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 			w.Write(responseBytes)
 			return
 		}
-		createassetmaintenance := domain.MaintenanceActivity{
-			AssetId:     assetID,
-			Cost:        req.Cost,
-			StartedAt:   req.StartedAt,
-			Description: req.Description,
+		createassetmaintenance, err := req.ConvertReqFormat()
+		if err != nil {
+			fmt.Printf("handler: incorrect date format: %s", err.Error())
+
+			w.WriteHeader(http.StatusNotFound)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "incorrect date format "})
+			w.Write(responseBytes)
+			return
 		}
 
-		assetmaintenance, err := assetMaintenanceService.CreateAssetMaintenance(r.Context(), createassetmaintenance)
+		assetmaintenance, err := assetMaintenanceService.CreateAssetMaintenance(r.Context(), assetId, createassetmaintenance)
 		if err != nil {
 			fmt.Printf("handler: error: %s", err.Error())
 
@@ -65,7 +67,7 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
-		responseBytes, _ := json.Marshal(contract.AssetMaintaintenanceResponse{ID: assetmaintenance.ID, AssetId: assetmaintenance.AssetId, Cost: assetmaintenance.Cost, StartedAt: assetmaintenance.StartedAt, Description: assetmaintenance.Description})
+		responseBytes, _ := json.Marshal(contract.AssetMaintaintenanceResponse{ID: assetmaintenance.ID, AssetId: assetmaintenance.AssetId, Cost: assetmaintenance.Cost, StartedAt: assetmaintenance.StartedAt.Format("02-01-2006"), Description: assetmaintenance.Description})
 		w.Write(responseBytes)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/vkhichar/asset-management/domain"
 )
@@ -13,7 +14,7 @@ const (
 )
 
 type AssetMaintenanceRepo interface {
-	InsertMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error)
+	InsertMaintenanceActivity(ctx context.Context, assetId uuid.UUID, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error)
 }
 
 type assetMaintainRepo struct {
@@ -26,12 +27,12 @@ func NewAssetMaintainRepository() AssetMaintenanceRepo {
 	}
 }
 
-func (repo *assetMaintainRepo) InsertMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
+func (repo *assetMaintainRepo) InsertMaintenanceActivity(ctx context.Context, assetId uuid.UUID, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
 	var maintenance domain.MaintenanceActivity
 
-	err := repo.db.Get(&maintenance, createMaintainActivityByQuery, req.AssetId, req.Cost, req.StartedAt, req.Description)
+	err := repo.db.Get(&maintenance, createMaintainActivityByQuery, assetId, req.Cost, req.StartedAt, req.Description)
 	if err != nil {
-		fmt.Printf("repolayer:%s", err.Error())
+		fmt.Printf("repolayer:Failed to fetch asset maintenance activities due to %s", err.Error())
 		return nil, err
 	}
 	return &maintenance, nil

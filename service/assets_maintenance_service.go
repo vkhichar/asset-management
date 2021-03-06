@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/repository"
 )
 
 type AssetMaintenanceService interface {
-	CreateAssetMaintenance(ctx context.Context, req domain.MaintenanceActivity) (user *domain.MaintenanceActivity, err error)
+	CreateAssetMaintenance(ctx context.Context, assetId uuid.UUID, req domain.MaintenanceActivity) (user *domain.MaintenanceActivity, err error)
 }
 
 type assetMaintenanceService struct {
@@ -22,8 +23,8 @@ func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo) AssetMaintenan
 	}
 }
 
-func (service *assetMaintenanceService) CreateAssetMaintenance(ctx context.Context, req domain.MaintenanceActivity) (user *domain.MaintenanceActivity, err error) {
-	maintain, err := service.assetMaintainRepo.InsertMaintenanceActivity(ctx, req)
+func (service *assetMaintenanceService) CreateAssetMaintenance(ctx context.Context, assetId uuid.UUID, req domain.MaintenanceActivity) (user *domain.MaintenanceActivity, err error) {
+	maintain, err := service.assetMaintainRepo.InsertMaintenanceActivity(ctx, assetId, req)
 	if err != nil {
 		fmt.Printf("servicelayer:%s", err.Error())
 		return nil, err
