@@ -58,9 +58,12 @@ func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param domain.Asset
 
 	if err != nil {
 		fmt.Printf("error in asset repository")
-		return asset, err
+		return domain.Asset{}, err
 	}
 
 	return asset, nil
+<<<<<<< HEAD
 
+=======
+>>>>>>> Adds create asset API
 }
