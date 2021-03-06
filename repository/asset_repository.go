@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	getAssetDetails = "SELECT id,category,status,purchase_at,purchase_cost,name,specifications FROM assets"
+	getAssetDetails  = "SELECT id,category,status,purchase_at,purchase_cost,name,specifications FROM assets"
+	createAssetQuery = "INSERT INTO assets (id, status, category, purchase_at, purchase_cost, name, specifications) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *"
 )
 
 type AssetRepository interface {
@@ -47,12 +48,12 @@ func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param domain.Asset) (domain.Asset, error) {
 	var asset domain.Asset
 	err := repo.db.Get(&asset, createAssetQuery,
-		asset_param.AssetID,
+		asset_param.Id,
 		asset_param.Status,
 		asset_param.Category,
 		asset_param.PurchaseAt,
 		asset_param.PurchaseCost,
-		asset_param.AssetName,
+		asset_param.Name,
 		asset_param.Specifications,
 	)
 

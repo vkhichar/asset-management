@@ -107,7 +107,7 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		responseBytes, _ := json.Marshal(contract.CreateAssetResponse{ID: returnedAsset.AssetID, Status: returnedAsset.Status, Category: returnedAsset.Category, PurchaseAt: returnedAsset.PurchaseAt.String(), PurchaseCost: returnedAsset.PurchaseCost, Name: returnedAsset.AssetName, Specifications: returnedAsset.Specifications})
+		responseBytes, _ := json.Marshal(contract.CreateAssetResponse{ID: returnedAsset.Id, Status: returnedAsset.Status, Category: returnedAsset.Category, PurchaseAt: returnedAsset.PurchaseAt.String(), PurchaseCost: returnedAsset.PurchaseCost, Name: returnedAsset.Name, Specifications: returnedAsset.Specifications})
 		w.Write(responseBytes)
 		return
 	}
