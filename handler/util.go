@@ -2,54 +2,54 @@ package handler
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/vkhichar/asset-management/contract"
+	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/service"
-)
-
-var (
-	ErrMissingToken = errors.New("missing token")
-	ErrInvalidToken = errors.New("invalid or expired token")
-	ErrForbidden    = errors.New("forbidden")
-	ErrBadRequest   = errors.New("bad request")
-	ErrNotFound     = errors.New("not Found")
 )
 
 func ReadTokenFromRequest(r *http.Request) (string, error) {
 	header := r.Header.Get("Authorization")
 	if header == "" {
-		return "", errors.New("Missing token")
+		return "", customerrors.ErrMissingToken
 	}
-	tokenStr := strings.Split(header, " ")
-	if len(tokenStr) != 2 {
-		return "", errors.New("Missing token")
+	var tokenStr string
+	if !strings.Contains(header, "Bearer ") {
+		return "", customerrors.ErrInvalidToken
 	}
 
-	return tokenStr[1], nil
+	tokenStr = header[len("Bearer ")-1:]
+	if len(tokenStr) == 0 {
+		return "", customerrors.ErrMissingToken
+	}
+
+	return tokenStr, nil
 }
 
-func verifyToken(r *http.Request, w http.ResponseWriter, adminApi bool) (*service.Claims, error) {
+/**
+*
+ */
+
+func VerifyToken(r *http.Request, w http.ResponseWriter, adminApi bool) (*service.Claims, error) {
 	token, err := ReadTokenFromRequest(r)
 
 	if err != nil {
-		fmt.Printf("handler: invalid token: %s", err.Error())
-		return nil, ErrMissingToken
+		return nil, err
 	}
 
 	claims, err := deps.tokenService.ValidateToken(token)
 
 	if err != nil {
 		fmt.Printf("handler: invalid token: %s", err.Error())
-		return nil, ErrInvalidToken
+		return nil, customerrors.ErrInvalidToken
 	}
 
 	if adminApi && !claims.IsAdmin {
 		fmt.Printf("handler: non-admin user")
-		return nil, ErrForbidden
+		return nil, customerrors.ErrForbidden
 	}
 
 	return claims, nil
@@ -58,15 +58,15 @@ func verifyToken(r *http.Request, w http.ResponseWriter, adminApi bool) (*servic
 func WriteErrorResponse(w http.ResponseWriter, err error) {
 	var statusCode int
 	switch err {
-	case ErrMissingToken:
+	case customerrors.ErrMissingToken:
 		statusCode = http.StatusBadRequest
-	case ErrInvalidToken:
+	case customerrors.ErrInvalidToken:
 		statusCode = http.StatusUnauthorized
-	case ErrForbidden:
+	case customerrors.ErrForbidden:
 		statusCode = http.StatusForbidden
-	case ErrBadRequest:
+	case customerrors.ErrBadRequest:
 		statusCode = http.StatusBadRequest
-	case ErrNotFound:
+	case customerrors.ErrNotFound:
 		statusCode = http.StatusNotFound
 	default:
 		statusCode = http.StatusInternalServerError

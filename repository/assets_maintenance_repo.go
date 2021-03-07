@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 )
 
@@ -98,7 +99,7 @@ func (repo *assetMaintainRepo) UpdateMaintenanceActivity(ctx context.Context, re
 	}
 	if rc, _ := res.RowsAffected(); rc == 0 {
 		fmt.Printf("repository: record not found with id %d \n", req.ID)
-		return nil, NoActivityRecordFound
+		return nil, customerrors.ErrNotFound
 	}
 
 	var activity domain.MaintenanceActivity

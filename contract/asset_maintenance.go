@@ -43,7 +43,7 @@ func NewMaintenanceActivityResp(domain domain.MaintenanceActivity) MaintenanceAc
 	}
 }
 
-func (activity UpdateMaintenanceActivityReq) ConvertToDomain() domain.MaintenanceActivity {
+func (activity UpdateMaintenanceActivityReq) ToDomain() domain.MaintenanceActivity {
 	endedAt, _ := time.Parse(DATE_FORMAT, activity.EndedAt)
 
 	return domain.MaintenanceActivity{
@@ -51,4 +51,13 @@ func (activity UpdateMaintenanceActivityReq) ConvertToDomain() domain.Maintenanc
 		EndedAt:     endedAt,
 		Description: activity.Description,
 	}
+}
+
+func (req UpdateMaintenanceActivityReq) Validate() bool {
+	if req.Cost == 0.0 || req.EndedAt == "" || req.Description == "" {
+		return false
+	}
+
+	// ToDo validate date format
+	return true
 }
