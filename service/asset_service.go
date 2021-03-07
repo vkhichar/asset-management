@@ -39,7 +39,7 @@ func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, er
 func (service *assetService) CreateAsset(ctx context.Context, asset_param domain.Asset) (domain.Asset, error) {
 	asset, err := service.assetRepo.CreateAsset(ctx, asset_param)
 	if err != nil {
-		fmt.Printf("asset_service error while creating asset", err.Error())
+		fmt.Printf("asset_service error while creating asset: %s", err.Error())
 		return domain.Asset{}, err
 	}
 	return asset, nil
