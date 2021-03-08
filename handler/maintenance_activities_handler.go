@@ -68,6 +68,14 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 			w.Write(responseBytes)
 			return
 		}
+		if assetMaintenance == nil {
+			fmt.Printf("handler: error")
+
+			w.WriteHeader(http.StatusInternalServerError)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "something went wrong..."})
+			w.Write(responseBytes)
+			return
+		}
 		resp := contract.NewAssetMaintenanceResponse(assetMaintenance)
 		w.WriteHeader(http.StatusCreated)
 		responseBytes, _ := json.Marshal(resp)
