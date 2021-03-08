@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/vkhichar/asset-management/domain"
 )
 
@@ -14,18 +15,20 @@ type AssetMaintenanceReq struct {
 	Description string  `json:"description"`
 }
 
-func (req AssetMaintenanceReq) ConvertReqFormat() (domain.MaintenanceActivity, error) {
+func (req AssetMaintenanceReq) ConvertReqFormat(assetId uuid.UUID) (domain.MaintenanceActivity, error) {
 	t, err := time.Parse("02-01-2006", req.StartedAt)
 	if err != nil {
-		return domain.MaintenanceActivity{}, err
+		maintenanceAct := domain.MaintenanceActivity{}
+		return maintenanceAct, err
 	}
-	tempcreateassetmaintenance := domain.MaintenanceActivity{
+	tempCreateAssetMaintenance := domain.MaintenanceActivity{
+		AssetId:     assetId,
 		Cost:        req.Cost,
 		StartedAt:   t,
 		Description: req.Description,
 	}
 
-	return tempcreateassetmaintenance, nil
+	return tempCreateAssetMaintenance, nil
 
 }
 

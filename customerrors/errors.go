@@ -8,4 +8,6 @@ var (
 	NoUsersExist = errors.New("No users exist at present")
 
 	NoAssetsExist = errors.New("No assets exist")
+
+	NoMaintenanceActivitesExist = errors.New("No maintenance activites exist")
 )
