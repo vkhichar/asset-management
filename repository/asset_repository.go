@@ -16,7 +16,7 @@ const (
 
 type AssetRepository interface {
 	ListAssets(ctx context.Context) ([]domain.Asset, error)
-	CreateAsset(ctx context.Context, asset_param domain.Asset) (domain.Asset, error)
+	CreateAsset(ctx context.Context, asset_param domain.Asset) (*domain.Asset, error)
 }
 
 type assetRepo struct {
@@ -43,7 +43,7 @@ func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 	return as, nil
 }
 
-func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param domain.Asset) (domain.Asset, error) {
+func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param domain.Asset) (*domain.Asset, error) {
 	var asset domain.Asset
 	err := repo.db.Get(&asset, createAssetQuery,
 		asset_param.Id,
@@ -57,8 +57,8 @@ func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param domain.Asset
 
 	if err != nil {
 		fmt.Printf("error in asset repository")
-		return domain.Asset{}, err
+		return nil, err
 	}
 
-	return asset, nil
+	return &asset, nil
 }

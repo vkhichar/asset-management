@@ -12,7 +12,7 @@ import (
 
 type AssetService interface {
 	ListAssets(ctx context.Context) ([]domain.Asset, error)
-	CreateAsset(ctx context.Context, asset domain.Asset) (domain.Asset, error)
+	CreateAsset(ctx context.Context, asset domain.Asset) (*domain.Asset, error)
 }
 
 type assetService struct {
@@ -36,11 +36,14 @@ func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, er
 	return asset, nil
 }
 
-func (service *assetService) CreateAsset(ctx context.Context, asset_param domain.Asset) (domain.Asset, error) {
+func (service *assetService) CreateAsset(ctx context.Context, asset_param domain.Asset) (*domain.Asset, error) {
 	asset, err := service.assetRepo.CreateAsset(ctx, asset_param)
 	if err != nil {
 		fmt.Printf("asset_service error while creating asset: %s", err.Error())
-		return domain.Asset{}, err
+		return nil, err
 	}
-	return asset, nil
+	if asset == nil {
+		return nil, customerrors.NoAssetsExist
+	}
+	return asset, err
 }
