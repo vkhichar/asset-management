@@ -56,3 +56,20 @@ func TestUserService_Login_Success(t *testing.T) {
 	assert.Equal(t, "generated-token", token)
 	assert.Equal(t, &user, dbUser)
 }
+
+func TestUserService_ListUsers_When_ListUsersReturnsError(t *testing.T) {
+	ctx := context.Background()
+
+	mockUserRepo := &mockRepo.MockUserRepo{}
+	mockTokenService := &mockService.MockTokenService{}
+
+	mockUserRepo.On("ListUsers", ctx).Return(nil, errors.New("No users exist at present"))
+
+	userService := service.NewUserService(mockUserRepo, mockTokenService)
+
+	user, err := userService.ListUsers(ctx)
+
+	assert.Error(t, err)
+	assert.Equal(t, "No users exist at present", err.Error())
+	assert.Nil(t, user)
+}
