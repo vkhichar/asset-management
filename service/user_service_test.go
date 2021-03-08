@@ -107,8 +107,8 @@ func TestUserService_ListUsers_When_Success(t *testing.T) {
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService)
 
-	usersFromDb, err := userService.ListUsers(ctx)
+	usersDb, err := userService.ListUsers(ctx)
 
 	assert.NoError(t, err)
-	assert.Equal(t, users, usersFromDb)
+	assert.Equal(t, users, usersDb)
 }

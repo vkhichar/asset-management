@@ -36,9 +36,9 @@ func (m *MockUserRepo) CreateUser(ctx context.Context, user domain.User) (*domai
 func (m *MockUserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 	args := m.Called(ctx)
 
-	var user []domain.User
+	var users []domain.User
 	if args[0] != nil {
-		user = args[0].([]domain.User)
+		users = args[0].([]domain.User)
 	}
 
 	var err error
@@ -46,7 +46,7 @@ func (m *MockUserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 		err = args[1].(error)
 	}
 
-	return user, err
+	return users, err
 }
 
 func (m *MockUserRepo) UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error) {
