@@ -73,3 +73,42 @@ func TestUserService_ListUsers_When_ListUsersReturnsError(t *testing.T) {
 	assert.Equal(t, "No users exist at present", err.Error())
 	assert.Nil(t, user)
 }
+
+func TestUserService_ListUsers_When_Success(t *testing.T) {
+	ctx := context.Background()
+	users := []domain.User{
+		{
+			ID:       1,
+			Name:     "Jan Doe",
+			Email:    "jandoe@gmail.com",
+			Password: "12345",
+			IsAdmin:  true,
+		},
+		{
+			ID:       2,
+			Name:     "Alisa Ray",
+			Email:    "alisaray@gmail.com",
+			Password: "hello",
+			IsAdmin:  false,
+		},
+		{
+			ID:       3,
+			Name:     "Tom Walters",
+			Email:    "tomwalters@gmail.com",
+			Password: "tom123",
+			IsAdmin:  false,
+		},
+	}
+
+	mockUserRepo := &mockRepo.MockUserRepo{}
+	mockTokenService := &mockService.MockTokenService{}
+
+	mockUserRepo.On("ListUsers", ctx).Return(users, nil)
+
+	userService := service.NewUserService(mockUserRepo, mockTokenService)
+
+	usersFromDb, err := userService.ListUsers(ctx)
+
+	assert.NoError(t, err)
+	assert.Equal(t, users, usersFromDb)
+}

@@ -34,7 +34,6 @@ func (m *MockUserRepo) CreateUser(ctx context.Context, user domain.User) (*domai
 }
 
 func (m *MockUserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
-	// TODO: define mock method
 	args := m.Called(ctx)
 
 	var user []domain.User
