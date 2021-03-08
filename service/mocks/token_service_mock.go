@@ -21,5 +21,6 @@ func (m *MockTokenService) GenerateToken(c *service.Claims) (string, error) {
 
 func (m *MockTokenService) ValidateToken(token string) (*service.Claims, error) {
 	// TODO: define mock method
+
 	return nil, nil
 }

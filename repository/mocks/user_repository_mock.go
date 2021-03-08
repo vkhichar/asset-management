@@ -29,7 +29,19 @@ func (m *MockUserRepo) FindUser(ctx context.Context, email string) (*domain.User
 
 func (m *MockUserRepo) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
 	// TODO: define mock method
-	return nil, nil
+	args := m.Called(ctx, user)
+
+	var newUser *domain.User
+	if args[0] != nil {
+		newUser = args[0].(*domain.User)
+	}
+
+	var err error
+	if args[1] != nil {
+		err = args[1].(error)
+	}
+	//fmt.Printf("%s\n", err.Error())
+	return newUser, err
 }
 
 func (m *MockUserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
