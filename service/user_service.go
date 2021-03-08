@@ -14,7 +14,7 @@ type UserService interface {
 	Login(ctx context.Context, email, password string) (user *domain.User, token string, err error)
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
-	UpdateUserService(ctx context.Context, id int, req contract.UpdateUserRequest) (user *domain.User, err error)
+	UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (user *domain.User, err error)
 }
 
 type userService struct {
@@ -69,8 +69,8 @@ func (service *userService) CreateUser(ctx context.Context, user domain.User) (*
 	return nil, nil
 }
 
-func (service *userService) UpdateUserService(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error) {
-	user, err := service.userRepo.UpdateUserRepo(ctx, id, req)
+func (service *userService) UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error) {
+	user, err := service.userRepo.UpdateUser(ctx, id, req)
 
 	if err != nil {
 		return nil, err

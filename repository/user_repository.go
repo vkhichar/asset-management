@@ -23,7 +23,7 @@ type UserRepository interface {
 	FindUser(ctx context.Context, email string) (*domain.User, error)
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
-	UpdateUserRepo(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error)
+	UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error)
 }
 
 type userRepo struct {
@@ -73,7 +73,7 @@ func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain
 	return nil, nil
 }
 
-func (repo *userRepo) UpdateUserRepo(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error) {
+func (repo *userRepo) UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error) {
 	var user domain.User
 	var tempUser domain.User
 	err := repo.db.Get(&tempUser, getUserByIDQuery, id)
@@ -94,11 +94,13 @@ func (repo *userRepo) UpdateUserRepo(ctx context.Context, id int, req contract.U
 
 	tx.MustExec(updateUserColumns, *req.Name, *req.Password, time.Now(), id)
 
-	err1 := tx.Commit()
-	if err1 != nil {
-		fmt.Printf("repo: Error while commiting the database. Error: %s", err1)
-		tx.Rollback()
-	}
+	defer func() {
+		errOnCommit := tx.Commit()
+		if errOnCommit != nil {
+			fmt.Printf("repo: Error while commiting the database. Error: %s", errOnCommit)
+			tx.Rollback()
+		}
+	}()
 	err = repo.db.Get(&user, getUserByIDQuery, id)
 
 	if err != nil {

@@ -102,7 +102,20 @@ func UpdateUsersHandler(userService service.UserService) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		params := mux.Vars(r)
-		id, _ := strconv.Atoi(params["id"])
+		id, errInConversion := strconv.Atoi(params["id"])
+
+		if errInConversion != nil {
+			fmt.Printf("handler: Error while parameter conversion. Error: %s", errInConversion)
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "Error while parameter conversion"})
+			w.Write(responseBytes)
+
+			if err != nil {
+				fmt.Printf("handler: Error while Marshal,%s", err)
+			}
+			return
+
+		}
 
 		var req contract.UpdateUserRequest
 		err := json.NewDecoder(r.Body).Decode(&req)
@@ -119,7 +132,7 @@ func UpdateUsersHandler(userService service.UserService) http.HandlerFunc {
 			return
 		}
 
-		user, err := userService.UpdateUserService(r.Context(), id, req)
+		user, err := userService.UpdateUser(r.Context(), id, req)
 
 		if err == customerrors.UserDoesNotExist {
 			fmt.Println("handler: User for this id does not exist")
