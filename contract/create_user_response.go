@@ -17,7 +17,7 @@ type CreateUserResponse struct {
 
 func DomaintoContract(user *domain.User) (contractUser CreateUserResponse) {
 
-	contractUser = CreateUserResponse{user.Name, user.Email, user.Password, user.IsAdmin, user.CreatedAt, user.UpdatedAt}
+	contractUser = CreateUserResponse{Name: user.Name, Email: user.Email, Password: user.Password, IsAdmin: user.IsAdmin, CreatedAt: user.CreatedAt, UpdatedAt: user.UpdatedAt}
 	return contractUser
 
 }
