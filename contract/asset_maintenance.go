@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	DATE_FORMAT = "2006-01-02" // yyyy-mm-dd
+	DateFormat = "2006-01-02" // yyyy-mm-dd
 )
 
 type AssetMaintain struct {
@@ -37,14 +37,14 @@ func NewMaintenanceActivityResp(domain domain.MaintenanceActivity) MaintenanceAc
 		Id:          domain.ID,
 		Description: domain.Description,
 		Cost:        domain.Cost,
-		StartedAt:   domain.StartedAt.Format(DATE_FORMAT),
-		EndedAt:     domain.EndedAt.Format(DATE_FORMAT),
+		StartedAt:   domain.StartedAt.Format(DateFormat),
+		EndedAt:     domain.EndedAt.Format(DateFormat),
 		AssetId:     domain.AssetId,
 	}
 }
 
 func (activity UpdateMaintenanceActivityReq) ToDomain() domain.MaintenanceActivity {
-	endedAt, _ := time.Parse(DATE_FORMAT, activity.EndedAt)
+	endedAt, _ := time.Parse(DateFormat, activity.EndedAt)
 
 	return domain.MaintenanceActivity{
 		Cost:        activity.Cost,

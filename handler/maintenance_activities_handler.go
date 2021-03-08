@@ -140,11 +140,6 @@ func DetailedMaintenanceActivityHandler(service service.AssetMaintenanceService)
 func DeleteMaintenanceActivityHandler(service service.AssetMaintenanceService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, err := VerifyToken(r, w, true)
-		if err != nil {
-			WriteErrorResponse(w, err)
-			return
-		}
 		id, err := strconv.Atoi(mux.Vars(r)["id"])
 		if err != nil {
 			WriteErrorResponse(w, customerrors.ErrBadRequest)
@@ -163,12 +158,6 @@ func DeleteMaintenanceActivityHandler(service service.AssetMaintenanceService) h
 func ListMaintenanceActivitiesByAsserId(service service.AssetMaintenanceService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, err := VerifyToken(r, w, true)
-		if err != nil {
-			WriteErrorResponse(w, err)
-			return
-		}
-
 		assetId, err := uuid.Parse(mux.Vars(r)["asset_id"])
 		if err != nil {
 			fmt.Println(err)
@@ -192,11 +181,6 @@ func ListMaintenanceActivitiesByAsserId(service service.AssetMaintenanceService)
 func UpdateMaintenanceActivity(service service.AssetMaintenanceService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, err := VerifyToken(r, w, true)
-		if err != nil {
-			WriteErrorResponse(w, err)
-			return
-		}
 		id, err := strconv.Atoi(mux.Vars(r)["id"])
 		if err != nil {
 			fmt.Println(err)
