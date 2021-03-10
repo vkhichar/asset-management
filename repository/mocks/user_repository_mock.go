@@ -50,7 +50,18 @@ func (m *MockUserRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 }
 
 func (m *MockUserRepo) UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error) {
-	//define mock here
+	args := m.Called(ctx, id, req)
 
-	return nil, nil
+	var user *domain.User
+	if args[0] != nil {
+		user = args[0].(*domain.User)
+	}
+
+	var err error
+	if args[1] != nil {
+		err = args[1].(error)
+	}
+
+	return user, err
+
 }

@@ -8,4 +8,5 @@ require (
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/lib/pq v1.9.0
 	github.com/stretchr/testify v1.7.0
+	github.com/yosida95/uritemplate v2.0.0+incompatible // indirect
 )
