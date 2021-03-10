@@ -15,5 +15,7 @@ func Routes() *mux.Router {
 
 	router.HandleFunc("/assets", ListAssetHandler(deps.assetService)).Methods("GET")
 
+	router.HandleFunc("/users/{id}", GetUserByIDHandler(deps.userService)).Methods("GET")
+
 	return router
 }

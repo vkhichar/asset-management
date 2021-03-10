@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/vkhichar/asset-management/customerrors"
 
 	"github.com/vkhichar/asset-management/contract"
@@ -167,7 +169,7 @@ func CreateUserHandler(userService service.UserService) http.HandlerFunc {
 
 		user, err := userService.CreateUser(r.Context(), createdUser)
 
-		if err == service.ErrInvalidEmailPassword {
+		if err == customerrors.ErrInvalidEmailPassword {
 			fmt.Printf("handler: invalid email or password for email: %s", req.Email)
 
 			w.WriteHeader(http.StatusUnauthorized)
@@ -207,4 +209,70 @@ func CreateUserHandler(userService service.UserService) http.HandlerFunc {
 		w.Write(responseBytes)
 
 	}
+}
+
+func GetUserByIDHandler(userService service.UserService) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Context-Type", "application/json")
+		params := mux.Vars(r)
+
+		id, err := strconv.Atoi(params["id"])
+		if err != nil {
+			fmt.Printf("handler: invalid request for id %s", err.Error())
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, decodingErr := json.Marshal(contract.ErrorResponse{Error: "invalid request"})
+
+			if decodingErr != nil {
+				fmt.Fprintf(w, "handler: error while marshaling decoding request for get user by id")
+				return
+			}
+			w.Write(responseBytes)
+			return
+		}
+		user, err := userService.GetUserByID(r.Context(), id)
+
+		if err == customerrors.UserNotExist {
+			fmt.Printf("handler: user does not exist : %s", err.Error())
+
+			w.WriteHeader(http.StatusUnauthorized)
+			responseBytes, invalidErr := json.Marshal(contract.ErrorResponse{Error: "user does not exist "})
+
+			if invalidErr != nil {
+				fmt.Fprintf(w, "handler: error while marshaling invalid user id")
+				return
+			}
+			w.Write(responseBytes)
+			return
+		}
+
+		if err != nil {
+			fmt.Printf("handler: error while getting user by id:error: %s", err.Error())
+
+			w.WriteHeader(http.StatusInternalServerError)
+
+			responseBytes, createUsererr := json.Marshal(contract.ErrorResponse{Error: "handler:something went wrong"})
+
+			if createUsererr != nil {
+				fmt.Fprintf(w, "handler: error while marshaling user id error")
+				return
+			}
+			w.Write(responseBytes)
+			return
+		}
+
+		contractUser := contract.DomaintoContractUserID(user)
+
+		w.WriteHeader(http.StatusOK)
+		responseBytes, statusokErr := json.Marshal(contractUser)
+		if statusokErr != nil {
+			fmt.Fprintf(w, "handler: error while marshaling status ok")
+			return
+		}
+		w.Write(responseBytes)
+		return
+
+	}
+
 }

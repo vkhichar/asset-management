@@ -13,12 +13,14 @@ const (
 	getUserByEmailQuery = "SELECT id, name, email, password, is_admin FROM users WHERE email= $1"
 	selectAllUsers      = "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users"
 	createUserByQuery   = "INSERT INTO users (name, email, password,is_admin) VALUES ($1, $2, $3, $4) RETURNING id, name, email, password, is_admin, created_at, updated_at"
+	getUserByIDQuery    = "SELECT id, name, email, password, is_admin FROM users WHERE id= $1"
 )
 
 type UserRepository interface {
 	FindUser(ctx context.Context, email string) (*domain.User, error)
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
+	GetUserByID(ctx context.Context, id int) (*domain.User, error)
 }
 
 type userRepo struct {
@@ -73,6 +75,18 @@ func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain
 
 		return nil, err
 
+	}
+
+	return &newUser, nil
+}
+
+func (repo *userRepo) GetUserByID(ctx context.Context, id int) (*domain.User, error) {
+
+	var newUser domain.User
+	err := repo.db.Get(&newUser, getUserByIDQuery, id)
+
+	if err != nil {
+		return nil, err
 	}
 
 	return &newUser, nil

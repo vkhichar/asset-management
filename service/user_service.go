@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/vkhichar/asset-management/customerrors"
 
@@ -10,15 +9,12 @@ import (
 	"github.com/vkhichar/asset-management/repository"
 )
 
-var ErrInvalidEmailPassword = errors.New("invalid email or password")
-
 type UserService interface {
 	Login(ctx context.Context, email, password string) (user *domain.User, token string, err error)
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
+	GetUserByID(ctx context.Context, ID int) (*domain.User, error)
 }
-
-var ExtraError = errors.New("invalid email")
 
 type userService struct {
 	userRepo repository.UserRepository
@@ -77,4 +73,16 @@ func (service *userService) CreateUser(ctx context.Context, user domain.User) (*
 
 	return entry, nil
 
+}
+
+func (service *userService) GetUserByID(ctx context.Context, ID int) (*domain.User, error) {
+	user, err := service.userRepo.GetUserByID(ctx, ID)
+
+	if user == nil {
+		return nil, customerrors.UserNotExist
+	}
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

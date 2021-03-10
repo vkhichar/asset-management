@@ -25,7 +25,6 @@ func TestUserService_Login_When_FindUserReturnsError(t *testing.T) {
 	userService := service.NewUserService(mockUserRepo, mockTokenService)
 	user, token, err := userService.Login(ctx, email, "1234")
 
-	// fmt.Printf("%s\n", err.Error())
 	assert.Error(t, err)
 	assert.Equal(t, "some db error", err.Error())
 	assert.Equal(t, "", token)
@@ -77,7 +76,6 @@ func TestUserService_CreatUser_CreateUserReturnsError(t *testing.T) {
 	userService := service.NewUserService(mockUserRepo, mockTokenService)
 	newUser, err := userService.CreateUser(ctx, user)
 
-	// fmt.Printf("%s\n", err.Error())
 	if err == nil {
 		fmt.Printf("Error while creating user")
 		t.FailNow()
@@ -106,8 +104,49 @@ func TestUserService_CreateUser_Success(t *testing.T) {
 	mockUserRepo.On("CreateUser", ctx, user).Return(&user, nil)
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService)
-	// dbUser, token, err := userService.Login(ctx, email, inputPassword)
 	dbUser, err := userService.CreateUser(ctx, user)
+
+	assert.NoError(t, err)
+	assert.Equal(t, &user, dbUser)
+}
+
+func TestUserService_GetUserById_When_ReturnError(t *testing.T) {
+	ctx := context.Background()
+	ID := 1
+	mockUserRepo := &mockRepo.MockUserRepo{}
+	mockTokenService := &mockService.MockTokenService{}
+	mockUserRepo.On("GetUserByID", ctx, ID).Return(nil, errors.New("User does not exist"))
+
+	userService := service.NewUserService(mockUserRepo, mockTokenService)
+	newUser, err := userService.GetUserByID(ctx, ID)
+
+	if err == nil {
+		fmt.Printf("Error while creating user")
+		t.FailNow()
+	}
+
+	assert.Error(t, err)
+	assert.Equal(t, "User does not exist", err.Error())
+	assert.Nil(t, newUser)
+
+}
+
+func TestUserService_GetUserByID_Success(t *testing.T) {
+	ctx := context.Background()
+
+	user := domain.User{
+		ID:       1,
+		Name:     "Dummy",
+		Email:    "dummy@email",
+		Password: "12345",
+		IsAdmin:  false,
+	}
+	mockUserRepo := &mockRepo.MockUserRepo{}
+	mockTokenService := &mockService.MockTokenService{}
+	mockUserRepo.On("GetUserByID", ctx, user.ID).Return(&user, nil)
+
+	userService := service.NewUserService(mockUserRepo, mockTokenService)
+	dbUser, err := userService.GetUserByID(ctx, user.ID)
 
 	assert.NoError(t, err)
 	assert.Equal(t, &user, dbUser)
