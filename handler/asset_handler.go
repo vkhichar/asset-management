@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/service"
@@ -110,5 +112,60 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		responseBytes, _ := json.Marshal(contract.CreateAssetResponse{ID: returnedAsset.Id, Status: returnedAsset.Status, Category: returnedAsset.Category, PurchaseAt: returnedAsset.PurchaseAt.String(), PurchaseCost: returnedAsset.PurchaseCost, Name: returnedAsset.Name, Specifications: returnedAsset.Specifications})
 		w.Write(responseBytes)
 		return
+	}
+}
+
+func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Set Content-Type for response
+
+		w.Header().Set("Content-Type", "application/json")
+		params := mux.Vars(r)
+
+		id, err := uuid.Parse(params["id"])
+		if err != nil {
+			fmt.Printf("asset handler: Error while parsing string into JSON:%s", err.Error())
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+			if err != nil {
+				fmt.Printf(err.Error())
+			}
+			w.Write(responseBytes)
+			return
+		}
+
+		var req contract.GetAssetRequest
+
+		err = req.Validate(id)
+		if err != nil {
+			fmt.Printf("handler: invalid request for get asset: Check for proper id")
+			fmt.Printf(err.Error())
+
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+			if err != nil {
+				fmt.Printf(err.Error())
+			}
+			w.Write(responseBytes)
+			return
+		}
+
+		returnedAsset, err := assetService.GetAsset(r.Context(), id)
+
+		if err != nil {
+			fmt.Printf("handler: error while getting asset, error: %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+			if err != nil {
+				fmt.Printf(err.Error())
+			}
+			w.Write(responseBytes)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		responseBytes, _ := json.Marshal(contract.GetAssetResponse{ID: returnedAsset.Id, Status: returnedAsset.Status, Category: returnedAsset.Category, PurchaseAt: returnedAsset.PurchaseAt.String(), PurchaseCost: returnedAsset.PurchaseCost, Name: returnedAsset.Name, Specifications: returnedAsset.Specifications})
+		w.Write(responseBytes)
+		return
+
 	}
 }

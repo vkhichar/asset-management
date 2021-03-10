@@ -3,6 +3,7 @@ package mocks
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/vkhichar/asset-management/domain"
 )
@@ -29,4 +30,20 @@ func (m *MockAssetRepo) CreateAsset(ctx context.Context, asset_param domain.Asse
 
 func (m *MockAssetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 	return nil, nil
+}
+
+func (m *MockAssetRepo) GetAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error) {
+	args := m.Called(ctx, Id)
+
+	var asset *domain.Asset
+	if args[0] != nil {
+		asset = args[0].(*domain.Asset)
+	}
+
+	var err error
+	if args[1] != nil {
+		err = args[1].(error)
+	}
+
+	return asset, err
 }

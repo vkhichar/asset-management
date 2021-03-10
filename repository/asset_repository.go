@@ -5,18 +5,22 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 )
 
 const (
-	getAssetDetails  = "SELECT id,category,status,purchase_at,purchase_cost,name,specifications FROM assets"
-	createAssetQuery = "INSERT INTO assets (id, status, category, purchase_at, purchase_cost, name, specifications) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *"
+	getAssetDetails   = "SELECT id,category,status,purchase_at,purchase_cost,name,specifications FROM assets"
+	createAssetQuery  = "INSERT INTO assets (id, status, category, purchase_at, purchase_cost, name, specifications) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *"
+	getAssetByIDQuery = "SELECT * FROM assets WHERE id=$1"
 )
 
 type AssetRepository interface {
 	ListAssets(ctx context.Context) ([]domain.Asset, error)
 	CreateAsset(ctx context.Context, asset_param domain.Asset) (*domain.Asset, error)
+	GetAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error)
 }
 
 type assetRepo struct {
@@ -57,6 +61,22 @@ func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param domain.Asset
 
 	if err != nil {
 		fmt.Printf("error in asset repository")
+		return nil, err
+	}
+
+	return &asset, nil
+}
+
+func (repo *assetRepo) GetAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error) {
+	var asset domain.Asset
+
+	err := repo.db.Get(&asset, getAssetByIDQuery, Id)
+	if err == sql.ErrNoRows {
+		fmt.Printf("repository: couldn't find asset for Asset ID: %s", Id)
+		return nil, customerrors.NoAssetsExist
+	}
+
+	if err != nil {
 		return nil, err
 	}
 
