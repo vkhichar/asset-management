@@ -19,8 +19,11 @@ type Asset struct {
 }
 
 func DomainToContractassets(d *domain.Asset) Asset {
-
+	if d == nil {
+		return Asset{}
+	}
 	u := Asset{
+
 		Id:             d.Id,
 		Status:         d.Status,
 		Category:       d.Category,
