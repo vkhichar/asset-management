@@ -20,7 +20,7 @@ type UserRepository interface {
 	FindUser(ctx context.Context, email string) (*domain.User, error)
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
-	DeleteUserRepo(ctx context.Context, id int) (*domain.User, error)
+	DeleteUser(ctx context.Context, id int) (*domain.User, error)
 }
 
 type userRepo struct {
@@ -70,7 +70,7 @@ func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain
 	return nil, nil
 }
 
-func (repo *userRepo) DeleteUserRepo(ctx context.Context, id int) (*domain.User, error) {
+func (repo *userRepo) DeleteUser(ctx context.Context, id int) (*domain.User, error) {
 	var user domain.User
 
 	err := repo.db.Get(&user, getUserById, id)

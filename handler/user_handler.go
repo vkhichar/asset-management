@@ -100,16 +100,29 @@ func DeleteUserHandler(userService service.UserService) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		params := mux.Vars(r)
-		id, _ := strconv.Atoi(params["id"])
+		id, parseErr := strconv.Atoi(params["id"])
 
-		user, err := userService.DeleteUserService(r.Context(), id)
+		if parseErr != nil {
+			fmt.Println("Handler: Error while parsing Id")
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, jsonErr := json.Marshal(contract.ErrorResponse{Error: "Enter id in valid format"})
+			if jsonErr != nil {
+				fmt.Printf("handler: Error while converting error to json. Error: %s", jsonErr)
+				return
+			}
+			w.Write(responseBytes)
+			return
 
-		if err == customerrors.NoUserExist {
+		}
+
+		user, err := userService.DeleteUser(r.Context(), id)
+
+		if err == customerrors.NoUserExistForDelete {
 			fmt.Println("Handler: No user of given id exist")
 			w.WriteHeader(http.StatusNotFound)
-			responseBytes, err1 := json.Marshal(contract.ErrorResponse{Error: "no user found"})
-			if err1 != nil {
-				fmt.Printf("handler: Error while converting error to json. Error: %s", err)
+			responseBytes, jsonErr := json.Marshal(contract.ErrorResponse{Error: "no user found"})
+			if jsonErr != nil {
+				fmt.Printf("handler: Error while converting error to json. Error: %s", jsonErr)
 				return
 			}
 			w.Write(responseBytes)
@@ -119,17 +132,17 @@ func DeleteUserHandler(userService service.UserService) http.HandlerFunc {
 		if err != nil {
 			fmt.Printf("handler: error while searching for user,error= %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
-			responseBytes, err1 := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
-			if err1 != nil {
-				fmt.Printf("handler: Error while converting error to json.Error: %s", err)
+			responseBytes, jsonErr := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+			if jsonErr != nil {
+				fmt.Printf("handler: Error while converting error to json.Error: %s", jsonErr)
 				return
 			}
 			w.Write(responseBytes)
 			return
 		}
-		responsebytes, err1 := json.Marshal(user)
-		if err1 != nil {
-			fmt.Printf("handler: Error while converting user to json.Error: %s", err)
+		responsebytes, jsonErr := json.Marshal(user)
+		if jsonErr != nil {
+			fmt.Printf("handler: Error while converting user to json.Error: %s", jsonErr)
 			return
 		}
 		w.WriteHeader(http.StatusOK)

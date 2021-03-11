@@ -13,7 +13,7 @@ type UserService interface {
 	Login(ctx context.Context, email, password string) (user *domain.User, token string, err error)
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
-	DeleteUserService(ctx context.Context, id int) (*domain.User, error)
+	DeleteUser(ctx context.Context, id int) (*domain.User, error)
 }
 
 type userService struct {
@@ -68,15 +68,15 @@ func (service *userService) CreateUser(ctx context.Context, user domain.User) (*
 	return nil, nil
 }
 
-func (service *userService) DeleteUserService(ctx context.Context, id int) (*domain.User, error) {
-	user, err := service.userRepo.DeleteUserRepo(ctx, id)
-
-	if user == nil {
-		return user, customerrors.NoUserExist
-	}
+func (service *userService) DeleteUser(ctx context.Context, id int) (*domain.User, error) {
+	user, err := service.userRepo.DeleteUser(ctx, id)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if user == nil {
+		return user, customerrors.NoUserExistForDelete
 	}
 
 	return user, nil

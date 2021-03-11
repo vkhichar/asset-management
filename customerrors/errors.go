@@ -9,5 +9,5 @@ var (
 
 	NoAssetsExist = errors.New("No assets exist")
 
-	NoUserExist = errors.New("No user present by this Id")
+	NoUserExistForDelete = errors.New("No user present by this Id")
 )
