@@ -88,12 +88,13 @@ func (repo *userRepo) DeleteUser(ctx context.Context, id int) (*domain.User, err
 
 	tx.MustExec(deleteUserById, id)
 
-	err1 := tx.Commit()
+	defer func() {
+		errOnCommit := tx.Commit()
 
-	if err1 != nil {
-		fmt.Printf("Error while commiting in table. Error: %s", err)
-		tx.Rollback()
-		return nil, err
-	}
+		if errOnCommit != nil {
+			fmt.Printf("Repo: Error while commiting in table. Error: %s", errOnCommit)
+			tx.Rollback()
+		}
+	}()
 	return &user, nil
 }
