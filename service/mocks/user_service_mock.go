@@ -2,7 +2,6 @@ package mocks
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/vkhichar/asset-management/contract"
@@ -49,13 +48,12 @@ func (m *MockUserService) UpdateUser(ctx context.Context, id int, req contract.U
 		user = args[0].(*domain.User)
 	}
 
-	fmt.Println(user)
-
 	var err error
 	if args[1] != nil {
 		err = args[1].(error)
-	} else {
-		return user, customerrors.NoUsersExist
+	}
+	if args[0] == nil && args[1] == nil {
+		return user, customerrors.UserDoesNotExist
 	}
 	return user, err
 }

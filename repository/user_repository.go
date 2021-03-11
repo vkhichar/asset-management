@@ -94,17 +94,21 @@ func (repo *userRepo) UpdateUser(ctx context.Context, id int, req contract.Updat
 
 	tx.MustExec(updateUserColumns, *req.Name, *req.Password, time.Now(), id)
 
-	defer func() {
-		errOnCommit := tx.Commit()
-		if errOnCommit != nil {
-			fmt.Printf("repo: Error while commiting the database. Error: %s", errOnCommit)
-			tx.Rollback()
-		}
-	}()
+	// defer func() {
+	// 	errOnCommit := tx.Commit()
+	// 	if errOnCommit != nil {
+	// 		fmt.Printf("repo: Error while commiting the database. Error: %s", errOnCommit)
+	// 		tx.Rollback()
+	// 	}
+	// }()
+
+	tx.Commit()
+
 	err = repo.db.Get(&user, getUserByIDQuery, id)
 
 	if err != nil {
 		return nil, err
 	}
+	//fmt.Println(user)
 	return &user, nil
 }

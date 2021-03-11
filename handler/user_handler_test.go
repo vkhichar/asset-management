@@ -13,6 +13,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/handler"
@@ -115,26 +116,29 @@ func TestUserHandler_ListUsersHandler_When_ListUsersReturnsNil(t *testing.T) {
 	assert.JSONEq(t, string(expectedErr), rr.Body.String())
 }
 
-func TestUserHandler_UpdateUsersHandler_When_UpdateUsersReturnsError(t *testing.T) {
-	// ctx := context.Background()
+func TestUserHandler_UpdateUsersHandler_When_IdInvalid(t *testing.T) {
+	body := fmt.Sprintf(`{"name": "fatema", "password": "12345"}`)
+	request, err := http.NewRequest("PUT", "/users/AB", strings.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
 
+	resp := httptest.NewRecorder()
+	mockUserService := &mockService.MockUserService{}
+	r := mux.NewRouter()
+	r.HandleFunc("/users/{id}", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
+	r.ServeHTTP(resp, request)
+	expectedErr := string(`{"error":"Error while parameter conversion"}`)
+
+	assert.JSONEq(t, string(expectedErr), resp.Body.String())
+}
+
+func TestUserHandler_UpdateUsersHandler_When_UpdateUsersReturnsError(t *testing.T) {
 	id := 1
 	name := "fatema"
 	password := "12345"
-
-	// reqBody, _ := json.Marshal(map[string]string{
-	// 	"name":     name,
-	// 	"password": password,
-	// })
-
 	body := fmt.Sprintf(`{"name": "fatema", "password": "12345"}`)
-
-	//ioReader(reqBody)
-
-	//fmt.Println(string(reqBody))
-
 	request, err := http.NewRequest("PUT", "/users/1", strings.NewReader(body))
-
 	userReq := contract.UpdateUserRequest{
 		Name:     &name,
 		Password: &password,
@@ -142,19 +146,85 @@ func TestUserHandler_UpdateUsersHandler_When_UpdateUsersReturnsError(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
+	resp := httptest.NewRecorder()
+	mockUserService := &mockService.MockUserService{}
+	mockUserService.On("UpdateUser", mock.Anything, id, userReq).Return(nil, errors.New("something went wrong"))
+	r := mux.NewRouter()
+	r.HandleFunc("/users/{id}", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
+	r.ServeHTTP(resp, request)
+	expectedErr := string(`{"error":"something went wrong"}`)
+	assert.JSONEq(t, expectedErr, resp.Body.String())
+}
+
+func TestUserHandler_UpdateUsersHandler_When_Success(t *testing.T) {
+	id := 1
+	name := "fatema"
+	password := "12345"
+	body := fmt.Sprintf(`{"name": "fatema", "password": "12345"}`)
+	request, err := http.NewRequest("PUT", "/users/1", strings.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	userReq := contract.UpdateUserRequest{
+		Name:     &name,
+		Password: &password,
+	}
+
+	timeNow := time.Now()
+
+	expectedUserResp, _ := json.Marshal(contract.UpdateUserResponse{
+		ID:        1,
+		Name:      "fatema",
+		Email:     "fatema.m@gmail.com",
+		IsAdmin:   true,
+		CreatedAt: timeNow.String(),
+		UpdatedAt: timeNow.String(),
+		Password:  "12345",
+	})
+
+	userResp := &domain.User{
+		ID:        1,
+		Name:      "fatema",
+		Email:     "fatema.m@gmail.com",
+		Password:  "12345",
+		IsAdmin:   true,
+		CreatedAt: timeNow,
+		UpdatedAt: timeNow,
+	}
 
 	resp := httptest.NewRecorder()
 	mockUserService := &mockService.MockUserService{}
-	mockUserService.On("UpdateUser", request.Context(), id, userReq).Return(nil, errors.New("something went wrong"))
-
+	mockUserService.On("UpdateUser", mock.Anything, id, userReq).Return(userResp, nil)
 	r := mux.NewRouter()
 	r.HandleFunc("/users/{id}", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
 	r.ServeHTTP(resp, request)
 
-	// handlerTest := http.HandlerFunc(handler.UpdateUsersHandler(mockUserService))
-	// handlerTest.ServeHTTP(resp, request)
+	assert.JSONEq(t, string(expectedUserResp), resp.Body.String())
+}
 
-	expectedErr := string(`{"error":"something went wrong"}`)
+func TestUserHandler_UpdateUsersHandler_When_Nil(t *testing.T) {
+	id := 1
+	name := "fatema"
+	password := "12345"
+	body := fmt.Sprintf(`{"name": "fatema", "password": "12345"}`)
+	request, err := http.NewRequest("PUT", "/users/1", strings.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	assert.JSONEq(t, expectedErr, resp.Body.String())
+	userReq := contract.UpdateUserRequest{
+		Name:     &name,
+		Password: &password,
+	}
+
+	resp := httptest.NewRecorder()
+	mockUserService := &mockService.MockUserService{}
+	mockUserService.On("UpdateUser", mock.Anything, id, userReq).Return(nil, nil)
+	r := mux.NewRouter()
+	r.HandleFunc("/users/{id}", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
+	r.ServeHTTP(resp, request)
+	expectedErr := string(`{"error":"User for this id does not exist"}`)
+
+	assert.JSONEq(t, string(expectedErr), resp.Body.String())
 }
