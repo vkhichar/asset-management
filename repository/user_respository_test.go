@@ -1,29 +1,54 @@
-package repository
+package repository_test
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/vkhichar/asset-management/config"
 	"github.com/vkhichar/asset-management/domain"
-	mockRepo "github.com/vkhichar/asset-management/repository/mocks"
-	mockService "github.com/vkhichar/asset-management/service/mocks"
+	"github.com/vkhichar/asset-management/repository"
 )
 
-func (repo *userRepo) TestUserRepo_CreateUser_When_CreateUserReturnError(t *testing.T) {
+func TestUserRepo_CreateUser_When_CreateUserReturnSuccess(t *testing.T) {
 
 	ctx := context.Background()
 	user := domain.User{
-		ID:       1,
-		Name:     "Dummy",
-		Email:    "dummy@email",
-		Password: "12345",
-		IsAdmin:  false,
+		ID:       13,
+		Name:     "Nikhil",
+		Email:    "nikhil@email",
+		Password: "1234",
+		IsAdmin:  true,
 	}
-	newUser := repo.db.Get("INSERT INTO users (name, email, password,is_admin) VALUES ($1, $2, $3, $4) RETURNING id, name, email, password, is_admin, created_at, updated_at", user.Name, user.Email, user.Password, user.IsAdmin)
+	config.Init()
+	repository.InitDB()
+	db := repository.GetDB()
+	var newUser domain.User
+	userRepo := repository.NewUserRepository()
 
-	mockUserRepo := &mockRepo.MockUserRepo{}
-	mockTokenService := &mockService.MockTokenService{}
-	mockUserRepo.On("CreateUser", ctx, user).Return(nil, errors.New("invalid request"))
+	returnuser, err := userRepo.CreateUser(ctx, user)
+	if err != nil {
+		fmt.Printf("userRepo Mock:error while inserting data %s", err.Error())
+		return
+	}
 
+	db.Get(&newUser, "SELECT * FROM users WHERE id= $1", 13)
+
+	assert.Equal(t, &newUser, returnuser)
+	assert.NoError(t, err)
+}
+
+func TestUserRepo_GetUserByID_When_GetUserByID_ReturnUserExist(t *testing.T) {
+
+	ctx := context.Background()
+
+	ID := 5
+	config.Init()
+	repository.InitDB()
+	userRepo := repository.NewUserRepository()
+
+	returnUser, err := userRepo.GetUserByID(ctx, ID)
+	assert.NotEmpty(t, returnUser)
+	assert.NoError(t, err)
 }

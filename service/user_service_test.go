@@ -110,12 +110,12 @@ func TestUserService_CreateUser_Success(t *testing.T) {
 	assert.Equal(t, &user, dbUser)
 }
 
-func TestUserService_GetUserById_When_ReturnError(t *testing.T) {
+func TestUserService_GetUserById_When_ReturnError_User_not_exist(t *testing.T) {
 	ctx := context.Background()
-	ID := 1
+	ID := 5
 	mockUserRepo := &mockRepo.MockUserRepo{}
 	mockTokenService := &mockService.MockTokenService{}
-	mockUserRepo.On("GetUserByID", ctx, ID).Return(nil, errors.New("User does not exist"))
+	mockUserRepo.On("GetUserByID", ctx, ID).Return(nil, nil)
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService)
 	newUser, err := userService.GetUserByID(ctx, ID)
@@ -125,12 +125,32 @@ func TestUserService_GetUserById_When_ReturnError(t *testing.T) {
 		t.FailNow()
 	}
 
-	assert.Error(t, err)
 	assert.Equal(t, "User does not exist", err.Error())
+	assert.Error(t, err)
 	assert.Nil(t, newUser)
 
 }
 
+func TestUserService_GetUserById_When_ReturnError(t *testing.T) {
+	ctx := context.Background()
+	ID := 5
+	mockUserRepo := &mockRepo.MockUserRepo{}
+	mockTokenService := &mockService.MockTokenService{}
+	mockUserRepo.On("GetUserByID", ctx, ID).Return(nil, errors.New("invalid request"))
+
+	userService := service.NewUserService(mockUserRepo, mockTokenService)
+	newUser, err := userService.GetUserByID(ctx, ID)
+
+	if err == nil {
+		fmt.Printf("Error while creating user")
+		t.FailNow()
+	}
+
+	assert.Equal(t, "invalid request", err.Error())
+	assert.Error(t, err)
+	assert.Nil(t, newUser)
+
+}
 func TestUserService_GetUserByID_Success(t *testing.T) {
 	ctx := context.Background()
 

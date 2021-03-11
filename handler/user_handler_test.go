@@ -9,8 +9,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/handler"
 	mockService "github.com/vkhichar/asset-management/service/mocks"
@@ -63,38 +67,59 @@ func TestUserHandler_When_CreateUser_Success(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	mockService := &mockService.MockUserService{}
-	mockService.On("CreateUser", ctx, user).Return(user, err)
+	mockService.On("CreateUser", ctx, user).Return(user, nil)
 
 	CreateUserHandle := http.HandlerFunc(handler.CreateUserHandler(mockService))
 	CreateUserHandle.ServeHTTP(response, req)
 
-	fmt.Printf("%s\n", response.Body.String())
 	assert.NotNil(t, &user)
 	assert.NoError(t, err)
 
 }
 
-func TestUserHandler_GetUserById_When_ReturnError(t *testing.T) {
+func TestGetUserById_When_ReturnError_UserDoesNotExist(t *testing.T) {
 
-	ctx := context.Background()
-	ID := "14"
-	responseByte, _ := json.Marshal(ID)
-	requestReader := bytes.NewReader(responseByte)
-	req, err := http.NewRequest("GET", "/users/{ID}", requestReader)
+	ID := 5
+
+	req, err := http.NewRequest("GET", "/users/5", nil)
 	if err != nil {
 		fmt.Printf("TestHandler: error while newRequest %s", err.Error())
 		t.FailNow()
 	}
 
 	response := httptest.NewRecorder()
-	expectedError := string(`{"error":"invalid request"}`)
+	expectedError := string(`{"error":"user does not exist "}`)
 	mockService := &mockService.MockUserService{}
-	mockService.On("GetUserByID", ctx, ID).Return(nil, errors.New("invalid request"))
+	mockService.On("GetUserByID", mock.Anything, ID).Return(nil, nil)
 
-	CreateUserHandle := http.HandlerFunc(handler.CreateUserHandler(mockService))
-	CreateUserHandle.ServeHTTP(response, req)
+	r := mux.NewRouter()
+	r.HandleFunc("/users/{id}", handler.GetUserByIDHandler(mockService)).Methods("GET")
 
-	fmt.Println(response.Body.String())
+	r.ServeHTTP(response, req)
+
+	assert.JSONEq(t, expectedError, response.Body.String())
+
+}
+
+func TestGetUserById_When_ReturnError_SomethingWentWrong(t *testing.T) {
+
+	ID := 5
+
+	req, err := http.NewRequest("GET", "/users/5", nil)
+	if err != nil {
+		fmt.Printf("TestHandler: error while newRequest %s", err.Error())
+		t.FailNow()
+	}
+
+	response := httptest.NewRecorder()
+	expectedError := string(`{"error":"handler:something went wrong"}`)
+	mockService := &mockService.MockUserService{}
+	mockService.On("GetUserByID", mock.Anything, ID).Return(nil, errors.New("handler:something went wrong"))
+
+	r := mux.NewRouter()
+	r.HandleFunc("/users/{id}", handler.GetUserByIDHandler(mockService)).Methods("GET")
+
+	r.ServeHTTP(response, req)
 
 	assert.JSONEq(t, expectedError, response.Body.String())
 
@@ -102,26 +127,43 @@ func TestUserHandler_GetUserById_When_ReturnError(t *testing.T) {
 
 func TestUserHandler_GetUserByID_Success(t *testing.T) {
 
-	ctx := context.Background()
-	var user *domain.User
-	ID := "1"
-	responseByte, _ := json.Marshal(ID)
-	requestReader := bytes.NewReader(responseByte)
-	req, err := http.NewRequest("GET", "/users/{ID}", requestReader)
+	ID := 5
+
+	req, err := http.NewRequest("GET", "/users/5", nil)
 	if err != nil {
 		fmt.Printf("TestHandler: error while newRequest %s", err.Error())
 		t.FailNow()
 	}
 
+	timeNow := time.Now()
+	expectedObj, _ := json.Marshal(contract.GetUserByID{
+
+		Name:      "gourav",
+		Email:     "gourav@gmail.com",
+		IsAdmin:   true,
+		CreatedAt: timeNow,
+		UpdatedAt: timeNow,
+	})
+
+	user := domain.User{
+		ID:        5,
+		Name:      "gourav",
+		Email:     "gourav@gmail.com",
+		Password:  "12345",
+		IsAdmin:   true,
+		CreatedAt: timeNow,
+		UpdatedAt: timeNow,
+	}
 	response := httptest.NewRecorder()
 
 	mockService := &mockService.MockUserService{}
-	mockService.On("GetUserByID", ctx, ID).Return(nil, err)
+	mockService.On("GetUserByID", mock.Anything, ID).Return(&user, nil)
 
-	CreateUserHandle := http.HandlerFunc(handler.CreateUserHandler(mockService))
-	CreateUserHandle.ServeHTTP(response, req)
+	r := mux.NewRouter()
+	r.HandleFunc("/users/{id}", handler.GetUserByIDHandler(mockService)).Methods("GET")
 
-	assert.NotNil(t, &user)
-	assert.NoError(t, err)
+	r.ServeHTTP(response, req)
+
+	assert.JSONEq(t, string(expectedObj), response.Body.String())
 
 }

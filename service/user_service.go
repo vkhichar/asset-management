@@ -78,11 +78,12 @@ func (service *userService) CreateUser(ctx context.Context, user domain.User) (*
 func (service *userService) GetUserByID(ctx context.Context, ID int) (*domain.User, error) {
 	user, err := service.userRepo.GetUserByID(ctx, ID)
 
-	if user == nil {
-		return nil, customerrors.UserNotExist
-	}
 	if err != nil {
 		return nil, err
 	}
+	if user == nil {
+		return nil, customerrors.UserNotExist
+	}
+
 	return user, nil
 }

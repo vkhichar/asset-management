@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/stretchr/testify/mock"
+	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 )
 
@@ -28,7 +29,7 @@ func (m *MockUserRepo) FindUser(ctx context.Context, email string) (*domain.User
 }
 
 func (m *MockUserRepo) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
-	// TODO: define mock method
+
 	args := m.Called(ctx, user)
 
 	var newUser *domain.User
@@ -52,6 +53,10 @@ func (m *MockUserRepo) GetUserByID(ctx context.Context, ID int) (*domain.User, e
 
 	var newUser *domain.User
 	args := m.Called(ctx, ID)
+
+	if args[0] == nil && args[1] == nil {
+		return nil, customerrors.UserNotExist
+	}
 	if args[0] != nil {
 		newUser = args[0].(*domain.User)
 	}
