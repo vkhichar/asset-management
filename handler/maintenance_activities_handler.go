@@ -196,20 +196,27 @@ func UpdateMaintenanceActivity(service service.AssetMaintenanceService) http.Han
 		}
 
 		if !updateReq.Validate() {
-			fmt.Println(err)
 			WriteErrorResponse(w, customerrors.ErrBadRequest)
 			return
 		}
 
-		activityDomain := updateReq.ToDomain()
+		activityDomain, err := updateReq.ToDomain()
+		if err != nil {
+			WriteErrorResponse(w, customerrors.ErrBadRequest)
+			return
+		}
 
 		activityDomain.ID = id
 
-		activity, err := service.UpdateMaintenanceActivity(r.Context(), activityDomain)
+		activity, err := service.UpdateMaintenanceActivity(r.Context(), *activityDomain)
 
 		if err == customerrors.ErrNotFound {
-			fmt.Println(err)
 			WriteErrorResponse(w, customerrors.ErrNotFound)
+			return
+		}
+
+		if err != nil {
+			WriteErrorResponse(w, errors.New("Something went wrong"))
 			return
 		}
 

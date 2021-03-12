@@ -43,14 +43,16 @@ func NewMaintenanceActivityResp(domain domain.MaintenanceActivity) MaintenanceAc
 	}
 }
 
-func (activity UpdateMaintenanceActivityReq) ToDomain() domain.MaintenanceActivity {
-	endedAt, _ := time.Parse(DateFormat, activity.EndedAt)
-
-	return domain.MaintenanceActivity{
+func (activity UpdateMaintenanceActivityReq) ToDomain() (*domain.MaintenanceActivity, error) {
+	endedAt, err := time.Parse(DateFormat, activity.EndedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.MaintenanceActivity{
 		Cost:        activity.Cost,
 		EndedAt:     endedAt,
 		Description: activity.Description,
-	}
+	}, nil
 }
 
 func (req UpdateMaintenanceActivityReq) Validate() bool {

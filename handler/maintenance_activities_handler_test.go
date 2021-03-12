@@ -1,6 +1,7 @@
 package handler_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -263,4 +264,284 @@ func TestMaintenanceActivitiesHandler_DetailedMaintenanceActivityHandler_When_Id
 	r.ServeHTTP(rr, req)
 
 	assert.JSONEq(t, expectedErr, rr.Body.String())
+}
+
+func TestMaintenanceActivitiesHandler_DeleteById_When_Error(t *testing.T) {
+
+	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService.On("DeleteMaintenanceActivity", mock.Anything, 1).Return(errors.New("Failed to delete activity"))
+
+	req, err := http.NewRequest("DELETE", "/maintenance_activities/1", nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resRec := httptest.NewRecorder()
+	r := mux.NewRouter()
+	r.HandleFunc("/maintenance_activities/{id}", handler.DeleteMaintenanceActivityHandler(mockMaintenanceService)).Methods("DELETE")
+	r.ServeHTTP(resRec, req)
+
+	assert.Equal(t, http.StatusInternalServerError, resRec.Result().StatusCode)
+	assert.JSONEq(t, string(`{ "error" : "Something went wrong"}`), resRec.Body.String())
+
+}
+
+func TestMaintenanceActivitiesHandler_DeleteById_When_InvalidId(t *testing.T) {
+	req, err := http.NewRequest("DELETE", "/maintenance_activities/abcd", nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resRec := httptest.NewRecorder()
+	r := mux.NewRouter()
+	r.HandleFunc("/maintenance_activities/{id}",
+		handler.DeleteMaintenanceActivityHandler(&mockService.MockAssetMaintenanceService{})).Methods("DELETE")
+	r.ServeHTTP(resRec, req)
+
+	assert.Equal(t, http.StatusBadRequest, resRec.Result().StatusCode)
+
+}
+
+func TestMaintenanceActivitiesHandler_DeleteById_When_Success(t *testing.T) {
+	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService.On("DeleteMaintenanceActivity", mock.Anything, 1).Return(nil)
+
+	req, err := http.NewRequest("DELETE", "/maintenance_activities/1", nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resRec := httptest.NewRecorder()
+	r := mux.NewRouter()
+	r.HandleFunc("/maintenance_activities/{id}", handler.DeleteMaintenanceActivityHandler(mockMaintenanceService)).Methods("DELETE")
+	r.ServeHTTP(resRec, req)
+
+	assert.Equal(t, http.StatusNoContent, resRec.Result().StatusCode)
+
+}
+
+func TestMaintenanceActivitiesHandler_ListAllByAssetId_When_Error(t *testing.T) {
+	assetId := uuid.New()
+
+	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService.On("GetAllForAssetId", mock.Anything, mock.Anything).Return(nil, errors.New("Failed to fetch activities"))
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("/assets/%s/maintenance", assetId.String()), nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resRec := httptest.NewRecorder()
+	r := mux.NewRouter()
+	r.HandleFunc("/assets/{asset_id}/maintenance", handler.ListMaintenanceActivitiesByAsserId(mockMaintenanceService)).Methods("GET")
+	r.ServeHTTP(resRec, req)
+
+	assert.Equal(t, http.StatusInternalServerError, resRec.Result().StatusCode)
+	assert.JSONEq(t, string(`{ "error" : "Something went wrong"}`), resRec.Body.String())
+}
+
+func TestMaintenanceActivitiesHandler_ListAllByAssetId_When_NonEmptyResult(t *testing.T) {
+	assetId := uuid.New()
+
+	activities := make([]domain.MaintenanceActivity, 1)
+	activities[0] = domain.MaintenanceActivity{
+		ID:          1,
+		AssetId:     assetId,
+		Cost:        20,
+		StartedAt:   time.Now(),
+		EndedAt:     time.Now(),
+		Description: "test",
+	}
+
+	output := make([]contract.MaintenanceActivityResp, 1)
+	output[0] = contract.NewMaintenanceActivityResp(activities[0])
+
+	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService.On("GetAllForAssetId", mock.Anything, mock.Anything).Return(activities, nil)
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("/assets/%s/maintenance", assetId.String()), nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resRec := httptest.NewRecorder()
+	r := mux.NewRouter()
+	r.HandleFunc("/assets/{asset_id}/maintenance", handler.ListMaintenanceActivitiesByAsserId(mockMaintenanceService)).Methods("GET")
+	r.ServeHTTP(resRec, req)
+
+	res, err := json.Marshal(output)
+	if err != nil {
+		t.Fatal()
+	}
+
+	assert.Equal(t, http.StatusOK, resRec.Result().StatusCode)
+	assert.JSONEq(t, string(res), resRec.Body.String())
+}
+
+func TestMaintenanceActivitiesHandler_ListAllByAssetId_When_EmptyResult(t *testing.T) {
+	assetId := uuid.New()
+	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService.On("GetAllForAssetId", mock.Anything, mock.Anything).Return([]domain.MaintenanceActivity{}, nil)
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("/assets/%s/maintenance", assetId.String()), nil)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resRec := httptest.NewRecorder()
+	r := mux.NewRouter()
+	r.HandleFunc("/assets/{asset_id}/maintenance", handler.ListMaintenanceActivitiesByAsserId(mockMaintenanceService)).Methods("GET")
+	r.ServeHTTP(resRec, req)
+
+	assert.Equal(t, http.StatusOK, resRec.Result().StatusCode)
+	assert.JSONEq(t, string(`[]`), resRec.Body.String())
+}
+
+func TestMaintenanceActivitiesHandler_UpdateById_When_DbError(t *testing.T) {
+
+	reqBody := contract.UpdateMaintenanceActivityReq{
+		Cost:        20,
+		Description: "descr",
+		EndedAt:     "2020-03-03",
+	}
+
+	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService.On("UpdateMaintenanceActivity", mock.Anything, mock.Anything).Return(nil, errors.New("Failed to update activity"))
+
+	body, err := json.Marshal(reqBody)
+	if err != nil {
+		t.Fatal()
+	}
+
+	req, err := http.NewRequest("PUT", "/maintenance_activities/1", bytes.NewBuffer(body))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resRec := httptest.NewRecorder()
+	r := mux.NewRouter()
+	r.HandleFunc("/maintenance_activities/{id}", handler.UpdateMaintenanceActivity(mockMaintenanceService)).Methods("PUT")
+	r.ServeHTTP(resRec, req)
+
+	assert.Equal(t, http.StatusInternalServerError, resRec.Result().StatusCode)
+	assert.JSONEq(t, string(`{ "error" : "Something went wrong"}`), resRec.Body.String())
+}
+
+func TestMaintenanceActivitiesHandler_UpdateById_When_ErrNotFound(t *testing.T) {
+
+	reqBody := contract.UpdateMaintenanceActivityReq{
+		Cost:        20,
+		Description: "description",
+		EndedAt:     "2020-03-03",
+	}
+
+	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService.On("UpdateMaintenanceActivity", mock.Anything, mock.Anything).Return(nil, customerrors.ErrNotFound)
+
+	body, err := json.Marshal(reqBody)
+	if err != nil {
+		t.Fatal()
+	}
+
+	req, err := http.NewRequest("PUT", "/maintenance_activities/1", bytes.NewBuffer(body))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resRec := httptest.NewRecorder()
+	r := mux.NewRouter()
+	r.HandleFunc("/maintenance_activities/{id}", handler.UpdateMaintenanceActivity(mockMaintenanceService)).Methods("PUT")
+	r.ServeHTTP(resRec, req)
+
+	assert.Equal(t, http.StatusNotFound, resRec.Result().StatusCode)
+	assert.JSONEq(t, string(`{ "error" : "not found"}`), resRec.Body.String())
+}
+
+func TestMaintenanceActivitiesHandler_UpdateById_When_InvalidRequest(t *testing.T) {
+
+	reqBody := contract.UpdateMaintenanceActivityReq{
+		Cost:        20,
+		Description: "description",
+		EndedAt:     "dsds",
+	}
+
+	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+
+	body, err := json.Marshal(reqBody)
+	if err != nil {
+		t.Fatal()
+	}
+
+	req, err := http.NewRequest("PUT", "/maintenance_activities/1", bytes.NewBuffer(body))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resRec := httptest.NewRecorder()
+	r := mux.NewRouter()
+	r.HandleFunc("/maintenance_activities/{id}", handler.UpdateMaintenanceActivity(mockMaintenanceService)).Methods("PUT")
+	r.ServeHTTP(resRec, req)
+
+	assert.Equal(t, http.StatusBadRequest, resRec.Result().StatusCode)
+	assert.JSONEq(t, string(`{ "error" : "bad request"}`), resRec.Body.String())
+}
+
+func TestMaintenanceActivitiesHandler_UpdateById_When_Success(t *testing.T) {
+
+	reqBody := contract.UpdateMaintenanceActivityReq{
+		Cost:        25,
+		Description: "description",
+		EndedAt:     "2020-01-28",
+	}
+
+	date, err := time.Parse(contract.DateFormat, reqBody.EndedAt)
+	assetId := uuid.New()
+	updated := domain.MaintenanceActivity{
+		ID:          1,
+		AssetId:     assetId,
+		Cost:        25,
+		StartedAt:   date,
+		EndedAt:     date,
+		Description: "description",
+	}
+	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService.On("UpdateMaintenanceActivity", mock.Anything, mock.Anything).Return(&updated, nil)
+
+	body, err := json.Marshal(reqBody)
+	if err != nil {
+		t.Fatal()
+	}
+
+	req, err := http.NewRequest("PUT", "/maintenance_activities/1", bytes.NewBuffer(body))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resRec := httptest.NewRecorder()
+	r := mux.NewRouter()
+	r.HandleFunc("/maintenance_activities/{id}", handler.UpdateMaintenanceActivity(mockMaintenanceService)).Methods("PUT")
+	r.ServeHTTP(resRec, req)
+
+	expected := contract.MaintenanceActivityResp{
+		Id:          1,
+		AssetId:     assetId,
+		Cost:        25,
+		StartedAt:   "2020-01-28",
+		EndedAt:     "2020-01-28",
+		Description: "description",
+	}
+
+	assert.Equal(t, http.StatusOK, resRec.Result().StatusCode)
+	expectedRes, err := json.Marshal(expected)
+	assert.JSONEq(t, string(expectedRes), resRec.Body.String())
 }
