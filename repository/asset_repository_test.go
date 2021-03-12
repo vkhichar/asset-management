@@ -1,54 +1,41 @@
 package repository_test
 
-import (
-	"context"
-	"fmt"
-	"testing"
-	"time"
+// func TestUserRepository_CreateAsset_When_Success(t *testing.T) {
+// 	ctx := context.Background()
+// 	var assetExpected domain.Asset
+// 	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9016")
+// 	duration, err := time.Parse("01/01/0001", "01/01/0001")
+// 	spec := []byte(`{"ram":"4GB","brand":"acer"}`)
 
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/vkhichar/asset-management/config"
-	"github.com/vkhichar/asset-management/domain"
-	"github.com/vkhichar/asset-management/repository"
-)
+// 	dummy := domain.Asset{
+// 		Id:             id,
+// 		Status:         "active",
+// 		Category:       "laptop",
+// 		PurchaseAt:     duration,
+// 		PurchaseCost:   45000.00,
+// 		Name:           "aspire-5",
+// 		Specifications: spec,
+// 	}
 
-func TestUserRepository_CreateAsset_When_Success(t *testing.T) {
-	ctx := context.Background()
-	var assetExpected domain.Asset
-	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9016")
-	duration, err := time.Parse("01/01/0001", "01/01/0001")
-	spec := []byte(`{"ram":"4GB","brand":"acer"}`)
+// 	config.Init()
+// 	repository.InitDB()
+// 	db := repository.GetDB()
 
-	dummy := domain.Asset{
-		Id:             id,
-		Status:         "active",
-		Category:       "laptop",
-		PurchaseAt:     duration,
-		PurchaseCost:   45000.00,
-		Name:           "aspire-5",
-		Specifications: spec,
-	}
+// 	tx := db.MustBegin()
+// 	tx.MustExec("delete from assets")
+// 	tx.Commit()
 
-	config.Init()
-	repository.InitDB()
-	db := repository.GetDB()
+// 	assetRepo := repository.NewAssetRepository()
 
-	tx := db.MustBegin()
-	tx.MustExec("delete from assets")
-	tx.Commit()
+// 	asset, err := assetRepo.CreateAsset(ctx, dummy)
 
-	assetRepo := repository.NewAssetRepository()
+// 	fmt.Println()
+// 	db.Get(&assetExpected, "SELECT * FROM assets WHERE id = $1", id)
+// 	fmt.Println(assetExpected)
 
-	asset, err := assetRepo.CreateAsset(ctx, dummy)
-
-	fmt.Println()
-	db.Get(&assetExpected, "SELECT * FROM assets WHERE id = $1", id)
-	fmt.Println(assetExpected)
-
-	assert.Equal(t, &assetExpected, asset)
-	assert.Nil(t, err)
-}
+// 	assert.Equal(t, &assetExpected, asset)
+// 	assert.Nil(t, err)
+// }
 
 // func TestUserRepository_CreateAsset_When_ReturnsError(t *testing.T) {
 // 	ctx := context.Background()
