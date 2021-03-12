@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -99,6 +100,7 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 
 		if err != nil {
 			fmt.Printf("handler: error while creating asset, error: %s", err.Error())
+			fmt.Printf(err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
 			if err != nil {
@@ -109,7 +111,11 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		responseBytes, _ := json.Marshal(contract.CreateAssetResponse{ID: returnedAsset.Id, Status: returnedAsset.Status, Category: returnedAsset.Category, PurchaseAt: returnedAsset.PurchaseAt.String(), PurchaseCost: returnedAsset.PurchaseCost, Name: returnedAsset.Name, Specifications: returnedAsset.Specifications})
+		responseBytes, err := json.Marshal(contract.CreateAssetResponse{ID: returnedAsset.Id, Status: returnedAsset.Status, Category: returnedAsset.Category, PurchaseAt: returnedAsset.PurchaseAt.String(), PurchaseCost: returnedAsset.PurchaseCost, Name: returnedAsset.Name, Specifications: returnedAsset.Specifications})
+		if err != nil {
+			fmt.Printf("asset_handler: error while marshalling, %s", err.Error())
+			return
+		}
 		w.Write(responseBytes)
 		return
 	}
@@ -124,7 +130,7 @@ func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 
 		id, err := uuid.Parse(params["id"])
 		if err != nil {
-			fmt.Printf("asset handler: Error while parsing string into JSON:%s", err.Error())
+			fmt.Printf("asset handler: Error while parsing string into JSON: %s", err.Error())
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
 			if err != nil {
 				fmt.Printf(err.Error())
@@ -133,15 +139,14 @@ func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			return
 		}
 
-		var req contract.GetAssetRequest
+		validID := regexp.MustCompile("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[8|9|aA|bB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$")
 
-		err = req.Validate(id)
-		if err != nil {
-			fmt.Printf("handler: invalid request for get asset: Check for proper id")
-			fmt.Printf(err.Error())
+		if validID.MatchString(id.String()) == false {
+			fmt.Printf("handler: invalid request for get asset: Check for proper id ")
+			fmt.Printf("Invalid UUID format")
 
 			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "Invalid UUID format"})
 			if err != nil {
 				fmt.Printf(err.Error())
 			}
@@ -151,9 +156,9 @@ func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 
 		returnedAsset, err := assetService.GetAsset(r.Context(), id)
 
-		if err != nil {
-			fmt.Printf("handler: error while getting asset, error: %s", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+		if err == customerrors.NoAssetsExist {
+			fmt.Printf("handler: asset does not exist")
+			w.WriteHeader(http.StatusNotFound)
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
 			if err != nil {
 				fmt.Printf(err.Error())
@@ -162,10 +167,25 @@ func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			return
 		}
 
+		if err != nil {
+			fmt.Printf("handler: error while creating asset, error: %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+			if err != nil {
+				fmt.Printf(err.Error())
+			}
+			w.Write(responseBytes)
+			return
+		}
+
+		responseBytes, err := json.Marshal(contract.GetAssetResponse{ID: returnedAsset.Id, Status: returnedAsset.Status, Category: returnedAsset.Category, PurchaseAt: returnedAsset.PurchaseAt.String(), PurchaseCost: returnedAsset.PurchaseCost, Name: returnedAsset.Name, Specifications: returnedAsset.Specifications})
+		if err != nil {
+			fmt.Printf("asset_handler: error while marshalling, %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
-		responseBytes, _ := json.Marshal(contract.GetAssetResponse{ID: returnedAsset.Id, Status: returnedAsset.Status, Category: returnedAsset.Category, PurchaseAt: returnedAsset.PurchaseAt.String(), PurchaseCost: returnedAsset.PurchaseCost, Name: returnedAsset.Name, Specifications: returnedAsset.Specifications})
 		w.Write(responseBytes)
 		return
-
 	}
 }

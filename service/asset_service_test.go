@@ -81,38 +81,32 @@ func TestAssetService_GetAsset_When_GetAssetReturnsError(t *testing.T) {
 
 func TestAssetService_GetAsset_When_Success(t *testing.T) {
 	ctx := context.Background()
-	id := uuid.New()
-
-	duration, err := time.Parse("01-01-0001", "0001-01-01")
+	id, err := uuid.Parse("ca99be07-30ef-4853-a6b6-bfa38d254a29")
 	if err != nil {
-		fmt.Printf("asset_servie_test: error while parsing string into time")
-		return
-	}
-
-	specs, err := json.Marshal(`"ram":"4GB","brand":"acer"`)
-	if err != nil {
-		fmt.Printf("asset_servie_test: error while parsing string into json")
+		fmt.Printf("asset_servie_test: error while parsing string into uuid")
 		return
 	}
 
 	dummy := domain.Asset{
-		Id:             uuid.New(),
-		Status:         "active",
+		Id:             id,
+		Status:         "inactive",
 		Category:       "laptops",
-		PurchaseAt:     duration,
+		PurchaseAt:     time.Now(),
 		PurchaseCost:   45000.00,
 		Name:           "aspire-5",
-		Specifications: specs,
+		Specifications: json.RawMessage{},
 	}
 
 	mockAssetRepo := &mockRepo.MockAssetRepo{}
-	mockAssetRepo.On("GetAsset", ctx, dummy).Return(&dummy, nil)
+	mockAssetRepo.On("GetAsset", ctx, id).Return(&dummy, nil)
 
 	assetService := service.NewAssetService(mockAssetRepo)
-	asset, _ := assetService.GetAsset(ctx, id)
+	asset, err := assetService.GetAsset(ctx, id)
 
-	//assert.NoError(t, err)
-	//assert.Equal(t, dummy.Id, asset.Id)
-	assert.Nil(t, asset)
+	fmt.Println(asset)
+	fmt.Println()
 
+	assert.NoError(t, err)
+	assert.Equal(t, &dummy, asset)
+	assert.NotNil(t, asset)
 }
