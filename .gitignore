@@ -18,3 +18,5 @@ vendor/
 
 # binary
 asset-management
+
+application.yml

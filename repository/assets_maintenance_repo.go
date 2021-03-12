@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -42,8 +43,13 @@ func (repo *assetMaintainRepo) InsertMaintenanceActivity(ctx context.Context, re
 
 func (repo *assetMaintainRepo) DetailedMaintenanceActivity(ctx context.Context, activityId int) (*domain.MaintenanceActivity, error) {
 	var maintenanceActivity domain.MaintenanceActivity
-
 	err := repo.db.Get(&maintenanceActivity, detailedMaintainActivityByQuery, activityId)
+	if err == sql.ErrNoRows {
+		fmt.Printf("repository: activity not present")
+
+		return nil, nil
+	}
+
 	if err != nil {
 		fmt.Printf("repolayer:Failed to fetch asset maintenance activities due to %s", err.Error())
 		return nil, err

@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/vkhichar/asset-management/contract"
+	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/service"
 )
 
@@ -53,7 +54,7 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 			fmt.Printf("handler: incorrect date format: %s", err.Error())
 
 			w.WriteHeader(http.StatusNotFound)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "incorrect date format "})
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "incorrect date format"})
 			w.Write(responseBytes)
 			return
 		}
@@ -68,17 +69,17 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 			w.Write(responseBytes)
 			return
 		}
-		if assetMaintenance == nil {
-			fmt.Printf("handler: error")
 
-			w.WriteHeader(http.StatusInternalServerError)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "something went wrong..."})
-			w.Write(responseBytes)
-			return
-		}
 		resp := contract.NewAssetMaintenanceResponse(assetMaintenance)
+
+		responseBytes, eror := json.Marshal(resp)
+		if eror != nil {
+			fmt.Printf("handler: error while marshaling")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+
+		}
 		w.WriteHeader(http.StatusCreated)
-		responseBytes, _ := json.Marshal(resp)
 		w.Write(responseBytes)
 	}
 }
@@ -86,19 +87,41 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 func DetailedMaintenanceActivityHandler(service service.AssetMaintenanceService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		id, err := strconv.Atoi(mux.Vars(r)["id"])
+		id, errr := strconv.Atoi(mux.Vars(r)["id"])
+		if errr != nil {
+			fmt.Println("handler: wrong id format")
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "wrong id format"})
+			w.Write(responseBytes)
+			return
+		}
 		assetMaintenance, err := service.DetailedMaintenanceActivity(r.Context(), id)
-		if err != nil {
-			fmt.Printf("handler: error: %s", err.Error())
 
+		if err == customerrors.MaintenanceIdDoesNotExist {
+			fmt.Println("handler: Maintenance Id does not exist")
 			w.WriteHeader(http.StatusNotFound)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "This maintenance id does not exist... "})
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "id not found"})
+			w.Write(responseBytes)
+			return
+
+		}
+
+		if err != nil {
+			fmt.Printf("handler: error while searching for maintenance activity,error= %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
 			w.Write(responseBytes)
 			return
 		}
 		resp := contract.NewDetailAssetMaintenanceActivityResponse(assetMaintenance)
+		responseBytes, eror := json.Marshal(resp)
+		if eror != nil {
+			fmt.Printf("handler: error while marshaling")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+
+		}
 		w.WriteHeader(http.StatusOK)
-		responseBytes, _ := json.Marshal(resp)
 		w.Write(responseBytes)
 	}
 }

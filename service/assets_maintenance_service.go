@@ -32,11 +32,6 @@ func (service *assetMaintenanceService) CreateAssetMaintenance(ctx context.Conte
 		return nil, err
 	}
 
-	if assetsMaintenance == nil {
-		fmt.Printf("servicelayer:NoMaintenanceActivitesExist")
-		return nil, customerrors.NoMaintenanceActivitesExist
-	}
-
 	return assetsMaintenance, nil
 }
 
@@ -46,6 +41,10 @@ func (service *assetMaintenanceService) DetailedMaintenanceActivity(ctx context.
 	if err != nil {
 		fmt.Printf("servicelayer:%s", err.Error())
 		return nil, err
+	}
+
+	if assetsMaintenance == nil {
+		return assetsMaintenance, customerrors.MaintenanceIdDoesNotExist
 	}
 
 	return assetsMaintenance, nil
