@@ -143,6 +143,7 @@ func TestUserHandler_UpdateUsersHandler_When_UpdateUsersReturnsError(t *testing.
 		Name:     &name,
 		Password: &password,
 	}
+
 	if err != nil {
 		t.Fatal(err)
 	}

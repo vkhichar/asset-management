@@ -58,7 +58,7 @@ func (repo *userRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 	if err == sql.ErrNoRows {
 		fmt.Printf("repository: No users present")
 
-		return nil, nil
+		return nil, customerrors.NoUsersExist
 	}
 
 	if err != nil {

@@ -2,7 +2,6 @@ package repository_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -89,13 +88,9 @@ func TestUserRepository_UpdateUsers_When_Success(t *testing.T) {
 
 	id := 12
 
-	fmt.Println("Above")
-
 	config.Init()
 	repository.InitDB()
 	db := repository.GetDB()
-
-	fmt.Println("Below")
 	tx := db.MustBegin()
 	tx.MustExec("delete from users")
 	tx.MustExec("insert into users (id, name,email,password,is_admin) values ($1,$2,$3,$4,$5)", 12, "Jan Doe", "jandoe@gmail.com", "12345", true)
@@ -105,11 +100,7 @@ func TestUserRepository_UpdateUsers_When_Success(t *testing.T) {
 
 	user, err := userRepo.UpdateUser(ctx, id, userReq)
 
-	//tx.MustExec("UPDATE users SET name=$1, password=$2, updated_at=$3 WHERE id=$4", name, password, user.UpdatedAt, id)
 	db.Get(&userExpected, "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users WHERE id = $1", id)
-	//fmt.Println(userExpected)
-
-	//tx.Commit()
 
 	assert.Equal(t, &userExpected, user)
 	assert.Nil(t, err)
