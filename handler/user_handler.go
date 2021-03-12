@@ -172,7 +172,7 @@ func CreateUserHandler(userService service.UserService) http.HandlerFunc {
 		if err == customerrors.ErrInvalidEmailPassword {
 			fmt.Printf("handler: invalid email or password for email: %s", req.Email)
 
-			w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusBadRequest)
 			responseBytes, invalidErr := json.Marshal(contract.ErrorResponse{Error: "invalid email or password"})
 
 			if invalidErr != nil {
@@ -236,7 +236,7 @@ func GetUserByIDHandler(userService service.UserService) http.HandlerFunc {
 		if err == customerrors.UserNotExist {
 			fmt.Printf("handler: user does not exist : %s", err.Error())
 
-			w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusBadRequest)
 			responseBytes, invalidErr := json.Marshal(contract.ErrorResponse{Error: "user does not exist "})
 
 			if invalidErr != nil {
