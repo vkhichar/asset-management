@@ -92,21 +92,39 @@ func (repo *assetMaintainRepo) GetAllByAssetId(ctx context.Context, assetId uuid
 }
 
 func (repo *assetMaintainRepo) UpdateMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
-	res, err := repo.db.Exec(updateQuery, req.Cost, req.EndedAt, req.Description, req.ID)
+
+	tx, err := repo.db.BeginTx(ctx, nil)
 	if err != nil {
-		fmt.Printf("repository: Failed to update maintenance activity with id %d due to %s", req.ID, err.Error())
-		return nil, errors.New("Failed to fetch asset maintenance activity")
+		fmt.Printf("Repository: Failed to begin trasanction: %s", err.Error())
+		return nil, errors.New("Failed to update maintenance activity ")
+	}
+	tx.ExecContext(ctx, updateQuery, req.Cost, req.EndedAt, req.Description, req.ID)
+	res, err := tx.ExecContext(ctx, updateQuery, req.Cost, req.EndedAt, req.Description, req.ID)
+	if err != nil {
+		tx.Rollback()
+		return nil, errors.New("Failed to update asset maintenance activity")
 	}
 	if rc, _ := res.RowsAffected(); rc == 0 {
 		fmt.Printf("repository: record not found with id %d \n", req.ID)
 		return nil, customerrors.ErrNotFound
 	}
 
-	var activity domain.MaintenanceActivity
-	// ToDo use get api
-	repo.db.Get(&activity, findByIdQuery, req.ID)
+	activity := domain.MaintenanceActivity{}
+	row := tx.QueryRowContext(ctx, findByIdQuery, req.ID)
 
-	fmt.Println(activity)
+	err = row.Scan(&activity.ID, &activity.AssetId, &activity.Cost, &activity.StartedAt, &activity.EndedAt, &activity.Description)
 
+	if err != nil {
+		fmt.Printf("repository: record not found with id %s", err.Error())
+		tx.Rollback()
+		return nil, errors.New("Failed to update asset maintenance activity")
+	}
+	err = tx.Commit()
+
+	if err != nil {
+		fmt.Printf("repository: failed to commit trasaction %s \n", err.Error())
+		tx.Rollback()
+		return nil, errors.New("Failed to update asset maintenance activity")
+	}
 	return &activity, nil
 }
