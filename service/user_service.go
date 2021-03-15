@@ -15,6 +15,7 @@ type UserService interface {
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
 	UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (user *domain.User, err error)
+	DeleteUser(ctx context.Context, id int) (*domain.User, error)
 }
 
 type userService struct {
@@ -71,13 +72,26 @@ func (service *userService) CreateUser(ctx context.Context, user domain.User) (*
 
 func (service *userService) UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error) {
 	user, err := service.userRepo.UpdateUser(ctx, id, req)
-
 	if err != nil {
 		return nil, err
 	}
 
 	if user == nil {
 		return user, customerrors.UserDoesNotExist
+	}
+
+	return user, nil
+}
+
+func (service *userService) DeleteUser(ctx context.Context, id int) (*domain.User, error) {
+	user, err := service.userRepo.DeleteUser(ctx, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return user, customerrors.NoUserExistForDelete
 	}
 
 	return user, nil

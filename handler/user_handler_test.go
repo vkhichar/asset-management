@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"encoding/json"
+	"errors"
 	"testing"
 	"time"
 
@@ -129,10 +131,8 @@ func TestUserHandler_UpdateUsersHandler_When_IdInvalid(t *testing.T) {
 	r.HandleFunc("/users/{id}", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
 	r.ServeHTTP(resp, request)
 	expectedErr := string(`{"error":"Error while parameter conversion"}`)
-
 	assert.JSONEq(t, string(expectedErr), resp.Body.String())
 }
-
 func TestUserHandler_UpdateUsersHandler_When_UpdateUsersReturnsError(t *testing.T) {
 	id := 1
 	name := "fatema"
@@ -166,7 +166,6 @@ func TestUserHandler_UpdateUsersHandler_When_Success(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	userReq := contract.UpdateUserRequest{
 		Name:     &name,
 		Password: &password,
@@ -228,4 +227,94 @@ func TestUserHandler_UpdateUsersHandler_When_Nil(t *testing.T) {
 	expectedErr := string(`{"error":"User for this id does not exist"}`)
 
 	assert.JSONEq(t, string(expectedErr), resp.Body.String())
+}
+
+func TestUserHandler_DeleteUserHandler_When_DeleteUserReturnsError(t *testing.T) {
+	id := 1
+	request, err := http.NewRequest("DELETE", "/users/1", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp := httptest.NewRecorder()
+	mockUserService := &mockService.MockUserService{}
+
+	mockUserService.On("DeleteUser", mock.Anything, id).Return(nil, errors.New("something went wrong"))
+	r := mux.NewRouter()
+	r.HandleFunc("/users/{id}", handler.DeleteUserHandler(mockUserService)).Methods("DELETE")
+	r.ServeHTTP(resp, request)
+
+	expectedErr := `{"error":"something went wrong"}`
+
+	assert.JSONEq(t, string(expectedErr), resp.Body.String())
+}
+
+func TestUserHandler_DeleteUserHandler_When_DeleteUserReturnsNil(t *testing.T) {
+	id := 1
+	request, err := http.NewRequest("DELETE", "/users/1", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp := httptest.NewRecorder()
+	mockUserService := &mockService.MockUserService{}
+
+
+	mockUserService.On("DeleteUser", mock.Anything, id).Return(nil, nil)
+	r := mux.NewRouter()
+	r.HandleFunc("/users/{id}", handler.DeleteUserHandler(mockUserService)).Methods("DELETE")
+	r.ServeHTTP(resp, request)
+
+	expectedErr := `{"error":"no user found"}`
+
+	assert.JSONEq(t, string(expectedErr), resp.Body.String())
+}
+
+func TestUserHandler_DeleteUserHandler_When_DeleteUserHasErrorWhileParsingId(t *testing.T) {
+	request, err := http.NewRequest("DELETE", "/users/AB", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resp := httptest.NewRecorder()
+	mockUserService := &mockService.MockUserService{}
+	r := mux.NewRouter()
+	r.HandleFunc("/users/{id}", handler.DeleteUserHandler(mockUserService)).Methods("DELETE")
+	r.ServeHTTP(resp, request)
+
+	expectedErr := `{"error":"Enter id in valid format"}`
+
+	assert.JSONEq(t, string(expectedErr), resp.Body.String())
+}
+
+func TestUserHandler_DeleteUserHandler_When_Success(t *testing.T) {
+	id := 1
+	request, err := http.NewRequest("DELETE", "/users/1", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	timeNow := time.Now()
+
+	user := domain.User{
+		ID:        1,
+		Name:      "Dummy",
+		Email:     "dummy@email",
+		Password:  "12345",
+		IsAdmin:   true,
+		CreatedAt: timeNow,
+		UpdatedAt: timeNow,
+	}
+
+	resp := httptest.NewRecorder()
+	mockUserService := &mockService.MockUserService{}
+
+	mockUserService.On("DeleteUser", mock.Anything, id).Return(&user, nil)
+	r := mux.NewRouter()
+	r.HandleFunc("/users/{id}", handler.DeleteUserHandler(mockUserService)).Methods("DELETE")
+	r.ServeHTTP(resp, request)
+
+	expectedUser, _ := json.Marshal(user)
+
+	assert.JSONEq(t, string(expectedUser), resp.Body.String())
 }

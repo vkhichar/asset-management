@@ -17,6 +17,7 @@ const (
 	selectAllUsers      = "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users"
 	getUserByIDQuery    = "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users WHERE id = $1"
 	updateUserColumns   = "UPDATE users SET name = $1, password = $2, updated_at = $3 WHERE id = $4"
+	deleteUserById      = "DELETE FROM users WHERE id=$1"
 )
 
 type UserRepository interface {
@@ -24,6 +25,7 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
 	UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error)
+	DeleteUser(ctx context.Context, id int) (*domain.User, error)
 }
 
 type userRepo struct {
@@ -73,6 +75,7 @@ func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain
 	return nil, nil
 }
 
+<<<<<<< HEAD
 func (repo *userRepo) UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error) {
 	var user domain.User
 	var tempUser domain.User
@@ -91,17 +94,7 @@ func (repo *userRepo) UpdateUser(ctx context.Context, id int, req contract.Updat
 	}
 
 	tx := repo.db.MustBegin()
-
 	tx.MustExec(updateUserColumns, *req.Name, *req.Password, time.Now(), id)
-
-	// defer func() {
-	// 	errOnCommit := tx.Commit()
-	// 	if errOnCommit != nil {
-	// 		fmt.Printf("repo: Error while commiting the database. Error: %s", errOnCommit)
-	// 		tx.Rollback()
-	// 	}
-	// }()
-
 	tx.Commit()
 
 	err = repo.db.Get(&user, getUserByIDQuery, id)
@@ -109,6 +102,26 @@ func (repo *userRepo) UpdateUser(ctx context.Context, id int, req contract.Updat
 	if err != nil {
 		return nil, err
 	}
-	//fmt.Println(user)
+	return &user, nil
+}
+
+func (repo *userRepo) DeleteUser(ctx context.Context, id int) (*domain.User, error) {
+	var user domain.User
+
+	err := repo.db.Get(&user, getUserByIdQuery, id)
+
+	if err == sql.ErrNoRows {
+		fmt.Printf("Repository: No users present")
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	tx.MustExec(deleteUserById, id)
+
+	tx.Commit()
+
 	return &user, nil
 }

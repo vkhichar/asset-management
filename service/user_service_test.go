@@ -217,3 +217,64 @@ func TestUserService_UpdateUser_When_UpdateUserReturnsNil(t *testing.T) {
 	assert.Nil(t, userFromDb)
 	assert.NotNil(t, err)
 }
+
+func TestUserService_DeleteUser_When_DeleteUserReturnsError(t *testing.T) {
+	ctx := context.Background()
+	id := 4
+
+	mockUserRepo := &mockRepo.MockUserRepo{}
+	mockTokenService := &mockService.MockTokenService{}
+	userService := service.NewUserService(mockUserRepo, mockTokenService)
+
+	mockUserRepo.On("DeleteUser", ctx, id).Return(nil, errors.New("Some Internal Server Error"))
+
+	dbUser, err := userService.DeleteUser(ctx, id)
+
+	expectedErr := "Some Internal Server Error"
+
+	assert.NotNil(t, err)
+	assert.Nil(t, dbUser)
+	assert.Equal(t, expectedErr, err.Error())
+}
+
+func TestUserService_DeleteUser_When_DeleteUserReturnsNil(t *testing.T) {
+	ctx := context.Background()
+	id := 4
+
+	mockUserRepo := &mockRepo.MockUserRepo{}
+	mockTokenService := &mockService.MockTokenService{}
+	userService := service.NewUserService(mockUserRepo, mockTokenService)
+
+	mockUserRepo.On("DeleteUser", ctx, id).Return(nil, nil)
+
+	dbUser, err := userService.DeleteUser(ctx, id)
+
+	expectedErr := "No user present by this Id"
+
+	assert.Equal(t, expectedErr, err.Error())
+	assert.Nil(t, dbUser)
+}
+
+func TestUserService_DeleteUser_When_Success(t *testing.T) {
+	ctx := context.Background()
+	id := 1
+
+	user := domain.User{
+		ID:       1,
+		Name:     "Dummy",
+		Email:    "dummy@email",
+		Password: "12345",
+		IsAdmin:  true,
+	}
+
+	mockUserRepo := &mockRepo.MockUserRepo{}
+	mockTokenService := &mockService.MockTokenService{}
+	userService := service.NewUserService(mockUserRepo, mockTokenService)
+
+	mockUserRepo.On("DeleteUser", ctx, id).Return(&user, nil)
+
+	dbUser, err := userService.DeleteUser(ctx, id)
+
+	assert.NoError(t, err)
+	assert.Equal(t, &user, dbUser)
+}

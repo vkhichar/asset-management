@@ -57,3 +57,26 @@ func (m *MockUserService) UpdateUser(ctx context.Context, id int, req contract.U
 	}
 	return user, err
 }
+	return nil, nil
+}
+
+func (m *MockUserService) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
+	return nil, nil
+}
+
+func (m *MockUserService) DeleteUser(ctx context.Context, id int) (*domain.User, error) {
+	args := m.Called(ctx, id)
+	var user *domain.User
+	if args[0] != nil {
+		user = args[0].(*domain.User)
+	}
+
+	var err error
+	if args[1] != nil {
+		err = args[1].(error)
+	}
+	if args[0] == nil && args[1] == nil {
+		return nil, customerrors.NoUserExistForDelete
+	}
+	return user, err
+}
