@@ -2,14 +2,12 @@ package handler_test
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"encoding/json"
-	"errors"
 	"testing"
 	"time"
 
