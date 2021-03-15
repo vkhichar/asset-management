@@ -16,8 +16,8 @@ func DeleteAssetHandler(asset service.AssetService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		vars := mux.Vars(r)
-		Id, fault := uuid.Parse(vars["Id"])
-		if fault != nil {
+		Id, errParse := uuid.Parse(vars["Id"])
+		if errParse != nil {
 			fmt.Println("handler: Invalid UUID")
 
 			w.WriteHeader(http.StatusNotFound)
@@ -33,33 +33,34 @@ func DeleteAssetHandler(asset service.AssetService) http.HandlerFunc {
 		}
 
 		asset, err := asset.DeleteAsset(r.Context(), Id)
-		if err == customerrors.AssetAlreadyDeleted {
-			fmt.Println("handler: Asset Already Deleted")
 
-			w.WriteHeader(http.StatusNotFound)
-			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "Asset Already Deleted"})
-			if err != nil {
-				fmt.Printf("handler:Something went wrong while Marshaling,%s ", err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			w.Write(responseBytes)
-			return
-		}
-		if err == customerrors.NoAssetsExist {
-			fmt.Println("handler: No assets exist")
-
-			w.WriteHeader(http.StatusNotFound)
-			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "no asset found"})
-			if err != nil {
-				fmt.Printf("handler:Something went wrong while Marshaling,%s ", err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			w.Write(responseBytes)
-			return
-		}
 		if err != nil {
+			if err == customerrors.AssetAlreadyDeleted {
+				fmt.Println("handler: Asset Already Deleted")
+
+				w.WriteHeader(http.StatusNotFound)
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "Asset Already Deleted"})
+				if err != nil {
+					fmt.Printf("handler:Something went wrong while Marshaling,%s ", err.Error())
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				w.Write(responseBytes)
+				return
+			}
+			if err == customerrors.NoAssetsExist {
+				fmt.Println("handler: No assets exist")
+
+				w.WriteHeader(http.StatusNotFound)
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "no asset found"})
+				if err != nil {
+					fmt.Printf("handler:Something went wrong while Marshaling,%s ", err.Error())
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				w.Write(responseBytes)
+				return
+			}
 			fmt.Printf("handler:Error while Searching for Updated Asset, %s", err.Error())
 			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
 			w.Write(responseBytes)
@@ -67,8 +68,8 @@ func DeleteAssetHandler(asset service.AssetService) http.HandlerFunc {
 			return
 		}
 		assetRep := contract.DomainToContractassets(asset)
-		responseBytes, bug := json.Marshal(assetRep)
-		if bug != nil {
+		responseBytes, errMarshal := json.Marshal(assetRep)
+		if errMarshal != nil {
 			fmt.Println("handler:Something went wrong while marshalingh assetRep")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -87,9 +88,9 @@ func UpdateAssetHandler(asset service.AssetService) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		vars := mux.Vars(r)
-		Id, fault := uuid.Parse(vars["Id"])
+		Id, errParse := uuid.Parse(vars["Id"])
 
-		if fault != nil {
+		if errParse != nil {
 			fmt.Println("handler: Invalid UUID")
 
 			w.WriteHeader(http.StatusNotFound)
@@ -103,42 +104,42 @@ func UpdateAssetHandler(asset service.AssetService) http.HandlerFunc {
 			return
 		}
 		var req contract.UpdateRequest
-		issue := json.NewDecoder(r.Body).Decode(&req)
-		if issue != nil {
-			fmt.Println("handler: Something went wrong", issue.Error())
+		errDecoder := json.NewDecoder(r.Body).Decode(&req)
+		if errDecoder != nil {
+			fmt.Println("handler: Something went wrong", errDecoder.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		asset, err := asset.UpdateAsset(r.Context(), Id, req)
-		if err == customerrors.AssetAlreadyDeleted {
-			fmt.Println("handler: Asset Already Deleted")
-
-			w.WriteHeader(http.StatusNotFound)
-			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "Asset Already Deleted"})
-			if err != nil {
-				fmt.Printf("handler:Something went wrong while Marshaling,%s ", err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			w.Write(responseBytes)
-			return
-		}
-		if err == customerrors.NoAssetsExist {
-			fmt.Println("handler: No asset found")
-
-			w.WriteHeader(http.StatusNotFound)
-			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "no asset found"})
-			if err != nil {
-				fmt.Printf("handler:Something went wrong while Marshaling,%s", err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			w.Write(responseBytes)
-			return
-		}
 
 		if err != nil {
+			if err == customerrors.AssetAlreadyDeleted {
+				fmt.Println("handler: Asset Already Deleted")
+
+				w.WriteHeader(http.StatusNotFound)
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "Asset Already Deleted"})
+				if err != nil {
+					fmt.Printf("handler:Something went wrong while Marshaling,%s ", err.Error())
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				w.Write(responseBytes)
+				return
+			}
+			if err == customerrors.NoAssetsExist {
+				fmt.Println("handler: No asset found")
+
+				w.WriteHeader(http.StatusNotFound)
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "no asset found"})
+				if err != nil {
+					fmt.Printf("handler:Something went wrong while Marshaling,%s", err.Error())
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				w.Write(responseBytes)
+				return
+			}
 			fmt.Printf("handler:Error while Searching for Updated Asset, %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
@@ -147,8 +148,8 @@ func UpdateAssetHandler(asset service.AssetService) http.HandlerFunc {
 		}
 
 		assetRep := contract.DomainToContractassets(asset)
-		responseBytes, bug := json.Marshal(assetRep)
-		if bug != nil {
+		responseBytes, errMarshal := json.Marshal(assetRep)
+		if errMarshal != nil {
 			fmt.Println("handler:Something went wrong while marshalingh assetRep")
 			w.WriteHeader(http.StatusInternalServerError)
 			return

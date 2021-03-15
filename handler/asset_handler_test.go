@@ -26,14 +26,20 @@ import (
 
 func TestAssetHandler_UpdateAssets_When_ReturnsError(t *testing.T) {
 
-	fl, err := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	fl, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParse != nil {
+		fmt.Println("Error While Parsing")
+	}
 	Id := fl
 	status := "active"
 	m := make(map[string]interface{})
 	m["RAM"] = "4GB"
 	m["HDD"] = "500GB"
 	m["Generation"] = "i8"
-	b, _ := json.Marshal(m)
+	b, errMarshal := json.Marshal(m)
+	if errMarshal != nil {
+		fmt.Println("Error While Marshal")
+	}
 	specifications := b
 
 	body := fmt.Sprintf(`{"status" :"active","specifications": {"Generation":"i8","HDD":"500GB","RAM":"4GB"}}`)
@@ -45,10 +51,6 @@ func TestAssetHandler_UpdateAssets_When_ReturnsError(t *testing.T) {
 		Status:         &status,
 		Specifications: specifications,
 	}
-	var e1 map[string]interface{}
-	fault := json.Unmarshal([]byte(assetReq.Specifications), &e1)
-	fmt.Println("Test:", e1)
-	fmt.Println(fault)
 	rr := httptest.NewRecorder()
 	mockAssetService := &mockService.MockAssetService{}
 	mockAssetService.On("UpdateAsset", mock.Anything, Id, assetReq).Return(nil, errors.New("something went wrong"))
@@ -65,14 +67,20 @@ func TestAssetHandler_UpdateAssets_When_ReturnsError(t *testing.T) {
 
 func TestAssetHandler_UpdateAssets_When_ReturnsNil(t *testing.T) {
 
-	fl, err := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	fl, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParse != nil {
+		fmt.Println("Error While Parsing")
+	}
 	Id := fl
 	status := "active"
 	m := make(map[string]interface{})
 	m["RAM"] = "4GB"
 	m["HDD"] = "500GB"
 	m["Generation"] = "i8"
-	b, _ := json.Marshal(m)
+	b, errMarshal := json.Marshal(m)
+	if errMarshal != nil {
+		fmt.Println("Error While Marshal")
+	}
 	specifications := b
 
 	body := fmt.Sprintf(`{"status" :"active","specifications": {"Generation":"i8","HDD":"500GB","RAM":"4GB"}}`)
@@ -99,14 +107,20 @@ func TestAssetHandler_UpdateAssets_When_ReturnsNil(t *testing.T) {
 }
 func TestAssetHandler_UpdateAssets_When_ReturnsAlreadyDeleted(t *testing.T) {
 
-	fl, err := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	fl, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParse != nil {
+		fmt.Println("Error While Parsing")
+	}
 	Id := fl
 	status := "active"
 	m := make(map[string]interface{})
 	m["RAM"] = "4GB"
 	m["HDD"] = "500GB"
 	m["Generation"] = "i8"
-	b, _ := json.Marshal(m)
+	b, errMarshal := json.Marshal(m)
+	if errMarshal != nil {
+		fmt.Println("Error While MArshaling")
+	}
 	specifications := b
 
 	body := fmt.Sprintf(`{"status" :"active","specifications": {"Generation":"i8","HDD":"500GB","RAM":"4GB"}}`)
@@ -178,16 +192,28 @@ func TestAssetHandler_ListAllAssets_When_Success(t *testing.T) {
 	}
 	rr := httptest.NewRecorder()
 
-	fl, _ := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	fl, errParseFloat := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParseFloat != nil {
+		fmt.Println("Error While Parsing")
+	}
 	layout := "2006-01-02T15:04:05.000Z"
 	str := "2020-07-01T00:00:00Z"
-	dat, _ := time.Parse(layout, str)
-	cost, _ := strconv.ParseFloat("500", 32)
+	dat, errParseDate := time.Parse(layout, str)
+	if errParseDate != nil {
+		fmt.Println("Error While Parsing")
+	}
+	cost, errParseFloat := strconv.ParseFloat("500", 32)
+	if errParseFloat != nil {
+		fmt.Println("Error While Parsing")
+	}
 	m := make(map[string]interface{})
 	m["RAM"] = "4GB"
 	m["HDD"] = "500GB"
 	m["Genration"] = "i8"
-	b, _ := json.Marshal(m)
+	b, errMarshal := json.Marshal(m)
+	if errMarshal != nil {
+		fmt.Println("Error While Marshal")
+	}
 	asset := []domain.Asset{
 		{
 			Id:             fl,
@@ -210,7 +236,10 @@ func TestAssetHandler_ListAllAssets_When_Success(t *testing.T) {
 			Specifications: b,
 		},
 	}
-	expect, _ := json.Marshal(expectedasset)
+	expect, errMarshal := json.Marshal(expectedasset)
+	if errMarshal != nil {
+		fmt.Println("Error While Marshal")
+	}
 	expectedout := string(expect)
 
 	mockAssetService := &mockService.MockAssetService{}
@@ -225,26 +254,41 @@ func TestAssetHandler_ListAllAssets_When_Success(t *testing.T) {
 
 func TestAssetHandler_UpdateAssets_When_Success(t *testing.T) {
 
-	fl, err := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	fl, errParsing := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParsing != nil {
+		fmt.Println("Error While Parsing")
+	}
 	Id := fl
 	status := "retired"
 	m := make(map[string]interface{})
 	m["RAM"] = "8GB"
 	m["HDD"] = "1TB"
 	m["Generation"] = "i8"
-	ss, _ := json.Marshal(m)
+	ss, errMarshal := json.Marshal(m)
+	if errMarshal != nil {
+		fmt.Println("Error While Parsing")
+	}
 	specifications := ss
 	td := make(map[string]interface{})
 	m["RAM"] = "8GB"
 	m["HDD"] = "1TB"
 	m["Generation"] = "i8"
 
-	TD, _ := json.Marshal(td)
+	TD, errMarshal := json.Marshal(td)
+	if errMarshal != nil {
+		fmt.Println("Error While Marshal")
+	}
 
 	layout := "2006-01-02T15:04:05.000Z"
 	str := "2020-07-01T00:00:00Z"
-	dat, _ := time.Parse(layout, str)
-	cost, _ := strconv.ParseFloat("500", 32)
+	dat, errParseDate := time.Parse(layout, str)
+	if errParseDate != nil {
+		fmt.Println("Error While Marshal")
+	}
+	cost, errParseFloat := strconv.ParseFloat("500", 32)
+	if errParseFloat != nil {
+		fmt.Println("Error While Parsing float")
+	}
 
 	body := fmt.Sprintf(`{"status":"retired","specifications":{"Generation":"i8","HDD":"1TB","RAM":"8GB"}}`)
 	req, err := http.NewRequest("PUT", "/assets/ffb4b1a4-7bf5-11ee-9339-0242ac130002", strings.NewReader(body))
@@ -269,7 +313,10 @@ func TestAssetHandler_UpdateAssets_When_Success(t *testing.T) {
 		Name:           "Dell Latitude E5550",
 		Specifications: TD,
 	}
-	expect, _ := json.Marshal(expectedasset)
+	expect, errMarshal := json.Marshal(expectedasset)
+	if errMarshal != nil {
+		fmt.Println("Error While Marshaling")
+	}
 	expectedout := string(expect)
 	assetReq := contract.UpdateRequest{
 		Status:         &status,
@@ -289,7 +336,10 @@ func TestAssetHandler_UpdateAssets_When_Success(t *testing.T) {
 
 func TestAssetHandler_Delete_When_ReturnsError(t *testing.T) {
 
-	fl, err := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	fl, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParse != nil {
+		fmt.Println("Error While Parsing")
+	}
 	Id := fl
 
 	req, err := http.NewRequest("DELETE", "/assets/delete/ffb4b1a4-7bf5-11ee-9339-0242ac130002", nil)
@@ -312,19 +362,30 @@ func TestAssetHandler_Delete_When_ReturnsError(t *testing.T) {
 
 func TestAssetHandler_DeleteAssets_When_Success(t *testing.T) {
 
-	fl, err := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	fl, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParse != nil {
+		fmt.Println("Error While Parsing")
+	}
 	Id := fl
 
 	m := make(map[string]interface{})
 	m["RAM"] = "4GB"
 	m["HDD"] = "500GB"
 	m["Generation"] = "i8"
-	ss, _ := json.Marshal(m)
-
+	ss, errMarshal := json.Marshal(m)
+	if errMarshal != nil {
+		fmt.Println("Error While Marshaling")
+	}
 	layout := "2006-01-02T15:04:05.000Z"
 	str := "2020-07-01T00:00:00Z"
-	dat, _ := time.Parse(layout, str)
-	cost, _ := strconv.ParseFloat("500", 32)
+	dat, errParseDate := time.Parse(layout, str)
+	if errParseDate != nil {
+		fmt.Println("Error While Marshal")
+	}
+	cost, errParseFloat := strconv.ParseFloat("500", 32)
+	if errParseFloat != nil {
+		fmt.Println("Error While Parsing")
+	}
 
 	req, err := http.NewRequest("DELETE", "/assets/delete/ffb4b1a4-7bf5-11ee-9339-0242ac130002", nil)
 	if err != nil {
@@ -348,7 +409,10 @@ func TestAssetHandler_DeleteAssets_When_Success(t *testing.T) {
 		Name:           "Dell Latitude E5550",
 		Specifications: ss,
 	}
-	expect, _ := json.Marshal(expectedasset)
+	expect, errMarshal := json.Marshal(expectedasset)
+	if errMarshal != nil {
+		fmt.Println("Error While Marshal")
+	}
 	expectedout := string(expect)
 	rr := httptest.NewRecorder()
 	mockAssetService := &mockService.MockAssetService{}
@@ -364,7 +428,10 @@ func TestAssetHandler_DeleteAssets_When_Success(t *testing.T) {
 
 func TestAssetHandler_Delete_When_ReturnsNil(t *testing.T) {
 
-	fl, err := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	fl, errParsing := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParsing != nil {
+		fmt.Println("Error While Parsing")
+	}
 	Id := fl
 
 	req, err := http.NewRequest("DELETE", "/assets/delete/ffb4b1a4-7bf5-11ee-9339-0242ac130002", nil)
@@ -386,7 +453,10 @@ func TestAssetHandler_Delete_When_ReturnsNil(t *testing.T) {
 }
 func TestAssetHandler_Delete_When_ReturnsAlreadyDeleted(t *testing.T) {
 
-	fl, err := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	fl, errParsing := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParsing != nil {
+		fmt.Println("Error While Parsing")
+	}
 	Id := fl
 
 	req, err := http.NewRequest("DELETE", "/assets/delete/ffb4b1a4-7bf5-11ee-9339-0242ac130002", nil)
