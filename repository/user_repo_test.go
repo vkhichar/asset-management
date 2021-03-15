@@ -29,7 +29,7 @@ func TestUserRepository_DeleteUser_When_DeleteUserReturnsError(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestUserRepository_UpdateUsers_When_Success(t *testing.T) {
+func TestUserRepository_DeleteUsers_When_Success(t *testing.T) {
 	ctx := context.Background()
 	var userExpected domain.User
 	id := 1
