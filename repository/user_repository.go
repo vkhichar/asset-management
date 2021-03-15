@@ -75,7 +75,6 @@ func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain
 	return nil, nil
 }
 
-<<<<<<< HEAD
 func (repo *userRepo) UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error) {
 	var user domain.User
 	var tempUser domain.User
@@ -108,7 +107,7 @@ func (repo *userRepo) UpdateUser(ctx context.Context, id int, req contract.Updat
 func (repo *userRepo) DeleteUser(ctx context.Context, id int) (*domain.User, error) {
 	var user domain.User
 
-	err := repo.db.Get(&user, getUserByIdQuery, id)
+	err := repo.db.Get(&user, getUserByIDQuery, id)
 
 	if err == sql.ErrNoRows {
 		fmt.Printf("Repository: No users present")
@@ -119,8 +118,8 @@ func (repo *userRepo) DeleteUser(ctx context.Context, id int) (*domain.User, err
 		return nil, err
 	}
 
+	tx := repo.db.MustBegin()
 	tx.MustExec(deleteUserById, id)
-
 	tx.Commit()
 
 	return &user, nil

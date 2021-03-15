@@ -7,8 +7,6 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/vkhichar/asset-management/customerrors"
-
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/service"
