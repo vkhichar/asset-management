@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/vkhichar/asset-management/contract"
+	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 )
 
@@ -24,6 +25,9 @@ func (m *MockAssetRepo) UpdateAsset(ctx context.Context, Id uuid.UUID, req contr
 	if args[1] != nil {
 		err = args[1].(error)
 	}
+	if args[0] == nil && args[1] == nil {
+		return asset, customerrors.NoAssetsExist
+	}
 	return asset, err
 }
 func (m *MockAssetRepo) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error) {
@@ -38,7 +42,9 @@ func (m *MockAssetRepo) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.
 	if args[1] != nil {
 		err = args[1].(error)
 	}
-
+	if args[0] == nil && args[1] == nil {
+		return asset, customerrors.NoAssetsExist
+	}
 	return asset, err
 }
 

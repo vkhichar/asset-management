@@ -50,14 +50,7 @@ func (repo *assetRepo) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.A
 	sample := "retired"
 	tx := repo.db.MustBegin()
 	tx.MustExec(getAssetDeletefun, sample, Id)
-
-	defer func() {
-		fault := tx.Commit()
-		if fault != nil {
-			fmt.Printf("repo: Error while commiting the database. Error: %s", fault)
-			tx.Rollback()
-		}
-	}()
+	tx.Commit()
 	err = repo.db.Get(&asset, getAsset, Id)
 	if err != nil {
 		return nil, err
@@ -71,8 +64,11 @@ func (repo *assetRepo) UpdateAsset(ctx context.Context, Id uuid.UUID, req contra
 	err := repo.db.Get(&m, getAssetName, Id)
 
 	if err == sql.ErrNoRows {
-
+		fmt.Println("hello")
 		return nil, customerrors.NoAssetsExist
+	}
+	if m.Status == "retired" {
+		return nil, customerrors.AssetAlreadyDeleted
 	}
 
 	if req.Status == nil {
@@ -88,14 +84,7 @@ func (repo *assetRepo) UpdateAsset(ctx context.Context, Id uuid.UUID, req contra
 	tx := repo.db.MustBegin()
 
 	tx.MustExec(UpdateAssetDetails, *req.Status, req.Specifications, Id)
-
-	defer func() {
-		fault := tx.Commit()
-		if fault != nil {
-			fmt.Printf("repo: Error while commiting the database. Error: %s", fault)
-			tx.Rollback()
-		}
-	}()
+	tx.Commit()
 	err = repo.db.Get(&asset, getAsset, Id)
 	if err != nil {
 		return nil, err
@@ -107,9 +96,8 @@ func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 	var as []domain.Asset
 	err := repo.db.Select(&as, getAssetDetails)
 	if err == sql.ErrNoRows {
-		fmt.Printf("repository: No asset present")
 
-		return nil, nil
+		return nil, customerrors.NoAssetsExist
 	}
 	if err != nil {
 		return nil, err

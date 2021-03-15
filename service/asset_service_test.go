@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/vkhichar/asset-management/contract"
+	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 	mockRepo "github.com/vkhichar/asset-management/repository/mocks"
 	"github.com/vkhichar/asset-management/service"
@@ -139,6 +140,21 @@ func TestAssetService_DeleteAsset_When_DeleteAssetReturnsError(t *testing.T) {
 	assert.Nil(t, asset)
 
 }
+func TestAssetService_DeleteAsset_When_DeleteAssetReturnsAlready(t *testing.T) {
+	ctx := context.Background()
+	Id, _ := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	mockAssetRepo := &mockRepo.MockAssetRepo{}
+
+	mockAssetRepo.On("DeleteAsset", ctx, Id).Return(nil, customerrors.AssetAlreadyDeleted)
+
+	assetService := service.NewAssetService(mockAssetRepo)
+	asset, err := assetService.DeleteAsset(ctx, Id)
+
+	assert.Error(t, err)
+	assert.Equal(t, "Asset Already Deleted", err.Error())
+	assert.Nil(t, asset)
+
+}
 
 func TestAssetService_DeleteAsset_When_DeleteAssetReturnsNil(t *testing.T) {
 	ctx := context.Background()
@@ -177,6 +193,29 @@ func TestAssetService_UpdateAsset_When_ReturnsError(t *testing.T) {
 	assert.Nil(t, asset)
 	assert.Error(t, err)
 	assert.Equal(t, "some DB error", err.Error())
+
+}
+func TestAssetService_UpdateAsset_When_ReturnsAlreadyDeleted(t *testing.T) {
+	ctx := context.Background()
+	Id, _ := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	mockAssetRepo := &mockRepo.MockAssetRepo{}
+	Status := "active"
+	m := make(map[string]interface{})
+	m["RAM"] = "4GB"
+	m["HDD"] = "1TB"
+	b, _ := json.Marshal(m)
+	Specifications := b
+	req := contract.UpdateRequest{
+		Status:         &Status,
+		Specifications: Specifications,
+	}
+	mockAssetRepo.On("UpdateAsset", ctx, Id, req).Return(nil, customerrors.AssetAlreadyDeleted)
+
+	AssetService := service.NewAssetService(mockAssetRepo)
+	asset, err := AssetService.UpdateAsset(ctx, Id, req)
+	assert.Nil(t, asset)
+	assert.Error(t, err)
+	assert.Equal(t, "Asset Already Deleted", err.Error())
 
 }
 func TestAssetService_ListAllAsset_When_ListAssetReturnsError(t *testing.T) {
