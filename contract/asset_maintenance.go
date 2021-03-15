@@ -1,6 +1,8 @@
 package contract
 
 import (
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,6 +11,7 @@ import (
 
 const (
 	DateFormat = "2006-01-02" // yyyy-mm-dd
+	DateRegex  = "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
 )
 
 type AssetMaintain struct {
@@ -56,10 +59,13 @@ func (activity UpdateMaintenanceActivityReq) ToDomain() (*domain.MaintenanceActi
 }
 
 func (req UpdateMaintenanceActivityReq) Validate() bool {
-	if req.Cost == 0.0 || req.EndedAt == "" || req.Description == "" {
+	if req.Cost == 0.0 || strings.TrimSpace(req.EndedAt) == "" || strings.TrimSpace(req.Description) == "" {
 		return false
 	}
 
-	// ToDo validate date format
+	if matched, _ := regexp.MatchString(DateRegex, req.EndedAt); !matched {
+		return false
+	}
+
 	return true
 }

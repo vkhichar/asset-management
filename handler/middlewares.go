@@ -34,7 +34,7 @@ func ReadTokenFromRequest(r *http.Request) (string, error) {
 	if !strings.Contains(header, "Bearer ") {
 		return "", customerrors.ErrInvalidToken
 	}
-	tokenStr := header[len("Bearer ")-1:]
+	tokenStr := header[len("Bearer "):]
 	if len(tokenStr) == 0 {
 		return "", customerrors.ErrMissingToken
 	}
