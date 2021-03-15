@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	userid  = "user_id"
-	isAdmin = "is_admin"
+	UserId  = "user_id"
+	IsAdmin = "is_admin"
 )
 
 var signingMethod = jwt.GetSigningMethod("HS256")
@@ -41,16 +41,16 @@ func (jwtService *JwtService) ValidateToken(token string) (*Claims, error) {
 	if !ok {
 		return nil, NewInvalidTokenError("Invalid token")
 	}
-	userId, _ := claims[userid].(float64)
-	isAdmin, _ := claims[isAdmin].(bool)
+	userId, _ := claims[UserId].(float64)
+	isAdmin, _ := claims[IsAdmin].(bool)
 	return &Claims{UserID: int(userId), IsAdmin: isAdmin}, nil
 }
 
 func generateJwtClaims(c *Claims) jwt.Claims {
 	now := jwt.TimeFunc()
 	claims := jwt.MapClaims{}
-	claims[userid] = c.UserID
-	claims[isAdmin] = c.IsAdmin
+	claims[UserId] = c.UserID
+	claims[IsAdmin] = c.IsAdmin
 	claims["iat"] = now.Unix() // issuedAt
 	claims["exp"] = now.Add(time.Minute * time.Duration(config.GetJwtConfig().TokenExpiry)).Unix()
 	// expiresAt = issuedAt + tokenExpiry in minute

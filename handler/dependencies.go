@@ -8,6 +8,7 @@ import (
 type dependencies struct {
 	userService  service.UserService
 	assetService service.AssetService
+	tokenService service.TokenService
 }
 
 var deps dependencies
@@ -20,4 +21,5 @@ func InitDependencies() {
 	deps.assetService = assetService
 	jwtTokenService := service.NewJwtService()
 	deps.userService = service.NewUserService(userRepo, jwtTokenService)
+	deps.tokenService = jwtTokenService
 }
