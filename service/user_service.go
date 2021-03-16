@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/customerrors"
@@ -21,12 +22,14 @@ type UserService interface {
 type userService struct {
 	userRepo repository.UserRepository
 	tokenSvc TokenService
+	eventSvc EventService
 }
 
-func NewUserService(repo repository.UserRepository, ts TokenService) UserService {
+func NewUserService(repo repository.UserRepository, ts TokenService, es EventService) UserService {
 	return &userService{
 		userRepo: repo,
 		tokenSvc: ts,
+		eventSvc: es,
 	}
 }
 
@@ -80,6 +83,8 @@ func (service *userService) UpdateUser(ctx context.Context, id int, req contract
 		return user, customerrors.UserDoesNotExist
 	}
 
+	eventId := service.eventSvc.PostUserEvent(ctx, user)
+	fmt.Println("New event created with id:", eventId)
 	return user, nil
 }
 
