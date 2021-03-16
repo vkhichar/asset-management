@@ -27,31 +27,17 @@ func NewAssetService(repo repository.AssetRepository) AssetService {
 }
 func (service *assetService) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error) {
 	asset, err := service.assetRepo.DeleteAsset(ctx, Id)
-	if err == customerrors.AssetAlreadyDeleted {
-		return nil, customerrors.AssetAlreadyDeleted
-	}
 	if err != nil {
 		return nil, err
-	}
-
-	if asset == nil {
-		return nil, customerrors.NoAssetsExist
 	}
 	return asset, nil
 }
 
 func (service *assetService) UpdateAsset(ctx context.Context, Id uuid.UUID, req contract.UpdateRequest) (*domain.Asset, error) {
 	asset, err := service.assetRepo.UpdateAsset(ctx, Id, req)
-	if err == customerrors.AssetAlreadyDeleted {
-		return nil, customerrors.AssetAlreadyDeleted
-	}
 	if err != nil {
 		return nil, err
 	}
-	if asset == nil {
-		return nil, customerrors.NoAssetsExist
-	}
-
 	return asset, nil
 }
 

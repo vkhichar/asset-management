@@ -23,7 +23,6 @@ func DomainToContractassets(d *domain.Asset) Asset {
 		return Asset{}
 	}
 	u := Asset{
-
 		Id:             d.Id,
 		Status:         d.Status,
 		Category:       d.Category,

@@ -7,6 +7,6 @@ var (
 
 	NoUsersExist = errors.New("No users exist at present")
 
-	NoAssetsExist       = errors.New("No assets exist")
+	NoAssetsExist       = errors.New("No asset found")
 	AssetAlreadyDeleted = errors.New("Asset Already Deleted")
 )

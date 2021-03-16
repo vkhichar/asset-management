@@ -13,12 +13,12 @@ import (
 )
 
 const (
-	getAssetDetails    = "SELECT id,category,status,purchase_at,purchase_cost,name,specifications FROM assets"
-	getAssetName       = "SELECT status,specifications from assets Where id=$1"
-	UpdateAssetDetails = "UPDATE assets SET status=$1,specifications=$2 Where id=$3"
-	getAssetDelete     = "SELECT status FROM assets Where id=$1"
-	getAssetDeletefun  = "UPDATE assets SET status=$1 Where id=$2"
-	getAsset           = "SELECT id,category,status,purchase_at,purchase_cost,name,specifications FROM assets Where id=$1"
+	getAssetDetails    = "SELECT id, category, status, purchase_at, purchase_cost, name, specifications FROM assets"
+	getAssetName       = "SELECT status, specifications from assets WHERE id=$1 AND status!=$2"
+	UpdateAssetDetails = "UPDATE assets SET status=$1, specifications=$2 WHERE id=$3"
+	getAssetDelete     = "SELECT status FROM assets WHERE id=$1 AND status!=$2"
+	getAssetDeletefun  = "UPDATE assets SET status=$1 WHERE id=$2"
+	getAsset           = "SELECT id, category, status, purchase_at, purchase_cost, name, specifications FROM assets WHERE id=$1"
 )
 
 type AssetRepository interface {
@@ -40,18 +40,16 @@ func NewAssetRepository() AssetRepository {
 func (repo *assetRepo) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error) {
 	var m domain.Asset
 	var asset domain.Asset
-	err := repo.db.Get(&m, getAssetDelete, Id)
-	if err == sql.ErrNoRows {
+	sample := "retired"
+	err := repo.db.Get(&m, getAssetDelete, Id, sample)
+	if err != nil {
 		return nil, customerrors.NoAssetsExist
 	}
-	if m.Status == "retired" {
-		return nil, customerrors.AssetAlreadyDeleted
-	}
-	sample := "retired"
 	tx := repo.db.MustBegin()
 	tx.MustExec(getAssetDeletefun, sample, Id)
 	tx.Commit()
 	err = repo.db.Get(&asset, getAsset, Id)
+	fmt.Println(err)
 	if err != nil {
 		return nil, err
 	}
@@ -61,14 +59,11 @@ func (repo *assetRepo) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.A
 func (repo *assetRepo) UpdateAsset(ctx context.Context, Id uuid.UUID, req contract.UpdateRequest) (*domain.Asset, error) {
 	var m domain.Asset
 	var asset domain.Asset
-	err := repo.db.Get(&m, getAssetName, Id)
+	sample := "retired"
+	err := repo.db.Get(&m, getAssetName, Id, sample)
 
-	if err == sql.ErrNoRows {
-		fmt.Println("hello")
+	if err != nil {
 		return nil, customerrors.NoAssetsExist
-	}
-	if m.Status == "retired" {
-		return nil, customerrors.AssetAlreadyDeleted
 	}
 
 	if req.Status == nil {

@@ -17,7 +17,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/vkhichar/asset-management/contract"
-	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 
 	"github.com/vkhichar/asset-management/handler"
@@ -28,7 +27,7 @@ func TestAssetHandler_UpdateAssets_When_ReturnsError(t *testing.T) {
 
 	fl, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
 	if errParse != nil {
-		fmt.Println("Error While Parsing")
+		fmt.Printf("Error While Parsing %s", errParse.Error())
 	}
 	Id := fl
 	status := "active"
@@ -38,7 +37,7 @@ func TestAssetHandler_UpdateAssets_When_ReturnsError(t *testing.T) {
 	m["Generation"] = "i8"
 	b, errMarshal := json.Marshal(m)
 	if errMarshal != nil {
-		fmt.Println("Error While Marshal")
+		fmt.Printf("Error While Marshal %s", errMarshal.Error())
 	}
 	specifications := b
 
@@ -69,7 +68,7 @@ func TestAssetHandler_UpdateAssets_When_ReturnsNil(t *testing.T) {
 
 	fl, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
 	if errParse != nil {
-		fmt.Println("Error While Parsing")
+		fmt.Printf("Error While Parsing %s", errParse.Error())
 	}
 	Id := fl
 	status := "active"
@@ -79,7 +78,7 @@ func TestAssetHandler_UpdateAssets_When_ReturnsNil(t *testing.T) {
 	m["Generation"] = "i8"
 	b, errMarshal := json.Marshal(m)
 	if errMarshal != nil {
-		fmt.Println("Error While Marshal")
+		fmt.Printf("Error While Marshal %s", errMarshal.Error())
 	}
 	specifications := b
 
@@ -101,46 +100,6 @@ func TestAssetHandler_UpdateAssets_When_ReturnsNil(t *testing.T) {
 	r.ServeHTTP(rr, req)
 
 	expectedErr := string(`{"error":"no asset found"}`)
-
-	assert.JSONEq(t, expectedErr, rr.Body.String())
-
-}
-func TestAssetHandler_UpdateAssets_When_ReturnsAlreadyDeleted(t *testing.T) {
-
-	fl, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
-	if errParse != nil {
-		fmt.Println("Error While Parsing")
-	}
-	Id := fl
-	status := "active"
-	m := make(map[string]interface{})
-	m["RAM"] = "4GB"
-	m["HDD"] = "500GB"
-	m["Generation"] = "i8"
-	b, errMarshal := json.Marshal(m)
-	if errMarshal != nil {
-		fmt.Println("Error While MArshaling")
-	}
-	specifications := b
-
-	body := fmt.Sprintf(`{"status" :"active","specifications": {"Generation":"i8","HDD":"500GB","RAM":"4GB"}}`)
-	req, err := http.NewRequest("PUT", "/assets/ffb4b1a4-7bf5-11ee-9339-0242ac130002", strings.NewReader(body))
-	if err != nil {
-		t.Fatal(err)
-	}
-	assetReq := contract.UpdateRequest{
-		Status:         &status,
-		Specifications: specifications,
-	}
-	rr := httptest.NewRecorder()
-	mockAssetService := &mockService.MockAssetService{}
-	mockAssetService.On("UpdateAsset", mock.Anything, Id, assetReq).Return(nil, customerrors.AssetAlreadyDeleted)
-
-	r := mux.NewRouter()
-	r.HandleFunc("/assets/{Id}", handler.UpdateAssetHandler(mockAssetService)).Methods("PUT")
-	r.ServeHTTP(rr, req)
-
-	expectedErr := string(`{"error":"Asset Already Deleted"}`)
 
 	assert.JSONEq(t, expectedErr, rr.Body.String())
 
@@ -194,17 +153,17 @@ func TestAssetHandler_ListAllAssets_When_Success(t *testing.T) {
 
 	fl, errParseFloat := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
 	if errParseFloat != nil {
-		fmt.Println("Error While Parsing")
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
 	}
 	layout := "2006-01-02T15:04:05.000Z"
 	str := "2020-07-01T00:00:00Z"
 	dat, errParseDate := time.Parse(layout, str)
 	if errParseDate != nil {
-		fmt.Println("Error While Parsing")
+		fmt.Printf("Error While Parsing %s", errParseDate.Error())
 	}
 	cost, errParseFloat := strconv.ParseFloat("500", 32)
 	if errParseFloat != nil {
-		fmt.Println("Error While Parsing")
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
 	}
 	m := make(map[string]interface{})
 	m["RAM"] = "4GB"
@@ -212,7 +171,7 @@ func TestAssetHandler_ListAllAssets_When_Success(t *testing.T) {
 	m["Genration"] = "i8"
 	b, errMarshal := json.Marshal(m)
 	if errMarshal != nil {
-		fmt.Println("Error While Marshal")
+		fmt.Printf("Error While Marshal %s", errMarshal.Error())
 	}
 	asset := []domain.Asset{
 		{
@@ -238,7 +197,7 @@ func TestAssetHandler_ListAllAssets_When_Success(t *testing.T) {
 	}
 	expect, errMarshal := json.Marshal(expectedasset)
 	if errMarshal != nil {
-		fmt.Println("Error While Marshal")
+		fmt.Printf("Error While Marshal %s", errMarshal.Error())
 	}
 	expectedout := string(expect)
 
@@ -256,7 +215,7 @@ func TestAssetHandler_UpdateAssets_When_Success(t *testing.T) {
 
 	fl, errParsing := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
 	if errParsing != nil {
-		fmt.Println("Error While Parsing")
+		fmt.Printf("Error While Parsing %s", errParsing.Error())
 	}
 	Id := fl
 	status := "retired"
@@ -266,7 +225,7 @@ func TestAssetHandler_UpdateAssets_When_Success(t *testing.T) {
 	m["Generation"] = "i8"
 	ss, errMarshal := json.Marshal(m)
 	if errMarshal != nil {
-		fmt.Println("Error While Parsing")
+		fmt.Printf("Error While Parsing %s", errMarshal.Error())
 	}
 	specifications := ss
 	td := make(map[string]interface{})
@@ -276,18 +235,18 @@ func TestAssetHandler_UpdateAssets_When_Success(t *testing.T) {
 
 	TD, errMarshal := json.Marshal(td)
 	if errMarshal != nil {
-		fmt.Println("Error While Marshal")
+		fmt.Printf("Error While Marshal %s", errMarshal.Error())
 	}
 
 	layout := "2006-01-02T15:04:05.000Z"
 	str := "2020-07-01T00:00:00Z"
 	dat, errParseDate := time.Parse(layout, str)
 	if errParseDate != nil {
-		fmt.Println("Error While Marshal")
+		fmt.Printf("Error While Marshal %s", errParseDate.Error())
 	}
 	cost, errParseFloat := strconv.ParseFloat("500", 32)
 	if errParseFloat != nil {
-		fmt.Println("Error While Parsing float")
+		fmt.Printf("Error While Parsing float %s", errParseFloat.Error())
 	}
 
 	body := fmt.Sprintf(`{"status":"retired","specifications":{"Generation":"i8","HDD":"1TB","RAM":"8GB"}}`)
@@ -315,7 +274,7 @@ func TestAssetHandler_UpdateAssets_When_Success(t *testing.T) {
 	}
 	expect, errMarshal := json.Marshal(expectedasset)
 	if errMarshal != nil {
-		fmt.Println("Error While Marshaling")
+		fmt.Printf("Error While Marshaling %s", errMarshal.Error())
 	}
 	expectedout := string(expect)
 	assetReq := contract.UpdateRequest{
@@ -338,7 +297,7 @@ func TestAssetHandler_Delete_When_ReturnsError(t *testing.T) {
 
 	fl, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
 	if errParse != nil {
-		fmt.Println("Error While Parsing")
+		fmt.Printf("Error While Parsing %s", errParse.Error())
 	}
 	Id := fl
 
@@ -364,7 +323,7 @@ func TestAssetHandler_DeleteAssets_When_Success(t *testing.T) {
 
 	fl, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
 	if errParse != nil {
-		fmt.Println("Error While Parsing")
+		fmt.Printf("Error While Parsing %s", errParse.Error())
 	}
 	Id := fl
 
@@ -374,17 +333,17 @@ func TestAssetHandler_DeleteAssets_When_Success(t *testing.T) {
 	m["Generation"] = "i8"
 	ss, errMarshal := json.Marshal(m)
 	if errMarshal != nil {
-		fmt.Println("Error While Marshaling")
+		fmt.Printf("Error While Marshaling %s", errMarshal.Error())
 	}
 	layout := "2006-01-02T15:04:05.000Z"
 	str := "2020-07-01T00:00:00Z"
 	dat, errParseDate := time.Parse(layout, str)
 	if errParseDate != nil {
-		fmt.Println("Error While Marshal")
+		fmt.Printf("Error While Marshal %s", errParseDate.Error())
 	}
 	cost, errParseFloat := strconv.ParseFloat("500", 32)
 	if errParseFloat != nil {
-		fmt.Println("Error While Parsing")
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
 	}
 
 	req, err := http.NewRequest("DELETE", "/assets/delete/ffb4b1a4-7bf5-11ee-9339-0242ac130002", nil)
@@ -411,7 +370,7 @@ func TestAssetHandler_DeleteAssets_When_Success(t *testing.T) {
 	}
 	expect, errMarshal := json.Marshal(expectedasset)
 	if errMarshal != nil {
-		fmt.Println("Error While Marshal")
+		fmt.Printf("Error While Marshal %s", errMarshal.Error())
 	}
 	expectedout := string(expect)
 	rr := httptest.NewRecorder()
@@ -430,7 +389,7 @@ func TestAssetHandler_Delete_When_ReturnsNil(t *testing.T) {
 
 	fl, errParsing := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
 	if errParsing != nil {
-		fmt.Println("Error While Parsing")
+		fmt.Printf("Error While Parsing %s", errParsing.Error())
 	}
 	Id := fl
 
@@ -447,31 +406,6 @@ func TestAssetHandler_Delete_When_ReturnsNil(t *testing.T) {
 	r.ServeHTTP(rr, req)
 
 	expectedErr := string(`{"error":"no asset found"}`)
-
-	assert.JSONEq(t, expectedErr, rr.Body.String())
-
-}
-func TestAssetHandler_Delete_When_ReturnsAlreadyDeleted(t *testing.T) {
-
-	fl, errParsing := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
-	if errParsing != nil {
-		fmt.Println("Error While Parsing")
-	}
-	Id := fl
-
-	req, err := http.NewRequest("DELETE", "/assets/delete/ffb4b1a4-7bf5-11ee-9339-0242ac130002", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	rr := httptest.NewRecorder()
-	mockAssetService := &mockService.MockAssetService{}
-	mockAssetService.On("DeleteAsset", mock.Anything, Id).Return(nil, customerrors.AssetAlreadyDeleted)
-
-	r := mux.NewRouter()
-	r.HandleFunc("/assets/delete/{Id}", handler.DeleteAssetHandler(mockAssetService)).Methods("DELETE")
-	r.ServeHTTP(rr, req)
-
-	expectedErr := string(`{"error":"Asset Already Deleted"}`)
 
 	assert.JSONEq(t, expectedErr, rr.Body.String())
 
