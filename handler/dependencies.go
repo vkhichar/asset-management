@@ -29,5 +29,6 @@ func InitDependencies() {
 	deps.assetMaintenanceService = assetMaintenanceService
 	deps.tokenService = plainTokenService
 	assetMaintenanceRepo := repository.NewAssetMaintainRepository()
-	deps.assetMaintenanceService = service.NewAssetForMaintenance(assetMaintenanceRepo)
+	eventService := service.NewEventService()
+	deps.assetMaintenanceService = service.NewAssetForMaintenance(assetMaintenanceRepo, eventService)
 }

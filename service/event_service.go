@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -14,8 +15,12 @@ import (
 	"github.com/vkhichar/asset-management/domain"
 )
 
+const EventResource = "/events"
+const AssetMaintenanceEvent = "ASSET_MAINTENANCE_ACTIVITY"
+
 type EventService interface {
 	PostUserEvent(context.Context, *domain.User) (string, error)
+	PostEvent(ctx context.Context, req domain.MaintenanceActivity) (int, error)
 }
 
 type eventSvc struct{}
@@ -59,4 +64,48 @@ func (evSvc *eventSvc) PostUserEvent(ctx context.Context, user *domain.User) (st
 	}
 
 	return string(body), nil
+}
+
+func (evSvc *eventSvc) PostEvent(ctx context.Context, req domain.MaintenanceActivity) (int, error) {
+
+	reqBody, err := json.Marshal(req)
+	if err != nil {
+		fmt.Println(err)
+		return 0, err
+	}
+
+	fmt.Println(string(reqBody))
+
+	eventReqBody, _ := json.Marshal(contract.NewEventRequest(AssetMaintenanceEvent, reqBody))
+
+	fmt.Println(string(eventReqBody))
+	res, err := http.Post(config.GetEventServiceUrl()+EventResource, "application/json", bytes.NewBuffer(eventReqBody))
+
+	if err != nil {
+		fmt.Println(err)
+		return 0, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		fmt.Println("Failed to create event due to ", res.StatusCode)
+		return 0, errors.New("Event not created")
+	}
+
+	resBody, err := ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
+
+	if err != nil {
+		fmt.Println("Failed to read response\n", err)
+		return 0, err
+	}
+
+	var eventResp contract.EventResponse
+	err = json.Unmarshal(resBody, &eventResp)
+
+	if err != nil {
+		fmt.Println("Invalid response received ", err)
+		return 0, err
+	}
+
+	return eventResp.Id, err
 }

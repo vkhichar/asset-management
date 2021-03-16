@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type configs struct {
-	appPort      int
-	eventAppPort int
-	dbConfig     DBConfig
+	appPort         int
+	eventAppPort    int
+	dbConfig        DBConfig
+	eventServiceUrl string
 }
 
 type DBConfig struct {
@@ -40,6 +42,11 @@ func Init() error {
 	config.appPort = port
 	config.eventAppPort = eventPort
 	config.dbConfig = initDBConfig()
+
+	config.eventServiceUrl = os.Getenv("EVENT_SERVICE_URL")
+	if strings.TrimSpace(config.eventServiceUrl) == "" {
+		panic("config: missing EVENT_SERVICE_URL")
+	}
 
 	return nil
 }
@@ -72,4 +79,8 @@ func GetEventAppPort() string {
 
 func GetDBConfig() DBConfig {
 	return config.dbConfig
+}
+
+func GetEventServiceUrl() string {
+	return config.eventServiceUrl
 }

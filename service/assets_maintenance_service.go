@@ -20,11 +20,13 @@ type AssetMaintenanceService interface {
 
 type assetMaintenanceService struct {
 	assetMaintainRepo repository.AssetMaintenanceRepo
+	eventService      EventService
 }
 
-func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo) AssetMaintenanceService {
+func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo, eventService EventService) AssetMaintenanceService {
 	return &assetMaintenanceService{
 		assetMaintainRepo: repo,
+		eventService:      eventService,
 	}
 }
 
@@ -63,5 +65,16 @@ func (service *assetMaintenanceService) GetAllForAssetId(ctx context.Context, as
 }
 
 func (service *assetMaintenanceService) UpdateMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
-	return service.assetMaintainRepo.UpdateMaintenanceActivity(ctx, req)
+	activity, err := service.assetMaintainRepo.UpdateMaintenanceActivity(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	id, err := service.eventService.PostEvent(ctx, *activity)
+
+	if err != nil {
+		fmt.Println("Failed to submit event: ", err)
+	} else {
+		fmt.Println("Successfully submitted event with id ", id)
+	}
+	return activity, nil
 }
