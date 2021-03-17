@@ -60,6 +60,7 @@ func TestAssetService_UpdateAsset_When_Success(t *testing.T) {
 	if errMarshal != nil {
 		fmt.Printf("Error While Marshaling %s", errMarshal.Error())
 	}
+	eventId := "123"
 	Specifications := jsr
 	Status := "active"
 	req := contract.UpdateRequest{
@@ -70,6 +71,7 @@ func TestAssetService_UpdateAsset_When_Success(t *testing.T) {
 	mockEventService := &mockService.MockEventService{}
 
 	mockAssetRepo.On("UpdateAsset", ctx, Id, req).Return(&asset, nil)
+	mockEventService.On("PostAssetEvent", ctx, &asset).Return(eventId, nil)
 	assetService := service.NewAssetService(mockAssetRepo, mockEventService)
 	DBasset, err := assetService.UpdateAsset(ctx, Id, req)
 	if err != nil {

@@ -16,7 +16,7 @@ func (m *MockEventService) PostUserEvent(ctx context.Context, user *domain.User)
 
 	var EventId string
 	if args[0] != "" {
-		eventId = args[0].(string)
+		EventId = args[0].(string)
 	}
 	var err error
 	if args[1] != nil {
@@ -30,7 +30,7 @@ func (m *MockEventService) PostAssetEvent(ctx context.Context, asset *domain.Ass
 
 	var eventId string
 	if args[0] != nil {
-		EventId = args[0].(string)
+		eventId = args[0].(string)
 	}
 	var err error
 	if args[1] != nil {
