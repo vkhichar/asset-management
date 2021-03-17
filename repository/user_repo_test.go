@@ -18,6 +18,7 @@ func TestUserRepository_ListUsers_When_Nil(t *testing.T) {
 	db := repository.GetDB()
 	tx := db.MustBegin()
 	tx.MustExec("delete from users")
+	tx.Commit()
 
 	userRepo := repository.NewUserRepository()
 
@@ -37,6 +38,7 @@ func TestUserRepository_ListUsers_When_Success(t *testing.T) {
 	tx.MustExec("delete from users")
 	tx.MustExec("insert into users (name,email,password,is_admin) values ($1,$2,$3,$4)", "Jan Doe", "jandoe@gmail.com", "12345", true)
 	tx.MustExec("insert into users (name,email,password,is_admin) values ($1,$2,$3,$4)", "Alisa Ray", "alisaray@gmail.com", "hello", false)
+	tx.Commit()
 
 	db.Select(&userExpected, "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users")
 	userRepo := repository.NewUserRepository()
@@ -65,6 +67,7 @@ func TestUserRepository_UpdateUsers_When_Nil(t *testing.T) {
 	tx := db.MustBegin()
 	tx.MustExec("delete from users")
 	tx.MustExec("insert into users (name,email,password,is_admin) values ($1,$2,$3,$4)", "Jan Doe", "jandoe@gmail.com", "12345", true)
+	tx.Commit()
 
 	userRepo := repository.NewUserRepository()
 
@@ -87,6 +90,8 @@ func TestUserRepository_UpdateUsers_When_Success(t *testing.T) {
 	}
 
 	id := 12
+	config.Init()
+	repository.InitDB()
 	db := repository.GetDB()
 	tx := db.MustBegin()
 	tx.MustExec("delete from users")
@@ -118,7 +123,7 @@ func TestUserRepository_DeleteUser_When_DeleteUserReturnsError(t *testing.T) {
 	user, err := userRepo.DeleteUser(ctx, id)
 
 	assert.Nil(t, user)
-	assert.Nil(t, err)
+	assert.NotNil(t, err)
 }
 
 func TestUserRepository_DeleteUsers_When_Success(t *testing.T) {
