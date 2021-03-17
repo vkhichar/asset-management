@@ -75,12 +75,13 @@ func LoginHandler(userService service.UserService) http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
 		responseBytes, statusokErr := json.Marshal(contract.LoginResponse{IsAdmin: user.IsAdmin, Token: token})
 		if statusokErr != nil {
 			fmt.Fprintf(w, "handler: error while marshaling status ok")
 			return
 		}
+		w.WriteHeader(http.StatusOK)
+
 		w.Write(responseBytes)
 	}
 }
@@ -200,12 +201,14 @@ func CreateUserHandler(userService service.UserService) http.HandlerFunc {
 
 		contractUser := contract.DomaintoContract(user)
 
-		w.WriteHeader(http.StatusOK)
 		responseBytes, statusokErr := json.Marshal(contractUser)
 		if statusokErr != nil {
-			fmt.Fprintf(w, "handler: error while marshaling status ok")
+			fmt.Printf("handler: error while marshaling status ok")
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
+
 		w.Write(responseBytes)
 
 	}
@@ -264,12 +267,15 @@ func GetUserByIDHandler(userService service.UserService) http.HandlerFunc {
 
 		contractUser := contract.DomaintoContractUserID(user)
 
-		w.WriteHeader(http.StatusOK)
 		responseBytes, statusokErr := json.Marshal(contractUser)
 		if statusokErr != nil {
-			fmt.Fprintf(w, "handler: error while marshaling status ok")
+			fmt.Printf("handler: error while marshaling status ok")
+			w.WriteHeader(http.StatusInternalServerError)
+
 			return
 		}
+		w.WriteHeader(http.StatusOK)
+
 		w.Write(responseBytes)
 		return
 

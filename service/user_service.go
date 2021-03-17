@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vkhichar/asset-management/customerrors"
 
@@ -19,12 +20,14 @@ type UserService interface {
 type userService struct {
 	userRepo repository.UserRepository
 	tokenSvc TokenService
+	eventSvc EventService
 }
 
-func NewUserService(repo repository.UserRepository, ts TokenService) UserService {
+func NewUserService(repo repository.UserRepository, ts TokenService, event EventService) UserService {
 	return &userService{
 		userRepo: repo,
 		tokenSvc: ts,
+		eventSvc: event,
 	}
 }
 
@@ -71,6 +74,13 @@ func (service *userService) CreateUser(ctx context.Context, user domain.User) (*
 		return nil, err
 	}
 
+	id, err := service.eventSvc.PostUserEvent(ctx, entry)
+	if err != nil {
+		fmt.Printf("user service: error while calling postuserevent: %s", err.Error())
+		fmt.Println()
+		return entry, err
+	}
+	fmt.Println(id)
 	return entry, nil
 
 }
