@@ -11,3 +11,5 @@ CREATE TABLE assets(
         specifications json NOT NULL,
         PRIMARY KEY(id)
 );
+
+
