@@ -6,7 +6,9 @@ import (
 )
 
 type dependencies struct {
-	userService service.UserService
+	userService             service.UserService
+	assetMaintenanceService service.AssetMaintenanceService
+	assetService            service.AssetService
 }
 
 var deps dependencies
@@ -14,7 +16,14 @@ var deps dependencies
 func InitDependencies() {
 	userRepo := repository.NewUserRepository()
 	plainTokenService := service.NewPlainTokenService()
+	assetMaintainRepo := repository.NewAssetMaintainRepository()
+	assetMaintenanceService := service.NewAssetForMaintenance(assetMaintainRepo)
+	assetRepo := repository.NewAssetRepository()
+	assetService := service.NewAssetService(assetRepo)
+	eventSvc := service.NewEventService()
+	userService := service.NewUserService(userRepo, plainTokenService, eventSvc)
 
-	userService := service.NewUserService(userRepo, plainTokenService)
 	deps.userService = userService
+	deps.assetService = assetService
+	deps.assetMaintenanceService = assetMaintenanceService
 }

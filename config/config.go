@@ -7,8 +7,9 @@ import (
 )
 
 type configs struct {
-	appPort  int
-	dbConfig DBConfig
+	appPort      int
+	eventAppPort int
+	dbConfig     DBConfig
 }
 
 type DBConfig struct {
@@ -23,13 +24,21 @@ var config configs
 
 func Init() error {
 	portStr := os.Getenv("APP_PORT")
-	port, err := strconv.Atoi(portStr)
-	if err != nil {
-		fmt.Printf("config: couldn't covert app_port from string to int: %s", err.Error())
+	port, portErr := strconv.Atoi(portStr)
+	if portErr != nil {
+		fmt.Printf("config: couldn't covert app_port from string to int: %s", portErr.Error())
 		port = 9000
 	}
 
+	eventPortStr := os.Getenv("EVENT_PORT")
+	eventPort, err := strconv.Atoi(eventPortStr)
+	if err != nil {
+		fmt.Printf("config: couldn't covert app_port from string to int: %s", err.Error())
+		port = 9035
+	}
+
 	config.appPort = port
+	config.eventAppPort = eventPort
 	config.dbConfig = initDBConfig()
 
 	return nil
@@ -55,6 +64,10 @@ func initDBConfig() DBConfig {
 
 func GetAppPort() string {
 	return strconv.Itoa(config.appPort)
+}
+
+func GetEventAppPort() string {
+	return strconv.Itoa(config.eventAppPort)
 }
 
 func GetDBConfig() DBConfig {
