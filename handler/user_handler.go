@@ -282,3 +282,132 @@ func GetUserByIDHandler(userService service.UserService) http.HandlerFunc {
 	}
 
 }
+
+func UpdateUsersHandler(userService service.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Content-Type", "application/json")
+
+		params := mux.Vars(r)
+		id, errInConversion := strconv.Atoi(params["id"])
+
+		if errInConversion != nil {
+			fmt.Printf("handler: Error while parameter conversion. Error: %s", errInConversion)
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "Error while parameter conversion"})
+			w.Write(responseBytes)
+
+			if err != nil {
+				fmt.Printf("handler: Error while Marshal,%s", err)
+			}
+			return
+
+		}
+
+		var req contract.UpdateUserRequest
+		err := json.NewDecoder(r.Body).Decode(&req)
+
+		if err != nil {
+			fmt.Printf("handler:Error while decoding request for update, %s", err)
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "invalid request"})
+			w.Write(responseBytes)
+
+			if err != nil {
+				fmt.Printf("handler: Error while Marshal,%s", err)
+			}
+			return
+		}
+
+		user, err := userService.UpdateUser(r.Context(), id, req)
+
+		if err == customerrors.UserDoesNotExist {
+			fmt.Println("handler: User for this id does not exist")
+			w.WriteHeader(http.StatusNotFound)
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "User for this id does not exist"})
+			if err != nil {
+				fmt.Printf("handler: Error while converting error to json, error:%s", err)
+				return
+			}
+			w.Write(responseBytes)
+			return
+		}
+
+		if err != nil {
+			fmt.Printf("handler: error while searching for user,error= %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+			if err != nil {
+				fmt.Printf("handler: Error while converting error to json, error:%s", err)
+				return
+			}
+			w.Write(responseBytes)
+			return
+		}
+		resp := contract.DomainToContractUpdate(user)
+
+		responsebytes, err := json.Marshal(resp)
+		if err != nil {
+			fmt.Printf("handler: Error while converting to json, error:%s", err)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(responsebytes)
+	}
+}
+
+func DeleteUserHandler(userService service.UserService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		params := mux.Vars(r)
+		id, parseErr := strconv.Atoi(params["id"])
+
+		if parseErr != nil {
+			fmt.Println("Handler: Error while parsing Id")
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, jsonErr := json.Marshal(contract.ErrorResponse{Error: "Enter id in valid format"})
+			if jsonErr != nil {
+				fmt.Printf("handler: Error while converting error to json. Error: %s", jsonErr)
+				return
+			}
+			w.Write(responseBytes)
+			return
+
+		}
+
+		user, err := userService.DeleteUser(r.Context(), id)
+
+		if err == customerrors.NoUserExistForDelete {
+			fmt.Println("Handler: No user of given id exist")
+			w.WriteHeader(http.StatusNotFound)
+			responseBytes, jsonErr := json.Marshal(contract.ErrorResponse{Error: "no user found"})
+			if jsonErr != nil {
+				fmt.Printf("handler: Error while converting error to json. Error: %s", jsonErr)
+				return
+			}
+			w.Write(responseBytes)
+			return
+		}
+
+		if err != nil {
+			fmt.Printf("handler: error while searching for user,error= %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+
+			responseBytes, jsonErr := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+			if jsonErr != nil {
+				fmt.Printf("handler: Error while converting error to json.Error: %s", jsonErr)
+				return
+			}
+			w.Write(responseBytes)
+			return
+		}
+		responsebytes, jsonErr := json.Marshal(user)
+		if jsonErr != nil {
+			fmt.Printf("handler: Error while converting user to json.Error: %s", jsonErr)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(responsebytes)
+	}
+}

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/customerrors"
-
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/repository"
 )
@@ -15,6 +15,9 @@ type UserService interface {
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
 	GetUserByID(ctx context.Context, ID int) (*domain.User, error)
+	UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (user *domain.User, err error)
+	DeleteUser(ctx context.Context, id int) (*domain.User, error)
+
 }
 
 type userService struct {
@@ -28,7 +31,6 @@ func NewUserService(repo repository.UserRepository, ts TokenService, event Event
 		userRepo: repo,
 		tokenSvc: ts,
 		eventSvc: event,
-	}
 }
 
 func (service *userService) Login(ctx context.Context, email, password string) (*domain.User, string, error) {
@@ -93,6 +95,41 @@ func (service *userService) GetUserByID(ctx context.Context, ID int) (*domain.Us
 	}
 	if user == nil {
 		return nil, customerrors.UserNotExist
+	}
+
+	return user, nil
+}
+
+func (service *userService) UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error) {
+	user, err := service.userRepo.UpdateUser(ctx, id, req)
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return user, customerrors.UserDoesNotExist
+	}
+
+	eventId, errEvent := service.eventSvc.PostUpdateUserEvent(ctx, user)
+	if errEvent != nil {
+		fmt.Printf("Service: Error while creating event. Error: %s", errEvent.Error())
+		return user, errEvent
+	} else {
+		fmt.Println("New event created:", eventId)
+	}
+
+	return user, nil
+}
+
+func (service *userService) DeleteUser(ctx context.Context, id int) (*domain.User, error) {
+	user, err := service.userRepo.DeleteUser(ctx, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return user, customerrors.NoUserExistForDelete
 	}
 
 	return user, nil
