@@ -9,7 +9,7 @@ import (
 type configs struct {
 	appPort      int
 	dbConfig     DBConfig
-	eventAPPport int
+	eventAppPort int
 	jwtConfig    JwtConfig
 }
 
@@ -40,14 +40,17 @@ func Init() error {
 
 	config.appPort = port
 
-	eventPort := os.Getenv("EVENT_PORT")
-	eveport, err := strconv.Atoi(eventPort)
+	eventPortStr := os.Getenv("EVENT_PORT")
+	eventPort, err := strconv.Atoi(eventPortStr)
 	if err != nil {
 		fmt.Printf("config: couldn't convert event_port from string to int: %s", err.Error())
-		eveport = 9035
+		eventPort = 9035
 	}
 
-	config.eventAPPport = eveport
+	config.appPort = port
+
+	config.eventAppPort = eventPort
+
 	config.dbConfig = initDBConfig()
 	return nil
 }
@@ -75,7 +78,7 @@ func GetAppPort() string {
 }
 
 func GetEventAppPort() string {
-	return strconv.Itoa(config.eventAPPport)
+	return strconv.Itoa(config.eventAppPort)
 }
 
 func GetDBConfig() DBConfig {
