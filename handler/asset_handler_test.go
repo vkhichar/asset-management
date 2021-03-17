@@ -42,7 +42,7 @@ func TestCreateAssetHandler_When_InvalidRequest(t *testing.T) {
 
 	expectedErr := string(`{"error":"invalid request"}`)
 	mockAssetService := &mockService.MockAssetService{}
-	mockAssetService.On("CreateAsset", ctx, obj).Return(nil, errors.New("invalid request"))
+	mockAssetService.On("CreateAsset", ctx, &obj).Return(nil, errors.New("invalid request"))
 
 	resp := httptest.NewRecorder()
 	handler := http.HandlerFunc(handler.CreateAssetHandler(mockAssetService))

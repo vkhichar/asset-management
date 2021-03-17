@@ -20,7 +20,6 @@ const (
 )
 
 type CreateAssetRequest struct {
-	//AssetID       int    `json:"id"`
 	Status         string          `json:"status"`
 	Category       string          `json:"category"`
 	PurchaseAt     string          `json:"purchase_at"`
@@ -33,6 +32,7 @@ func (req CreateAssetRequest) ConvertToAsset() (domain.Asset, error) {
 	t, err := time.Parse("02/01/2006", req.PurchaseAt)
 
 	if err != nil {
+		fmt.Printf("create asset request: %s", err.Error())
 		return domain.Asset{}, err
 	}
 

@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/google/uuid"
@@ -13,17 +12,19 @@ import (
 
 type AssetService interface {
 	ListAssets(ctx context.Context) ([]domain.Asset, error)
-	CreateAsset(ctx context.Context, asset domain.Asset) (*domain.Asset, error)
+	CreateAsset(ctx context.Context, asset *domain.Asset) (*domain.Asset, error)
 	GetAsset(ctx context.Context, ID uuid.UUID) (*domain.Asset, error)
 }
 
 type assetService struct {
 	assetRepo repository.AssetRepository
+	eventSvc  EventService
 }
 
-func NewAssetService(repo repository.AssetRepository) AssetService {
+func NewAssetService(repo repository.AssetRepository, event EventService) AssetService {
 	return &assetService{
 		assetRepo: repo,
+		eventSvc:  event,
 	}
 }
 
@@ -38,12 +39,23 @@ func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, er
 	return asset, nil
 }
 
-func (service *assetService) CreateAsset(ctx context.Context, assetParam domain.Asset) (*domain.Asset, error) {
+func (service *assetService) CreateAsset(ctx context.Context, assetParam *domain.Asset) (*domain.Asset, error) {
 	asset, err := service.assetRepo.CreateAsset(ctx, assetParam)
 	if err != nil {
+		if err == customerrors.NoAssetsExist {
+			fmt.Printf("Asset service: asset does not exist: %s", err.Error())
+			return nil, err
+		}
 		fmt.Printf("asset_service error while creating asset: %s", err.Error())
 		return nil, err
 	}
+
+	id, err := service.eventSvc.PostAssetEvent(ctx, asset)
+	if err != nil {
+		fmt.Printf("asset service: error during post asset event: %s", err.Error())
+		return nil, err
+	}
+	fmt.Println(id)
 
 	return asset, err
 }

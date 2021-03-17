@@ -16,7 +16,7 @@ func (m *MockAssetService) ListAssets(ctx context.Context) ([]domain.Asset, erro
 	return nil, nil
 }
 
-func (m *MockAssetService) CreateAsset(ctx context.Context, asset_param domain.Asset) (*domain.Asset, error) {
+func (m *MockAssetService) CreateAsset(ctx context.Context, asset_param *domain.Asset) (*domain.Asset, error) {
 	args := m.Called(ctx, asset_param)
 	var asset *domain.Asset
 	if args[0] != nil {

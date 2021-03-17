@@ -12,7 +12,7 @@ type MockAssetRepo struct {
 	mock.Mock
 }
 
-func (m *MockAssetRepo) CreateAsset(ctx context.Context, asset_param domain.Asset) (*domain.Asset, error) {
+func (m *MockAssetRepo) CreateAsset(ctx context.Context, asset_param *domain.Asset) (*domain.Asset, error) {
 	args := m.Called(ctx, asset_param)
 
 	var asset *domain.Asset

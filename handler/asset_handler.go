@@ -59,7 +59,6 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		// Set Content-Type for response
 		w.Header().Set("Content-Type", "application/json")
 
 		var req contract.CreateAssetRequest
@@ -71,6 +70,7 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "invalid request"})
 			if err != nil {
 				fmt.Printf(err.Error())
+				return
 			}
 			w.Write(responseBytes)
 			return
@@ -85,6 +85,7 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
 			if err != nil {
 				fmt.Printf(err.Error())
+				return
 			}
 			w.Write(responseBytes)
 			return
@@ -94,9 +95,10 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 
 		if err != nil {
 			fmt.Printf("handler: error while converting to object of type domain.Asset, error: %s", err.Error())
+			return
 		}
 
-		returnedAsset, err := assetService.CreateAsset(r.Context(), toAsset)
+		returnedAsset, err := assetService.CreateAsset(r.Context(), &toAsset)
 
 		if err != nil {
 			fmt.Printf("handler: error while creating asset, error: %s", err.Error())
@@ -105,6 +107,7 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
 			if err != nil {
 				fmt.Printf(err.Error())
+				return
 			}
 			w.Write(responseBytes)
 			return
@@ -123,7 +126,6 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 
 func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Set Content-Type for response
 
 		w.Header().Set("Content-Type", "application/json")
 		params := mux.Vars(r)
@@ -134,6 +136,7 @@ func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
 			if err != nil {
 				fmt.Printf(err.Error())
+				return
 			}
 			w.Write(responseBytes)
 			return
@@ -149,6 +152,7 @@ func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "Invalid UUID format"})
 			if err != nil {
 				fmt.Printf(err.Error())
+				return
 			}
 			w.Write(responseBytes)
 			return
@@ -156,23 +160,25 @@ func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 
 		returnedAsset, err := assetService.GetAsset(r.Context(), id)
 
-		if err == customerrors.NoAssetsExist {
-			fmt.Printf("handler: asset does not exist")
-			w.WriteHeader(http.StatusNotFound)
-			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
-			if err != nil {
-				fmt.Printf(err.Error())
-			}
-			w.Write(responseBytes)
-			return
-		}
-
 		if err != nil {
+			if err == customerrors.NoAssetsExist {
+				fmt.Printf("handler: asset does not exist")
+				w.WriteHeader(http.StatusNotFound)
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+				if err != nil {
+					fmt.Printf(err.Error())
+					return
+				}
+				w.Write(responseBytes)
+				return
+			}
+
 			fmt.Printf("handler: error while creating asset, error: %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
 			if err != nil {
 				fmt.Printf(err.Error())
+				return
 			}
 			w.Write(responseBytes)
 			return

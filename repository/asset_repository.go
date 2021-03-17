@@ -19,7 +19,7 @@ const (
 
 type AssetRepository interface {
 	ListAssets(ctx context.Context) ([]domain.Asset, error)
-	CreateAsset(ctx context.Context, asset_param domain.Asset) (*domain.Asset, error)
+	CreateAsset(ctx context.Context, asset_param *domain.Asset) (*domain.Asset, error)
 	GetAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error)
 }
 
@@ -47,7 +47,7 @@ func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 	return as, nil
 }
 
-func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param domain.Asset) (*domain.Asset, error) {
+func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param *domain.Asset) (*domain.Asset, error) {
 	var asset domain.Asset
 	err := repo.db.Get(&asset, createAssetQuery,
 		asset_param.Id,
@@ -60,6 +60,10 @@ func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param domain.Asset
 	)
 
 	if err != nil {
+		if err == customerrors.NoAssetsExist {
+			fmt.Printf("Asset Repository: No asset exist : %s", err.Error())
+			return nil, err
+		}
 		fmt.Printf("error in asset repository")
 		return nil, err
 	}
@@ -71,12 +75,12 @@ func (repo *assetRepo) GetAsset(ctx context.Context, Id uuid.UUID) (*domain.Asse
 	var asset domain.Asset
 
 	err := repo.db.Get(&asset, getAssetByIDQuery, Id)
-	if err == sql.ErrNoRows {
-		fmt.Printf("repository: couldn't find asset for Asset ID: %s", Id)
-		return nil, customerrors.NoAssetsExist
-	}
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Printf("repository: couldn't find asset for Asset ID: %s", Id)
+			return nil, customerrors.NoAssetsExist
+		}
 		return nil, err
 	}
 
