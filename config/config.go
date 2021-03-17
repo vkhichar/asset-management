@@ -10,6 +10,7 @@ type configs struct {
 	appPort      int
 	dbConfig     DBConfig
 	eventAPPport int
+	jwtConfig    JwtConfig
 }
 
 type DBConfig struct {
@@ -20,7 +21,14 @@ type DBConfig struct {
 	Name     string
 }
 
+type JwtConfig struct {
+	TokenExpiry int
+	Secret      string
+}
+
 var config configs
+
+const DEFAULT_TOKEN_EXPIRY = 5
 
 func Init() error {
 	portStr := os.Getenv("APP_PORT")
@@ -72,4 +80,20 @@ func GetEventAppPort() string {
 
 func GetDBConfig() DBConfig {
 	return config.dbConfig
+}
+
+func initJwtConfig() JwtConfig {
+	tokenExpiry, err := strconv.Atoi(os.Getenv("TOKEN_EXPIRY"))
+	if err != nil {
+		fmt.Printf("config: couldn't read environment variable for token expiry: %s", err.Error())
+		tokenExpiry = DEFAULT_TOKEN_EXPIRY
+	}
+	return JwtConfig{
+		TokenExpiry: tokenExpiry,
+		Secret:      os.Getenv("JWT_SECRET"),
+	}
+}
+
+func GetJwtConfig() JwtConfig {
+	return config.jwtConfig
 }

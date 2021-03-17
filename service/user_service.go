@@ -17,7 +17,6 @@ type UserService interface {
 	GetUserByID(ctx context.Context, ID int) (*domain.User, error)
 	UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (user *domain.User, err error)
 	DeleteUser(ctx context.Context, id int) (*domain.User, error)
-
 }
 
 type userService struct {
@@ -31,9 +30,10 @@ func NewUserService(repo repository.UserRepository, ts TokenService, event Event
 		userRepo: repo,
 		tokenSvc: ts,
 		eventSvc: event,
+	}
 }
 
-func (service *userService) Login(ctx context.Context, email, password string) (*domain.User, string, error) {
+func (service *userService) Login(ctx context.Context, email string, password string) (*domain.User, string, error) {
 	user, err := service.userRepo.FindUser(ctx, email)
 	if err != nil {
 		return nil, "", err
@@ -76,7 +76,7 @@ func (service *userService) CreateUser(ctx context.Context, user domain.User) (*
 		return nil, err
 	}
 
-	id, err := service.eventSvc.PostUserEvent(ctx, entry)
+	id, err := service.eventSvc.PostCreateUserEvent(ctx, entry)
 	if err != nil {
 		fmt.Printf("user service: error while calling postuserevent: %s", err.Error())
 		fmt.Println()

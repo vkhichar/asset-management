@@ -15,7 +15,6 @@ import (
 )
 
 type EventService interface {
-
 	PostCreateUserEvent(ctx context.Context, user *domain.User) (string, error)
 	PostUpdateUserEvent(context.Context, *domain.User) (string, error)
 }
@@ -25,7 +24,6 @@ type eventSvc struct{}
 func NewEventService() EventService {
 	return &eventSvc{}
 }
-
 
 func (e *eventSvc) PostCreateUserEvent(ctx context.Context, user *domain.User) (string, error) {
 
@@ -97,5 +95,7 @@ func (evSvc *eventSvc) PostUpdateUserEvent(ctx context.Context, user *domain.Use
 	if errBodyRead != nil {
 		fmt.Printf("Event service: Error while reading response body. Error: %s", errBodyRead.Error())
 		return "", errBodyRead
-	
+	}
+
+	return string(body), nil
 }

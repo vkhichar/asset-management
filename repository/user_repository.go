@@ -14,6 +14,7 @@ import (
 
 const (
 	getUserByEmailQuery = "SELECT id, name, email, password, is_admin FROM users WHERE email= $1"
+	createUserByQuery   = "INSERT INTO users Id,name,email,password,is_admin VALUES ($1,$2,$3,$4) RETURNING *"
 	selectAllUsers      = "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users"
 
 	getUserByIDQuery  = "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users WHERE id = $1"

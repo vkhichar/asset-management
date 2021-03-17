@@ -25,7 +25,7 @@ func TestUserService_Login_When_FindUserReturnsError(t *testing.T) {
 
 	mockUserRepo.On("FindUser", ctx, email).Return(nil, errors.New("some db error"))
 
-	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
+	userService := service.NewUserService(mockUserRepo, mockTokenService, mockevent)
 
 	user, token, err := userService.Login(ctx, email, "1234")
 
@@ -75,6 +75,8 @@ func TestUserService_CreatUser_CreateUserReturnsError(t *testing.T) {
 	}
 
 	mockevent := &mockService.MockEventService{}
+	mockUserRepo := &mockRepo.MockUserRepo{}
+	mockTokenService := &mockService.MockTokenService{}
 
 	mockUserRepo.On("CreateUser", ctx, user).Return(nil, errors.New("some db error"))
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockevent)
@@ -160,17 +162,19 @@ func TestUserService_CreateUser_Success(t *testing.T) {
 		IsAdmin:  false,
 	}
 
+	event_id := "122"
 	mockUserRepo := &mockRepo.MockUserRepo{}
 	mockTokenService := &mockService.MockTokenService{}
-	mockevent := &mockService.MockEventService{}
-
 	mockUserRepo.On("CreateUser", ctx, user).Return(&user, nil)
-
+	mockevent := &mockService.MockEventService{}
+	mockevent.On("PostCreateUserEvent", ctx, &user).Return(event_id, nil)
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockevent)
-	dbUser, err := userService.CreateUser(ctx, user)
 
+	obj, err := userService.CreateUser(ctx, user)
+
+	assert.NotNil(t, obj)
 	assert.NoError(t, err)
-	assert.Equal(t, &user, dbUser)
+
 }
 
 func TestUserService_GetUserById_When_ReturnError_User_not_exist(t *testing.T) {
@@ -331,7 +335,7 @@ func TestUserService_UpdateUser_When_UpdateUserReturnsError(t *testing.T) {
 	}
 
 	mockUserRepo.On("UpdateUser", ctx, id, req).Return(nil, errors.New("User of given id does not exist"))
-	mockEventService.On("PostUpdateUserEvent", ctx, user).Return(nil, nil)
+	mockEventService.On("PostUpdateUserEvent", ctx, user).Return("", nil)
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
 
@@ -370,7 +374,7 @@ func TestUserService_UpdateUser_When_Success(t *testing.T) {
 	}
 
 	mockUserRepo.On("UpdateUser", ctx, id, req).Return(user, nil)
-	mockEventService.On("PostUpdateUserEvent", ctx, user).Return(nil, nil)
+	mockEventService.On("PostUpdateUserEvent", ctx, user).Return("", nil)
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
 
@@ -408,7 +412,7 @@ func TestUserService_UpdateUser_When_UpdateUserReturnsNil(t *testing.T) {
 	}
 
 	mockUserRepo.On("UpdateUser", ctx, id, req).Return(nil, nil)
-	mockEventService.On("PostUpdateUserEvent", ctx, user).Return(nil, nil)
+	mockEventService.On("PostUpdateUserEvent", ctx, user).Return("", nil)
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
 
