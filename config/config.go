@@ -46,7 +46,9 @@ func Init() error {
 	}
 
 	config.appPort = port
+
 	config.eventAppPort = eventPort
+
 	config.dbConfig = initDBConfig()
 	config.jwtConfig = initJwtConfig()
 	return nil
