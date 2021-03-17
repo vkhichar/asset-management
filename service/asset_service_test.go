@@ -452,7 +452,7 @@ func TestAssetService_PostAssetEvent_When_Success(t *testing.T) {
 	}
 	defer gock.Off()
 
-	gock.New("http://34.70.86.33:" + config.GetEventPort()).
+	gock.New("http://34.70.86.33:" + config.GetEventAppPort()).
 		Post("/events").
 		Reply(200).
 		JSON(map[string]string{"id": "120"})
@@ -499,7 +499,7 @@ func TestAssetService_PostAssetEvent_When_ReturnsError(t *testing.T) {
 	}
 	defer gock.Off()
 
-	gock.New("http://34.70.86.33:" + config.GetEventPort()).
+	gock.New("http://34.70.86.33:" + config.GetEventAppPort()).
 		Post("/events").
 		Reply(400)
 	asset := domain.Asset{
