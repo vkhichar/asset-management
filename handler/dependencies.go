@@ -23,8 +23,6 @@ func InitDependencies() {
 	assetService := service.NewAssetService(assetRepo, eventSvc)
 	jwtTokenService := service.NewJwtService()
 
-	assetMaintainRepo := repository.NewAssetMaintainRepository()
-	assetMaintenanceService := service.NewAssetForMaintenance(assetMaintainRepo)
 	userService := service.NewUserService(userRepo, plainTokenService, eventSvc)
 	assetMaintenanceRepo := repository.NewAssetMaintainRepository()
 

@@ -23,7 +23,7 @@ type EventService interface {
 	PostUpdateUserEvent(context.Context, *domain.User) (string, error)
 
 	PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error)
-	PostUserEvent(context.Context, *domain.User) (string, error)
+	// PostUserEvent(context.Context, *domain.User) (string, error)
 	PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error)
 }
 

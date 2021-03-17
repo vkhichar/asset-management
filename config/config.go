@@ -8,19 +8,12 @@ import (
 )
 
 type configs struct {
-<<<<<<< HEAD
-	appPort      int
-	dbConfig     DBConfig
-	eventAppPort int
-	jwtConfig    JwtConfig
-=======
 	appPort         int
 	eventAppPort    int
 	dbConfig        DBConfig
 	eventServiceUrl string
 	apiTimeout      int
 	jwtConfig       JwtConfig
->>>>>>> a57ceeea7a603f523eb02e7c113394f9f64b67ee
 }
 
 type DBConfig struct {
