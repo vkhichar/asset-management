@@ -19,15 +19,20 @@ const EventResource = "/events"
 const AssetMaintenanceEvent = "ASSET_MAINTENANCE_ACTIVITY"
 
 type EventService interface {
-<<<<<<< HEAD
 	PostUserEvent(context.Context, *domain.User) (string, error)
-	PostEvent(ctx context.Context, req domain.MaintenanceActivity) (int, error)
+	PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error)
 }
 
-type eventSvc struct{}
+type eventSvc struct {
+	client *http.Client
+}
 
 func NewEventService() EventService {
-	return &eventSvc{}
+	return &eventSvc{
+		client: &http.Client{
+			Timeout: time.Second * time.Duration(config.GetEventApiTimeout()),
+		},
+	}
 }
 
 func (evSvc *eventSvc) PostUserEvent(ctx context.Context, user *domain.User) (string, error) {
@@ -67,25 +72,7 @@ func (evSvc *eventSvc) PostUserEvent(ctx context.Context, user *domain.User) (st
 	return string(body), nil
 }
 
-func (evSvc *eventSvc) PostEvent(ctx context.Context, req domain.MaintenanceActivity) (int, error) {
-=======
-	PostEvent(ctx context.Context, req domain.MaintenanceActivity) (string, error)
-}
-
-type eventService struct {
-	client *http.Client
-}
-
-func NewEventService() EventService {
-	return &eventService{
-		client: &http.Client{
-			Timeout: time.Second * time.Duration(config.GetEventApiTimeout()),
-		},
-	}
-}
-
-func (service *eventService) PostEvent(ctx context.Context, req domain.MaintenanceActivity) (string, error) {
->>>>>>> added event service
+func (service *eventSvc) PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error) {
 
 	reqBody, err := json.Marshal(req)
 	if err != nil {
@@ -94,8 +81,6 @@ func (service *eventService) PostEvent(ctx context.Context, req domain.Maintenan
 	}
 
 	eventReqBody, _ := json.Marshal(contract.NewEventRequest(AssetMaintenanceEvent, reqBody))
-
-	//res, err := service.client.Post(config.GetEventServiceUrl()+EventResource, "application/json", bytes.NewBuffer(eventReqBody))
 
 	httpreq, err := http.NewRequest("POST", config.GetEventServiceUrl()+EventResource, bytes.NewBuffer(eventReqBody))
 	httpreq.Header.Add("Content-type", "application/json")

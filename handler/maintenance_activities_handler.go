@@ -10,17 +10,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/vkhichar/asset-management/contract"
-<<<<<<< HEAD
-<<<<<<< HEAD
-	"github.com/vkhichar/asset-management/customerrors"
-=======
-	"github.com/vkhichar/asset-management/domain"
-	"github.com/vkhichar/asset-management/repository"
->>>>>>> Added update activity Api
-=======
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
->>>>>>> Code refactor
 	"github.com/vkhichar/asset-management/service"
 )
 
@@ -135,7 +126,7 @@ func DetailedMaintenanceActivityHandler(service service.AssetMaintenanceService)
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseBytes)
 	}
-)
+}
 
 func DeleteMaintenanceActivityHandler(service service.AssetMaintenanceService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

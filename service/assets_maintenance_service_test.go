@@ -8,11 +8,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/vkhichar/asset-management/domain"
 	mockRepo "github.com/vkhichar/asset-management/repository/mocks"
 	"github.com/vkhichar/asset-management/service"
-	"github.com/stretchr/testify/mock"
-	"github.com/vkhichar/asset-management/repository/mocks"
+	mockService "github.com/vkhichar/asset-management/service/mocks"
 )
 
 func TestAssetsMaintenanceService_CreateAssetMaintenance_When_InsertMaintenanceActivityReturnsError(t *testing.T) {
@@ -24,10 +24,11 @@ func TestAssetsMaintenanceService_CreateAssetMaintenance_When_InsertMaintenanceA
 		Description: "hardware corrupted",
 	}
 	mockAssetMaintenanceRepo := &mockRepo.MockMaintenanceActivityRepo{}
+	mockEventService := &mockService.MockEventService{}
 
 	mockAssetMaintenanceRepo.On("InsertMaintenanceActivity", ctx, req).Return(nil, errors.New("servicelayer:"))
 
-	maintenanceActivity := service.NewAssetForMaintenance(mockAssetMaintenanceRepo)
+	maintenanceActivity := service.NewAssetForMaintenance(mockAssetMaintenanceRepo, mockEventService)
 
 	maintenanceActivities, err := maintenanceActivity.CreateAssetMaintenance(ctx, req)
 
@@ -44,20 +45,22 @@ func TestAssetsMaintenanceService_CreateAssetMaintenance_When_Success(t *testing
 		StartedAt:   time.Now(),
 		Description: "hardware corrupted",
 	}
+	date := time.Now()
 
 	res := domain.MaintenanceActivity{
 		ID:          1,
 		AssetId:     uuid.New(),
 		Cost:        100,
-		StartedAt:   time.Now(),
-		EndedAt:     time.Now(),
+		StartedAt:   date,
+		EndedAt:     &date,
 		Description: "hardware corrupted",
 	}
 	mockAssetMaintenanceRepo := &mockRepo.MockMaintenanceActivityRepo{}
+	mockEventService := &mockService.MockEventService{}
 
 	mockAssetMaintenanceRepo.On("InsertMaintenanceActivity", ctx, req).Return(&res, nil)
 
-	maintenanceActivity := service.NewAssetForMaintenance(mockAssetMaintenanceRepo)
+	maintenanceActivity := service.NewAssetForMaintenance(mockAssetMaintenanceRepo, mockEventService)
 
 	maintenanceActivities, err := maintenanceActivity.CreateAssetMaintenance(ctx, req)
 
@@ -69,10 +72,11 @@ func TestAssetsMaintenanceService_DetailedMaintenanceActivity_When_DetailedMaint
 	ctx := context.Background()
 	activityId := 123
 	mockAssetMaintenanceRepo := &mockRepo.MockMaintenanceActivityRepo{}
+	mockEventService := &mockService.MockEventService{}
 
 	mockAssetMaintenanceRepo.On("DetailedMaintenanceActivity", ctx, activityId).Return(nil, errors.New("repolayer:Failed to fetch asset maintenance activities"))
 
-	maintenanceActivity := service.NewAssetForMaintenance(mockAssetMaintenanceRepo)
+	maintenanceActivity := service.NewAssetForMaintenance(mockAssetMaintenanceRepo, mockEventService)
 
 	maintenanceActivities, err := maintenanceActivity.DetailedMaintenanceActivity(ctx, activityId)
 
@@ -84,19 +88,21 @@ func TestAssetsMaintenanceService_DetailedMaintenanceActivity_When_DetailedMaint
 func TestAssetsMaintenanceService_DetailedMaintenanceActivity_When_Success(t *testing.T) {
 	ctx := context.Background()
 	activityId := 123
+	date := time.Now()
 	res := domain.MaintenanceActivity{
 		ID:          1,
 		AssetId:     uuid.New(),
 		Cost:        100,
-		StartedAt:   time.Now(),
-		EndedAt:     time.Now(),
+		StartedAt:   date,
+		EndedAt:     &date,
 		Description: "hardware corrupted",
 	}
 	mockAssetMaintenanceRepo := &mockRepo.MockMaintenanceActivityRepo{}
+	mockEventService := &mockService.MockEventService{}
 
 	mockAssetMaintenanceRepo.On("DetailedMaintenanceActivity", ctx, activityId).Return(&res, nil)
 
-	maintenanceActivity := service.NewAssetForMaintenance(mockAssetMaintenanceRepo)
+	maintenanceActivity := service.NewAssetForMaintenance(mockAssetMaintenanceRepo, mockEventService)
 
 	maintenanceActivities, err := maintenanceActivity.DetailedMaintenanceActivity(ctx, activityId)
 
@@ -108,21 +114,21 @@ func TestAssetsMaintenanceService_DetailedMaintenanceActivity_When_DetailedMaint
 	ctx := context.Background()
 	activityId := 123
 	mockAssetMaintenanceRepo := &mockRepo.MockMaintenanceActivityRepo{}
+	mockEventService := &mockService.MockEventService{}
 
 	mockAssetMaintenanceRepo.On("DetailedMaintenanceActivity", ctx, activityId).Return(nil, nil)
 
-	maintenanceActivity := service.NewAssetForMaintenance(mockAssetMaintenanceRepo)
+	maintenanceActivity := service.NewAssetForMaintenance(mockAssetMaintenanceRepo, mockEventService)
 
 	maintenanceActivities, err := maintenanceActivity.DetailedMaintenanceActivity(ctx, activityId)
 
 	assert.Error(t, err)
 	assert.Nil(t, maintenanceActivities)
-	mockService "github.com/vkhichar/asset-management/service/mocks"
-)
+}
 
 func TestMaintenanceActivitiesHandler_DeleteById_When_DeleteReturnsError(t *testing.T) {
 	ctx := context.Background()
-	mockAssetMaintenanceRepo := &mockRepo.MockAssetMaintenanceRepo{}
+	mockAssetMaintenanceRepo := &mockRepo.MockMaintenanceActivityRepo{}
 	mockAssetMaintenanceRepo.On("DeleteMaintenanceActivity", ctx, 1).Return(errors.New("Failed to delete activity"))
 
 	mockEventService := &mockService.MockEventService{}
@@ -137,7 +143,7 @@ func TestMaintenanceActivitiesHandler_DeleteById_When_DeleteReturnsError(t *test
 
 func TestMaintenanceActivitiesHandler_DeleteById_When_Success(t *testing.T) {
 	ctx := context.Background()
-	mockAssetMaintenanceRepo := &mockRepo.MockAssetMaintenanceRepo{}
+	mockAssetMaintenanceRepo := &mockRepo.MockMaintenanceActivityRepo{}
 	mockAssetMaintenanceRepo.On("DeleteMaintenanceActivity", ctx, 1).Return(nil)
 	mockEventService := &mockService.MockEventService{}
 
@@ -151,7 +157,7 @@ func TestMaintenanceActivitiesHandler_DeleteById_When_Success(t *testing.T) {
 func TestMaintenanceActivitiesHandler_GetAllByAssetId_When_GetAllReturnsError(t *testing.T) {
 	ctx := context.Background()
 	assetId, _ := uuid.NewUUID()
-	mockAssetMaintenanceRepo := &mockRepo.MockAssetMaintenanceRepo{}
+	mockAssetMaintenanceRepo := &mockRepo.MockMaintenanceActivityRepo{}
 	mockAssetMaintenanceRepo.On("GetAllByAssetId", ctx, assetId).Return(nil, errors.New("Failed to fetch activities"))
 	mockEventService := &mockService.MockEventService{}
 
@@ -168,7 +174,7 @@ func TestMaintenanceActivitiesHandler_GetAllByAssetId_When_GetAllReturnsError(t 
 func TestMaintenanceActivitiesHandler_GetAllByAssetId_When_GetAllReturnsNoData(t *testing.T) {
 	ctx := context.Background()
 	assetId, _ := uuid.NewUUID()
-	mockAssetMaintenanceRepo := &mockRepo.MockAssetMaintenanceRepo{}
+	mockAssetMaintenanceRepo := &mockRepo.MockMaintenanceActivityRepo{}
 	mockAssetMaintenanceRepo.On("GetAllByAssetId", ctx, assetId).Return([]domain.MaintenanceActivity{}, nil)
 	mockEventService := &mockService.MockEventService{}
 
@@ -183,7 +189,7 @@ func TestMaintenanceActivitiesHandler_GetAllByAssetId_When_GetAllReturnsNoData(t
 func TestMaintenanceActivitiesHandler_GetAllByAssetId_When_GetAllReturnsData(t *testing.T) {
 	ctx := context.Background()
 	assetId, _ := uuid.NewUUID()
-	mockAssetMaintenanceRepo := &mockRepo.MockAssetMaintenanceRepo{}
+	mockAssetMaintenanceRepo := &mockRepo.MockMaintenanceActivityRepo{}
 
 	activities := make([]domain.MaintenanceActivity, 1)
 	date := time.Now()
@@ -210,7 +216,7 @@ func TestMaintenanceActivitiesHandler_GetAllByAssetId_When_GetAllReturnsData(t *
 func TestMaintenanceActivitiesHandler_UpdateMaintenanceActivity_When_UpdateReturnsError(t *testing.T) {
 
 	ctx := context.Background()
-	mockAssetMaintenanceRepo := &mockRepo.MockAssetMaintenanceRepo{}
+	mockAssetMaintenanceRepo := &mockRepo.MockMaintenanceActivityRepo{}
 	assetId, _ := uuid.NewUUID()
 
 	date := time.Now()
@@ -224,7 +230,7 @@ func TestMaintenanceActivitiesHandler_UpdateMaintenanceActivity_When_UpdateRetur
 	mockAssetMaintenanceRepo.On("UpdateMaintenanceActivity", ctx, mock.Anything).Return(nil, errors.New("Failed to fetch activity"))
 
 	mockEventService := &mockService.MockEventService{}
-	mockEventService.On("PostEvent", ctx, mock.Anything).Return("", nil)
+	mockEventService.On("PostMaintenanceActivity", ctx, mock.Anything).Return("", nil)
 
 	maintenanceService := service.NewAssetForMaintenance(mockAssetMaintenanceRepo, mockEventService)
 	_, err := maintenanceService.UpdateMaintenanceActivity(ctx, activity)
@@ -235,7 +241,7 @@ func TestMaintenanceActivitiesHandler_UpdateMaintenanceActivity_When_UpdateRetur
 func TestMaintenanceActivitiesHandler_UpdateMaintenanceActivity_When_UpdateIsSuccessful(t *testing.T) {
 
 	ctx := context.Background()
-	mockAssetMaintenanceRepo := &mockRepo.MockAssetMaintenanceRepo{}
+	mockAssetMaintenanceRepo := &mockRepo.MockMaintenanceActivityRepo{}
 	assetId, _ := uuid.NewUUID()
 	date := time.Now()
 	activity := domain.MaintenanceActivity{
@@ -248,7 +254,7 @@ func TestMaintenanceActivitiesHandler_UpdateMaintenanceActivity_When_UpdateIsSuc
 	mockAssetMaintenanceRepo.On("UpdateMaintenanceActivity", ctx, mock.Anything).Return(&activity, nil)
 
 	mockEventService := &mockService.MockEventService{}
-	mockEventService.On("PostEvent", ctx, mock.Anything).Return("", nil)
+	mockEventService.On("PostMaintenanceActivity", ctx, mock.Anything).Return("", nil)
 
 	maintenanceService := service.NewAssetForMaintenance(mockAssetMaintenanceRepo, mockEventService)
 	output, err := maintenanceService.UpdateMaintenanceActivity(ctx, activity)

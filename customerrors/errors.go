@@ -13,5 +13,5 @@ var (
 	ErrInvalidToken           = errors.New("invalid or expired token")
 	ErrForbidden              = errors.New("forbidden")
 	ErrBadRequest             = errors.New("bad request")
-	ErrNotFound               = errors.New("not Found")
+	ErrNotFound               = errors.New("not found")
 )

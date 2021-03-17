@@ -11,7 +11,7 @@ import (
 
 func AuthenticationHandler(tokenService service.TokenService, next http.HandlerFunc, adminApi bool) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token, err := ReadTokenFromRequest(r)
+		token, err := ReadToken(r)
 		if err != nil {
 			WriteErrorResponse(w, err)
 			return
@@ -26,7 +26,7 @@ func AuthenticationHandler(tokenService service.TokenService, next http.HandlerF
 
 }
 
-func ReadTokenFromRequest(r *http.Request) (string, error) {
+func ReadToken(r *http.Request) (string, error) {
 	header := r.Header.Get("Authorization")
 	if header == "" {
 		return "", customerrors.ErrMissingToken

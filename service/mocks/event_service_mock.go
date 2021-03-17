@@ -26,7 +26,7 @@ func (m *MockEventService) PostUserEvent(ctx context.Context, user *domain.User)
 	return eventId, err
 }
 
-func (service *MockEventService) PostEvent(ctx context.Context, req domain.MaintenanceActivity) (string, error) {
+func (service *MockEventService) PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error) {
 	args := service.Called(ctx, req)
 
 	if args[1] != nil {

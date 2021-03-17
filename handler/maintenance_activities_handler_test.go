@@ -227,7 +227,7 @@ func TestMaintenanceActivitiesHandler_DetailedMaintenanceActivityHandler_When_Su
 		AssetId:     assetId,
 		Cost:        100,
 		StartedAt:   tym,
-		EndedAt:     tym,
+		EndedAt:     &tym,
 		Description: "hardware issue",
 	}
 	outptt := contract.DetailAssetMaintenanceActivityResponse{
@@ -268,7 +268,7 @@ func TestMaintenanceActivitiesHandler_DetailedMaintenanceActivityHandler_When_Id
 
 func TestMaintenanceActivitiesHandler_DeleteById_When_Error(t *testing.T) {
 
-	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService := &mockService.MockMaintenanceActivityService{}
 	mockMaintenanceService.On("DeleteMaintenanceActivity", mock.Anything, 1).Return(errors.New("Failed to delete activity"))
 
 	req, err := http.NewRequest("DELETE", "/maintenance_activities/1", nil)
@@ -297,7 +297,7 @@ func TestMaintenanceActivitiesHandler_DeleteById_When_InvalidId(t *testing.T) {
 	resRec := httptest.NewRecorder()
 	r := mux.NewRouter()
 	r.HandleFunc("/maintenance_activities/{id}",
-		handler.DeleteMaintenanceActivityHandler(&mockService.MockAssetMaintenanceService{})).Methods("DELETE")
+		handler.DeleteMaintenanceActivityHandler(&mockService.MockMaintenanceActivityService{})).Methods("DELETE")
 	r.ServeHTTP(resRec, req)
 
 	assert.Equal(t, http.StatusBadRequest, resRec.Result().StatusCode)
@@ -305,7 +305,7 @@ func TestMaintenanceActivitiesHandler_DeleteById_When_InvalidId(t *testing.T) {
 }
 
 func TestMaintenanceActivitiesHandler_DeleteById_When_Success(t *testing.T) {
-	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService := &mockService.MockMaintenanceActivityService{}
 	mockMaintenanceService.On("DeleteMaintenanceActivity", mock.Anything, 1).Return(nil)
 
 	req, err := http.NewRequest("DELETE", "/maintenance_activities/1", nil)
@@ -326,7 +326,7 @@ func TestMaintenanceActivitiesHandler_DeleteById_When_Success(t *testing.T) {
 func TestMaintenanceActivitiesHandler_ListAllByAssetId_When_Error(t *testing.T) {
 	assetId := uuid.New()
 
-	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService := &mockService.MockMaintenanceActivityService{}
 	mockMaintenanceService.On("GetAllForAssetId", mock.Anything, mock.Anything).Return(nil, errors.New("Failed to fetch activities"))
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("/assets/%s/maintenance", assetId.String()), nil)
@@ -361,7 +361,7 @@ func TestMaintenanceActivitiesHandler_ListAllByAssetId_When_NonEmptyResult(t *te
 	output := make([]contract.MaintenanceActivityResp, 1)
 	output[0] = contract.NewMaintenanceActivityResp(activities[0])
 
-	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService := &mockService.MockMaintenanceActivityService{}
 	mockMaintenanceService.On("GetAllForAssetId", mock.Anything, mock.Anything).Return(activities, nil)
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("/assets/%s/maintenance", assetId.String()), nil)
@@ -386,7 +386,7 @@ func TestMaintenanceActivitiesHandler_ListAllByAssetId_When_NonEmptyResult(t *te
 
 func TestMaintenanceActivitiesHandler_ListAllByAssetId_When_EmptyResult(t *testing.T) {
 	assetId := uuid.New()
-	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService := &mockService.MockMaintenanceActivityService{}
 	mockMaintenanceService.On("GetAllForAssetId", mock.Anything, mock.Anything).Return([]domain.MaintenanceActivity{}, nil)
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("/assets/%s/maintenance", assetId.String()), nil)
@@ -412,7 +412,7 @@ func TestMaintenanceActivitiesHandler_UpdateById_When_DbError(t *testing.T) {
 		EndedAt:     "2020-03-03",
 	}
 
-	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService := &mockService.MockMaintenanceActivityService{}
 	mockMaintenanceService.On("UpdateMaintenanceActivity", mock.Anything, mock.Anything).Return(nil, errors.New("Failed to update activity"))
 
 	body, err := json.Marshal(reqBody)
@@ -443,7 +443,7 @@ func TestMaintenanceActivitiesHandler_UpdateById_When_ErrNotFound(t *testing.T) 
 		EndedAt:     "2020-03-03",
 	}
 
-	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService := &mockService.MockMaintenanceActivityService{}
 	mockMaintenanceService.On("UpdateMaintenanceActivity", mock.Anything, mock.Anything).Return(nil, customerrors.ErrNotFound)
 
 	body, err := json.Marshal(reqBody)
@@ -474,7 +474,7 @@ func TestMaintenanceActivitiesHandler_UpdateById_When_InvalidRequest(t *testing.
 		EndedAt:     "dsds",
 	}
 
-	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService := &mockService.MockMaintenanceActivityService{}
 
 	body, err := json.Marshal(reqBody)
 	if err != nil {
@@ -514,7 +514,7 @@ func TestMaintenanceActivitiesHandler_UpdateById_When_Success(t *testing.T) {
 		EndedAt:     &date,
 		Description: "description",
 	}
-	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}
+	mockMaintenanceService := &mockService.MockMaintenanceActivityService{}
 	mockMaintenanceService.On("UpdateMaintenanceActivity", mock.Anything, mock.Anything).Return(&updated, nil)
 
 	body, err := json.Marshal(reqBody)
