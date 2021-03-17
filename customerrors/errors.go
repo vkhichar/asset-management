@@ -3,6 +3,9 @@ package customerrors
 import "errors"
 
 var (
+	UserNotExist = errors.New("User does not exist")
+
+	ExtraError                = errors.New("invalid email")
 	ErrInvalidAssetStatus     = errors.New("Invalid asset status")
 	ErrInvalidEmailPassword   = errors.New("invalid email or password")
 	NoUsersExist              = errors.New("No users exist at present")

@@ -6,8 +6,7 @@ import (
 	"github.com/vkhichar/asset-management/domain"
 )
 
-type User struct {
-	ID        int       `json:"id"`
+type GetUserByID struct {
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	IsAdmin   bool      `json:"is_admin"`
@@ -15,14 +14,9 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func DomainToContract(d *domain.User) User {
-	user := User{
-		ID:        d.ID,
-		Name:      d.Name,
-		Email:     d.Email,
-		IsAdmin:   d.IsAdmin,
-		CreatedAt: d.CreatedAt,
-		UpdatedAt: d.UpdatedAt,
-	}
-	return user
+func DomaintoContractUserID(user *domain.User) (contractUser GetUserByID) {
+
+	contractUser = GetUserByID{Name: user.Name, Email: user.Email, IsAdmin: user.IsAdmin, CreatedAt: user.CreatedAt, UpdatedAt: user.UpdatedAt}
+	return contractUser
+
 }

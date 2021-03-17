@@ -8,12 +8,13 @@ import (
 )
 
 type configs struct {
+	ipAddress       string
+	jwtConfig       JwtConfig
 	appPort         int
 	eventAppPort    int
 	dbConfig        DBConfig
 	eventServiceUrl string
 	apiTimeout      int
-	jwtConfig       JwtConfig
 }
 
 type DBConfig struct {
@@ -31,24 +32,31 @@ type JwtConfig struct {
 
 var config configs
 
-const DEFAULT_TOKEN_EXPIRY = 5 // in minutes
+const DEFAULT_TOKEN_EXPIRY = 5
 
 func Init() error {
 	portStr := os.Getenv("APP_PORT")
-	port, portErr := strconv.Atoi(portStr)
-	if portErr != nil {
-		fmt.Printf("config: couldn't covert app_port from string to int: %s", portErr.Error())
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		fmt.Printf("config: couldn't covert app_port from string to int: %s", err.Error())
 		port = 9000
 	}
+
 	config.appPort = port
+
 	eventPortStr := os.Getenv("EVENT_PORT")
 	eventPort, err := strconv.Atoi(eventPortStr)
 	if err != nil {
-		fmt.Printf("config: couldn't covert app_port from string to int: %s", err.Error())
+		fmt.Printf("config: couldn't convert event_port from string to int: %s", err.Error())
 		eventPort = 9035
 	}
 
+	ipAddressStr := os.Getenv("IP_ADDRESS")
+
+	config.appPort = port
+
 	config.eventAppPort = eventPort
+	config.ipAddress = ipAddressStr
 
 	config.dbConfig = initDBConfig()
 
@@ -91,6 +99,10 @@ func GetAppPort() string {
 
 func GetEventAppPort() string {
 	return strconv.Itoa(config.eventAppPort)
+}
+
+func GetIpAddress() string {
+	return config.ipAddress
 }
 
 func GetDBConfig() DBConfig {

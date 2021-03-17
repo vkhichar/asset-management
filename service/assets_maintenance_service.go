@@ -20,7 +20,6 @@ type AssetMaintenanceService interface {
 
 type assetMaintenanceService struct {
 	assetMaintainRepo repository.AssetMaintenanceRepo
-<<<<<<< HEAD
 	eventSvc          EventService
 }
 
@@ -28,15 +27,6 @@ func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo, es EventServic
 	return &assetMaintenanceService{
 		assetMaintainRepo: repo,
 		eventSvc:          es,
-=======
-	eventService      EventService
-}
-
-func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo, eventService EventService) AssetMaintenanceService {
-	return &assetMaintenanceService{
-		assetMaintainRepo: repo,
-		eventService:      eventService,
->>>>>>> a57ceeea7a603f523eb02e7c113394f9f64b67ee
 	}
 }
 
@@ -48,7 +38,7 @@ func (service *assetMaintenanceService) CreateAssetMaintenance(ctx context.Conte
 		return nil, err
 	}
 
-	eventID, errEvent := service.eventSvc.PostAssetMaintenanceActivityEvent(ctx, assetsMaintenance)
+	eventID, errEvent := service.eventSvc.PostMaintenanceActivity(ctx, assetsMaintenance)
 	if errEvent == customerrors.ResponseTimeLimitExceeded {
 		fmt.Printf("servicelayere events:%s", errEvent.Error())
 		return nil, errEvent
@@ -93,7 +83,7 @@ func (service *assetMaintenanceService) UpdateMaintenanceActivity(ctx context.Co
 	if err != nil {
 		return nil, err
 	}
-	id, err := service.eventService.PostMaintenanceActivity(ctx, *activity)
+	id, err := service.eventSvc.PostMaintenanceActivity(ctx, activity)
 
 	if err != nil {
 		fmt.Println("Failed to submit event: ", err)
