@@ -87,6 +87,7 @@ func TestUserRepository_UpdateUsers_When_Success(t *testing.T) {
 	}
 
 	id := 12
+	db := repository.GetDB()
 	tx := db.MustBegin()
 	tx.MustExec("delete from users")
 	tx.MustExec("insert into users (id, name,email,password,is_admin) values ($1,$2,$3,$4,$5)", 12, "Jan Doe", "jandoe@gmail.com", "12345", true)
