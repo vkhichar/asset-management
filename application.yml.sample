@@ -1,4 +1,5 @@
 APP_PORT: 9000
+EVENT_PORT: 9035
 
 # Database config
 DB_HOST: "localhost"
