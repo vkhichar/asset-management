@@ -12,4 +12,6 @@ var (
 	NoMaintenanceActivitesExist = errors.New("No maintenance activites exist")
 
 	MaintenanceIdDoesNotExist = errors.New("Maintenance id does no exist")
+
+	ResponseTimeLimitExceeded = errors.New("Response Time Limit Exceeded")
 )

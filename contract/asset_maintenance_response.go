@@ -33,7 +33,8 @@ type DetailAssetMaintenanceActivityResponse struct {
 }
 
 func NewDetailAssetMaintenanceActivityResponse(domain *domain.MaintenanceActivity) DetailAssetMaintenanceActivityResponse {
-	return DetailAssetMaintenanceActivityResponse{
+	 
+	resp:= DetailAssetMaintenanceActivityResponse{
 		ID:          domain.ID,
 		AssetId:     domain.AssetId,
 		Cost:        domain.Cost,
@@ -41,4 +42,10 @@ func NewDetailAssetMaintenanceActivityResponse(domain *domain.MaintenanceActivit
 		EndedAt:     domain.EndedAt.Format("02-01-2006"),
 		Description: domain.Description,
 	}
+
+	if resp.EndedAt=="01-01-0001"{
+		resp.EndedAt=""
+	}
+
+	   return resp
 }
