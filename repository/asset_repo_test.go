@@ -37,7 +37,6 @@ func TestAssetRepository_ListAssetsRepo_When_Success(t *testing.T) {
 
 func TestAssetRepository_ListAssetsRepo_When_ReturnsError(t *testing.T) {
 	ctx := context.Background()
-	expectedasset := "No assets exist"
 
 	config.Init()
 	repository.InitDB()
@@ -48,9 +47,10 @@ func TestAssetRepository_ListAssetsRepo_When_ReturnsError(t *testing.T) {
 
 	assetRepo := repository.NewAssetRepository()
 
-	asset, _ := assetRepo.ListAssets(ctx)
+	asset, err := assetRepo.ListAssets(ctx)
 
-	assert.Equal(t, expectedasset, asset)
+	assert.Nil(t, asset)
+	assert.Nil(t, err)
 
 }
 
@@ -133,7 +133,7 @@ func TestAssetRepository_UpdateAssetsRepo_When_Success(t *testing.T) {
 
 	tx.MustExec("Delete from assets")
 
-	tx.MustExec("insert into assets(id,status,category,purchase_at,purchase_cost,name,specifications) values($1,$2,$3,$4,$5,$6,$7)", "ffb4b1a4-7bf5-11ee-9339-0242ac130002", "retired", "Laptop", "01/07/2020", 500, "Dell Latitude E5550", `{"RAM":"4GB","HDD":"500GB","Generation":"i8"}`)
+	tx.MustExec("insert into assets(id,status,category,purchase_at,purchase_cost,name,specifications) values($1,$2,$3,$4,$5,$6,$7)", "ffb4b1a4-7bf5-11ee-9339-0242ac130002", "active", "Laptop", "01/07/2020", 500, "Dell Latitude E5550", `{"RAM":"4GB","HDD":"500GB","Generation":"i8"}`)
 	tx.Commit()
 	fmt.Println("below")
 

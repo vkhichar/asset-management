@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/vkhichar/asset-management/config"
@@ -53,7 +54,13 @@ func (e *eventSvc) PostAssetEvent(ctx context.Context, asset *domain.Asset) (str
 	if errReadAll != nil {
 		fmt.Printf("Error While Performing ReadAll %s", errReadAll.Error())
 	}
-	return string(body), nil
+	var responseObj contract.AssetEventResponse
+	errJsonMarshal := json.Unmarshal(body, &responseObj)
+	if errJsonMarshal != nil {
+		fmt.Printf("Event Service : Error While UnMarshaling :%s", errJsonMarshal.Error())
+	}
+	eventId := strconv.Itoa(responseObj.ID)
+	return eventId, nil
 }
 func (evSvc *eventSvc) PostUserEvent(ctx context.Context, user *domain.User) (string, error) {
 	request := contract.UpdateUserEventRequest{}
