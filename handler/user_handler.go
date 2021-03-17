@@ -205,7 +205,7 @@ func DeleteUserHandler(userService service.UserService) http.HandlerFunc {
 		if err != nil {
 			fmt.Printf("handler: error while searching for user,error= %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
-			
+
 			responseBytes, jsonErr := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
 			if jsonErr != nil {
 				fmt.Printf("handler: Error while converting error to json.Error: %s", jsonErr)
