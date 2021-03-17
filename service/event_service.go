@@ -25,6 +25,7 @@ type EventService interface {
 	PostUpdateUserEvent(context.Context, *domain.User) (string, error)
 	PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error)
 	PostMaintenanceActivity(ctx context.Context, req *domain.MaintenanceActivity) (string, error)
+	PostAssetMaintenanceActivityEvent(ctx context.Context, resBody *domain.MaintenanceActivity) (string, error)
 }
 
 type eventSvc struct {

@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-package service
-=======
 package service_test
 
 import (
@@ -60,4 +57,3 @@ func TestPostAssetMaintenanceActivity_When_TimeoutError(t *testing.T) {
 	assert.NotNil(t, err)
 
 }
->>>>>>> a57ceeea7a603f523eb02e7c113394f9f64b67ee

@@ -38,7 +38,7 @@ func (service *assetMaintenanceService) CreateAssetMaintenance(ctx context.Conte
 		return nil, err
 	}
 
-	eventID, errEvent := service.eventSvc.PostMaintenanceActivity(ctx, assetsMaintenance)
+	eventID, errEvent := service.eventSvc.PostAssetMaintenanceActivityEvent(ctx, assetsMaintenance)
 	if errEvent == customerrors.ResponseTimeLimitExceeded {
 		fmt.Printf("servicelayere events:%s", errEvent.Error())
 		return nil, errEvent
