@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/vkhichar/asset-management/contract"
@@ -18,11 +19,13 @@ type AssetService interface {
 
 type assetService struct {
 	assetRepo repository.AssetRepository
+	eventSvc  EventService
 }
 
-func NewAssetService(repo repository.AssetRepository) AssetService {
+func NewAssetService(repo repository.AssetRepository, es EventService) AssetService {
 	return &assetService{
 		assetRepo: repo,
+		eventSvc:  es,
 	}
 }
 func (service *assetService) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error) {
@@ -37,6 +40,13 @@ func (service *assetService) UpdateAsset(ctx context.Context, Id uuid.UUID, req 
 	asset, err := service.assetRepo.UpdateAsset(ctx, Id, req)
 	if err != nil {
 		return nil, err
+	}
+	res, errevent := service.eventSvc.PostAssetEvent(ctx, asset)
+	if errevent != nil {
+		fmt.Println("Service :Error in PostAssetEvent")
+
+	} else {
+		fmt.Println("New Id Created", res)
 	}
 	return asset, nil
 }
