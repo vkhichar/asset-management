@@ -12,6 +12,7 @@ type configs struct {
 	eventAppPort    int
 	dbConfig        DBConfig
 	eventServiceUrl string
+	apiTimeout      int
 }
 
 type DBConfig struct {
@@ -48,6 +49,12 @@ func Init() error {
 		panic("config: missing EVENT_SERVICE_URL")
 	}
 
+	timeout, err := strconv.Atoi(os.Getenv("EVENT_API_TIMEOUT"))
+	if err != nil {
+		fmt.Println("config: Invalid timeout value: ", err)
+		timeout = 3 // in seconds
+	}
+	config.apiTimeout = timeout
 	return nil
 }
 
@@ -83,4 +90,8 @@ func GetDBConfig() DBConfig {
 
 func GetEventServiceUrl() string {
 	return config.eventServiceUrl
+}
+
+func GetEventApiTimeout() int {
+	return config.apiTimeout
 }

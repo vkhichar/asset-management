@@ -74,7 +74,7 @@ func (service *assetMaintenanceService) UpdateMaintenanceActivity(ctx context.Co
 	if err != nil {
 		fmt.Println("Failed to submit event: ", err)
 	} else {
-		fmt.Println("Successfully submitted event with id ", id)
+		fmt.Println("Successfully submitted event ", id)
 	}
 	return activity, nil
 }

@@ -22,9 +22,12 @@ github.com/stretchr/objx v0.1.0 h1:4G4v2dO3VZwixGIRoQ5Lfboy6nUhCyYzaqnIAPPhYs4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+<<<<<<< HEAD
 github.com/yosida95/uritemplate v1.0.0 h1:ns8pHo6fm9ZHW10qEi9NVPo2EKYpp+SsM3OAJHsEnIU=
 github.com/yosida95/uritemplate v2.0.0+incompatible h1:j6LR/+4tiD14zc0Z0M8QilHLULqgZFD47XqgXQgCE1A=
 github.com/yosida95/uritemplate v2.0.0+incompatible/go.mod h1:mksJanHNnLsh6wYgt/AbBRZ4ogsHsO2uiZlm/UURY5c=
+=======
+>>>>>>> added event service
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/net v0.0.0-20191021144547-ec77196f6094/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=

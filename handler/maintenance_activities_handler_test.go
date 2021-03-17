@@ -348,12 +348,13 @@ func TestMaintenanceActivitiesHandler_ListAllByAssetId_When_NonEmptyResult(t *te
 	assetId := uuid.New()
 
 	activities := make([]domain.MaintenanceActivity, 1)
+	date := time.Now()
 	activities[0] = domain.MaintenanceActivity{
 		ID:          1,
 		AssetId:     assetId,
 		Cost:        20,
-		StartedAt:   time.Now(),
-		EndedAt:     time.Now(),
+		StartedAt:   date,
+		EndedAt:     &date,
 		Description: "test",
 	}
 
@@ -492,7 +493,7 @@ func TestMaintenanceActivitiesHandler_UpdateById_When_InvalidRequest(t *testing.
 	r.ServeHTTP(resRec, req)
 
 	assert.Equal(t, http.StatusBadRequest, resRec.Result().StatusCode)
-	assert.JSONEq(t, string(`{ "error" : "bad request"}`), resRec.Body.String())
+	assert.JSONEq(t, string(`{ "error" : "Invalid date ended_at"}`), resRec.Body.String())
 }
 
 func TestMaintenanceActivitiesHandler_UpdateById_When_Success(t *testing.T) {
@@ -510,7 +511,7 @@ func TestMaintenanceActivitiesHandler_UpdateById_When_Success(t *testing.T) {
 		AssetId:     assetId,
 		Cost:        25,
 		StartedAt:   date,
-		EndedAt:     date,
+		EndedAt:     &date,
 		Description: "description",
 	}
 	mockMaintenanceService := &mockService.MockAssetMaintenanceService{}

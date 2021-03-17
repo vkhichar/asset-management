@@ -19,6 +19,7 @@ const EventResource = "/events"
 const AssetMaintenanceEvent = "ASSET_MAINTENANCE_ACTIVITY"
 
 type EventService interface {
+<<<<<<< HEAD
 	PostUserEvent(context.Context, *domain.User) (string, error)
 	PostEvent(ctx context.Context, req domain.MaintenanceActivity) (int, error)
 }
@@ -67,28 +68,46 @@ func (evSvc *eventSvc) PostUserEvent(ctx context.Context, user *domain.User) (st
 }
 
 func (evSvc *eventSvc) PostEvent(ctx context.Context, req domain.MaintenanceActivity) (int, error) {
+=======
+	PostEvent(ctx context.Context, req domain.MaintenanceActivity) (string, error)
+}
+
+type eventService struct {
+	client *http.Client
+}
+
+func NewEventService() EventService {
+	return &eventService{
+		client: &http.Client{
+			Timeout: time.Second * time.Duration(config.GetEventApiTimeout()),
+		},
+	}
+}
+
+func (service *eventService) PostEvent(ctx context.Context, req domain.MaintenanceActivity) (string, error) {
+>>>>>>> added event service
 
 	reqBody, err := json.Marshal(req)
 	if err != nil {
 		fmt.Println(err)
-		return 0, err
+		return "", err
 	}
-
-	fmt.Println(string(reqBody))
 
 	eventReqBody, _ := json.Marshal(contract.NewEventRequest(AssetMaintenanceEvent, reqBody))
 
-	fmt.Println(string(eventReqBody))
-	res, err := http.Post(config.GetEventServiceUrl()+EventResource, "application/json", bytes.NewBuffer(eventReqBody))
+	//res, err := service.client.Post(config.GetEventServiceUrl()+EventResource, "application/json", bytes.NewBuffer(eventReqBody))
 
+	httpreq, err := http.NewRequest("POST", config.GetEventServiceUrl()+EventResource, bytes.NewBuffer(eventReqBody))
+	httpreq.Header.Add("Content-type", "application/json")
+	res, err := service.client.Do(httpreq)
 	if err != nil {
 		fmt.Println(err)
-		return 0, err
+		return "", err
 	}
 
 	if res.StatusCode != http.StatusOK {
 		fmt.Println("Failed to create event due to ", res.StatusCode)
-		return 0, errors.New("Event not created")
+		return "", errors.New("Event not created")
 	}
 
 	resBody, err := ioutil.ReadAll(res.Body)
@@ -96,16 +115,8 @@ func (evSvc *eventSvc) PostEvent(ctx context.Context, req domain.MaintenanceActi
 
 	if err != nil {
 		fmt.Println("Failed to read response\n", err)
-		return 0, err
+		return "", err
 	}
 
-	var eventResp contract.EventResponse
-	err = json.Unmarshal(resBody, &eventResp)
-
-	if err != nil {
-		fmt.Println("Invalid response received ", err)
-		return 0, err
-	}
-
-	return eventResp.Id, err
+	return string(resBody), err
 }

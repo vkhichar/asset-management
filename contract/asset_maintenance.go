@@ -1,6 +1,7 @@
 package contract
 
 import (
+	"errors"
 	"regexp"
 	"strings"
 	"time"
@@ -36,20 +37,28 @@ type MaintenanceActivityResp struct {
 }
 
 func NewMaintenanceActivityResp(domain domain.MaintenanceActivity) MaintenanceActivityResp {
+	var endedAt string
+	if domain.EndedAt != nil {
+		endedAt = domain.EndedAt.Format(DateFormat)
+	}
 	return MaintenanceActivityResp{
 		Id:          domain.ID,
 		Description: domain.Description,
 		Cost:        domain.Cost,
 		StartedAt:   domain.StartedAt.Format(DateFormat),
-		EndedAt:     domain.EndedAt.Format(DateFormat),
+		EndedAt:     endedAt,
 		AssetId:     domain.AssetId,
 	}
 }
 
 func (activity UpdateMaintenanceActivityReq) ToDomain() (*domain.MaintenanceActivity, error) {
-	endedAt, err := time.Parse(DateFormat, activity.EndedAt)
-	if err != nil {
-		return nil, err
+	var endedAt *time.Time
+	if activity.EndedAt != "" {
+		date, err := time.Parse(DateFormat, activity.EndedAt)
+		if err != nil {
+			return nil, err
+		}
+		endedAt = &date
 	}
 	return &domain.MaintenanceActivity{
 		Cost:        activity.Cost,
@@ -58,14 +67,20 @@ func (activity UpdateMaintenanceActivityReq) ToDomain() (*domain.MaintenanceActi
 	}, nil
 }
 
-func (req UpdateMaintenanceActivityReq) Validate() bool {
-	if req.Cost == 0.0 || strings.TrimSpace(req.EndedAt) == "" || strings.TrimSpace(req.Description) == "" {
-		return false
+func (req UpdateMaintenanceActivityReq) Validate() error {
+	if req.Cost < 0.0 {
+		return errors.New("Cost cannot be negative")
 	}
 
-	if matched, _ := regexp.MatchString(DateRegex, req.EndedAt); !matched {
-		return false
+	if strings.TrimSpace(req.Description) == "" {
+		return errors.New("Missing description")
 	}
 
-	return true
+	if strings.TrimSpace(req.EndedAt) != "" {
+		if matched, _ := regexp.MatchString(DateRegex, req.EndedAt); !matched {
+			return errors.New("Invalid date ended_at")
+		}
+	}
+
+	return nil
 }

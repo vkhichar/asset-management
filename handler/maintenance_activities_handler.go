@@ -195,8 +195,10 @@ func UpdateMaintenanceActivity(service service.AssetMaintenanceService) http.Han
 			return
 		}
 
-		if !updateReq.Validate() {
-			WriteErrorResponse(w, customerrors.ErrBadRequest)
+		if err := updateReq.Validate(); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+			w.Write(responseBytes)
 			return
 		}
 

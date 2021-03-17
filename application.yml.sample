@@ -8,3 +8,7 @@ DB_PASSWORD: ""
 DB_NAME: "asset_management"
 
 EVENT_SERVICE_URL: http://34.70.86.33:9035
+
+# in seconds
+EVENT_API_TIMEOUT: 3
+
