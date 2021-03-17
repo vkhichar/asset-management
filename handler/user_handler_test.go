@@ -2,12 +2,12 @@ package handler_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"encoding/json"
 	"testing"
 	"time"
 
@@ -256,7 +256,6 @@ func TestUserHandler_DeleteUserHandler_When_DeleteUserReturnsNil(t *testing.T) {
 
 	resp := httptest.NewRecorder()
 	mockUserService := &mockService.MockUserService{}
-
 
 	mockUserService.On("DeleteUser", mock.Anything, id).Return(nil, nil)
 	r := mux.NewRouter()
