@@ -19,13 +19,13 @@ type EventService interface {
 	PostUserEvent(context.Context, *domain.User) (string, error)
 }
 
-type eventsvc struct{}
+type eventSvc struct{}
 
 func NewEventService() EventService {
-	return &eventsvc{}
+	return &eventSvc{}
 }
 
-func (e *eventsvc) PostAssetEvent(ctx context.Context, asset *domain.Asset) (string, error) {
+func (e *eventSvc) PostAssetEvent(ctx context.Context, asset *domain.Asset) (string, error) {
 	object := contract.UpdateAssetEvent{}
 	object.EvenType = "asset"
 	object.Data = asset
