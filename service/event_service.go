@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -14,17 +15,28 @@ import (
 	"github.com/vkhichar/asset-management/domain"
 )
 
+const EventResource = "/events"
+const AssetMaintenanceEvent = "ASSET_MAINTENANCE_ACTIVITY"
+
 type EventService interface {
 	PostCreateUserEvent(ctx context.Context, user *domain.User) (string, error)
 	PostUpdateUserEvent(context.Context, *domain.User) (string, error)
 
 	PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error)
+	PostUserEvent(context.Context, *domain.User) (string, error)
+	PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error)
 }
 
-type eventSvc struct{}
+type eventSvc struct {
+	client *http.Client
+}
 
 func NewEventService() EventService {
-	return &eventSvc{}
+	return &eventSvc{
+		client: &http.Client{
+			Timeout: time.Second * time.Duration(config.GetEventApiTimeout()),
+		},
+	}
 }
 
 func (e *eventSvc) PostCreateUserEvent(ctx context.Context, user *domain.User) (string, error) {
@@ -139,4 +151,38 @@ func (evSvc *eventSvc) PostUpdateUserEvent(ctx context.Context, user *domain.Use
 	}
 
 	return string(body), nil
+}
+
+func (service *eventSvc) PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error) {
+
+	reqBody, err := json.Marshal(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+
+	eventReqBody, _ := json.Marshal(contract.NewEventRequest(AssetMaintenanceEvent, reqBody))
+
+	httpreq, err := http.NewRequest("POST", config.GetEventServiceUrl()+EventResource, bytes.NewBuffer(eventReqBody))
+	httpreq.Header.Add("Content-type", "application/json")
+	res, err := service.client.Do(httpreq)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		fmt.Println("Failed to create event due to ", res.StatusCode)
+		return "", errors.New("Event not created")
+	}
+
+	resBody, err := ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
+
+	if err != nil {
+		fmt.Println("Failed to read response\n", err)
+		return "", err
+	}
+
+	return string(resBody), err
 }

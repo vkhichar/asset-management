@@ -4,13 +4,23 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type configs struct {
+<<<<<<< HEAD
 	appPort      int
 	dbConfig     DBConfig
 	eventAppPort int
 	jwtConfig    JwtConfig
+=======
+	appPort         int
+	eventAppPort    int
+	dbConfig        DBConfig
+	eventServiceUrl string
+	apiTimeout      int
+	jwtConfig       JwtConfig
+>>>>>>> a57ceeea7a603f523eb02e7c113394f9f64b67ee
 }
 
 type DBConfig struct {
@@ -52,6 +62,19 @@ func Init() error {
 	config.eventAppPort = eventPort
 
 	config.dbConfig = initDBConfig()
+
+	config.eventServiceUrl = os.Getenv("EVENT_SERVICE_URL")
+	if strings.TrimSpace(config.eventServiceUrl) == "" {
+		panic("config: missing EVENT_SERVICE_URL")
+	}
+
+	timeout, err := strconv.Atoi(os.Getenv("EVENT_API_TIMEOUT"))
+	if err != nil {
+		fmt.Println("config: Invalid timeout value: ", err)
+		timeout = 3 // in seconds
+	}
+	config.apiTimeout = timeout
+	config.jwtConfig = initJwtConfig()
 	return nil
 }
 
@@ -83,6 +106,14 @@ func GetEventAppPort() string {
 
 func GetDBConfig() DBConfig {
 	return config.dbConfig
+}
+
+func GetEventServiceUrl() string {
+	return config.eventServiceUrl
+}
+
+func GetEventApiTimeout() int {
+	return config.apiTimeout
 }
 
 func initJwtConfig() JwtConfig {
