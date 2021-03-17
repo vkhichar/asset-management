@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/repository"
@@ -14,6 +15,8 @@ type AssetService interface {
 	ListAssets(ctx context.Context) ([]domain.Asset, error)
 	CreateAsset(ctx context.Context, asset *domain.Asset) (*domain.Asset, error)
 	GetAsset(ctx context.Context, ID uuid.UUID) (*domain.Asset, error)
+	UpdateAsset(ctx context.Context, Id uuid.UUID, req contract.UpdateRequest) (*domain.Asset, error)
+	DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error)
 }
 
 type assetService struct {
@@ -26,6 +29,21 @@ func NewAssetService(repo repository.AssetRepository, event EventService) AssetS
 		assetRepo: repo,
 		eventSvc:  event,
 	}
+}
+func (service *assetService) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error) {
+	asset, err := service.assetRepo.DeleteAsset(ctx, Id)
+	if err != nil {
+		return nil, err
+	}
+	return asset, nil
+}
+
+func (service *assetService) UpdateAsset(ctx context.Context, Id uuid.UUID, req contract.UpdateRequest) (*domain.Asset, error) {
+	asset, err := service.assetRepo.UpdateAsset(ctx, Id, req)
+	if err != nil {
+		return nil, err
+	}
+	return asset, nil
 }
 
 func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, error) {
@@ -50,7 +68,7 @@ func (service *assetService) CreateAsset(ctx context.Context, assetParam *domain
 		return nil, err
 	}
 
-	id, err := service.eventSvc.PostAssetEvent(ctx, asset)
+	id, err := service.eventSvc.PostAssetEventCreateAsset(ctx, asset)
 	if err != nil {
 		fmt.Printf("asset service: error during post asset event: %s", err.Error())
 		return nil, err
