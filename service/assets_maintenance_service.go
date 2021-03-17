@@ -30,7 +30,7 @@ func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo, es EventServic
 	}
 }
 
-func (service *assetMaintenanceService) CreateAssetMaintenance(ctx context.Context, req domain.MaintenanceActivity) (user *domain.MaintenanceActivity, err error) {
+func (service *assetMaintenanceService) CreateAssetMaintenance(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
 	assetsMaintenance, err := service.assetMaintainRepo.InsertMaintenanceActivity(ctx, req)
 
 	if err != nil {
