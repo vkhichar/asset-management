@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/customerrors"
+	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/service"
 )
 
@@ -134,4 +136,104 @@ func DetailedMaintenanceActivityHandler(service service.AssetMaintenanceService)
 		w.Write(responseBytes)
 		return
 	}
+}
+
+func DeleteMaintenanceActivityHandler(service service.AssetMaintenanceService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		id, err := strconv.Atoi(mux.Vars(r)["id"])
+		if err != nil {
+			WriteErrorResponse(w, customerrors.ErrBadRequest)
+			return
+		}
+		err = service.DeleteMaintenanceActivity(r.Context(), id)
+		if err != nil {
+			WriteErrorResponse(w, errors.New("Something went wrong"))
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+}
+
+func ListMaintenanceActivitiesByAsserId(service service.AssetMaintenanceService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		assetId, err := uuid.Parse(mux.Vars(r)["asset_id"])
+		if err != nil {
+			fmt.Println(err)
+			WriteErrorResponse(w, customerrors.ErrBadRequest)
+			return
+		}
+
+		activities, err := service.GetAllForAssetId(r.Context(), assetId)
+
+		if err != nil {
+			WriteErrorResponse(w, errors.New("Something went wrong"))
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		responseBytes, _ := json.Marshal(convertAllActivitiesToContract(activities))
+		w.Write(responseBytes)
+		return
+	}
+}
+
+func UpdateMaintenanceActivity(service service.AssetMaintenanceService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		id, err := strconv.Atoi(mux.Vars(r)["id"])
+		if err != nil {
+			fmt.Println(err)
+			WriteErrorResponse(w, customerrors.ErrBadRequest)
+			return
+		}
+		var updateReq contract.UpdateMaintenanceActivityReq
+		err = json.NewDecoder(r.Body).Decode(&updateReq)
+		if err != nil {
+			fmt.Println(err)
+			WriteErrorResponse(w, customerrors.ErrBadRequest)
+			return
+		}
+
+		if err := updateReq.Validate(); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+			w.Write(responseBytes)
+			return
+		}
+
+		activityDomain, err := updateReq.ToDomain()
+		if err != nil {
+			WriteErrorResponse(w, customerrors.ErrBadRequest)
+			return
+		}
+
+		activityDomain.ID = id
+
+		activity, err := service.UpdateMaintenanceActivity(r.Context(), *activityDomain)
+
+		if err == customerrors.ErrNotFound {
+			WriteErrorResponse(w, customerrors.ErrNotFound)
+			return
+		}
+
+		if err != nil {
+			WriteErrorResponse(w, errors.New("Something went wrong"))
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		responseBytes, _ := json.Marshal(contract.NewMaintenanceActivityResp(*activity))
+		w.Write(responseBytes)
+
+	}
+}
+
+func convertAllActivitiesToContract(activities []domain.MaintenanceActivity) []contract.MaintenanceActivityResp {
+	res := make([]contract.MaintenanceActivityResp, len(activities))
+	for index, value := range activities {
+		res[index] = contract.NewMaintenanceActivityResp(value)
+	}
+	return res
 }

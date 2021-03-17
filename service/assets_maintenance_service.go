@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/repository"
@@ -12,10 +13,14 @@ import (
 type AssetMaintenanceService interface {
 	CreateAssetMaintenance(ctx context.Context, req domain.MaintenanceActivity) (user *domain.MaintenanceActivity, err error)
 	DetailedMaintenanceActivity(ctx context.Context, activityId int) (user *domain.MaintenanceActivity, err error)
+	DeleteMaintenanceActivity(ctx context.Context, id int) (err error)
+	GetAllForAssetId(ctx context.Context, assetId uuid.UUID) ([]domain.MaintenanceActivity, error)
+	UpdateMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error)
 }
 
 type assetMaintenanceService struct {
 	assetMaintainRepo repository.AssetMaintenanceRepo
+<<<<<<< HEAD
 	eventSvc          EventService
 }
 
@@ -23,6 +28,15 @@ func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo, es EventServic
 	return &assetMaintenanceService{
 		assetMaintainRepo: repo,
 		eventSvc:          es,
+=======
+	eventService      EventService
+}
+
+func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo, eventService EventService) AssetMaintenanceService {
+	return &assetMaintenanceService{
+		assetMaintainRepo: repo,
+		eventService:      eventService,
+>>>>>>> a57ceeea7a603f523eb02e7c113394f9f64b67ee
 	}
 }
 
@@ -64,4 +78,27 @@ func (service *assetMaintenanceService) DetailedMaintenanceActivity(ctx context.
 	}
 
 	return assetsMaintenance, nil
+}
+
+func (service *assetMaintenanceService) DeleteMaintenanceActivity(ctx context.Context, activityId int) error {
+	return service.assetMaintainRepo.DeleteMaintenanceActivity(ctx, activityId)
+}
+
+func (service *assetMaintenanceService) GetAllForAssetId(ctx context.Context, assetId uuid.UUID) ([]domain.MaintenanceActivity, error) {
+	return service.assetMaintainRepo.GetAllByAssetId(ctx, assetId)
+}
+
+func (service *assetMaintenanceService) UpdateMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
+	activity, err := service.assetMaintainRepo.UpdateMaintenanceActivity(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	id, err := service.eventService.PostMaintenanceActivity(ctx, *activity)
+
+	if err != nil {
+		fmt.Println("Failed to submit event: ", err)
+	} else {
+		fmt.Println("Successfully submitted event ", id)
+	}
+	return activity, nil
 }

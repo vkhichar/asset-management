@@ -7,14 +7,16 @@ import (
 
 type dependencies struct {
 	userService             service.UserService
-	assetMaintenanceService service.AssetMaintenanceService
 	assetService            service.AssetService
+	tokenService            service.TokenService
+	assetMaintenanceService service.AssetMaintenanceService
 }
 
 var deps dependencies
 
 func InitDependencies() {
 	userRepo := repository.NewUserRepository()
+<<<<<<< HEAD
 	plainTokenService := service.NewPlainTokenService()
 	assetMaintainRepo := repository.NewAssetMaintainRepository()
 	eventSvc := service.NewEventService()
@@ -24,9 +26,18 @@ func InitDependencies() {
 
 	assetMaintenanceService := service.NewAssetForMaintenance(assetMaintainRepo, eventSvc)
 	deps.assetMaintenanceService = assetMaintenanceService
+=======
+>>>>>>> a57ceeea7a603f523eb02e7c113394f9f64b67ee
 	assetRepo := repository.NewAssetRepository()
-	assetService := service.NewAssetService(assetRepo)
+	eventSvc := service.NewEventService()
+	assetService := service.NewAssetService(assetRepo, eventSvc)
+	jwtTokenService := service.NewJwtService()
+	plainTokenService := service.NewPlainTokenService()
+	userService := service.NewUserService(userRepo, plainTokenService, eventSvc)
+	assetMaintenanceRepo := repository.NewAssetMaintainRepository()
 
+	deps.assetMaintenanceService = service.NewAssetForMaintenance(assetMaintenanceRepo, eventSvc)
 	deps.userService = userService
 	deps.assetService = assetService
+	deps.tokenService = jwtTokenService
 }
