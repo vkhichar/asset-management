@@ -14,7 +14,7 @@ import (
 
 const (
 	getUserByEmailQuery = "SELECT id, name, email, password, is_admin FROM users WHERE email= $1"
-	createUserByQuery   = "INSERT INTO users Id,name,email,password,is_admin VALUES ($1,$2,$3,$4) RETURNING *"
+	createUserByQuery   = "INSERT INTO users (name, email, password,is_admin) VALUES ($1, $2, $3, $4) RETURNING id, name, email, password, is_admin, created_at, updated_at"
 	selectAllUsers      = "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users"
 
 	getUserByIDQuery  = "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users WHERE id = $1"
@@ -80,7 +80,7 @@ func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain
 	err := repo.db.Get(&newUser, createUserByQuery, user.Name, user.Email, user.Password, user.IsAdmin)
 
 	if err != nil {
-
+		fmt.Println(user.Name)
 		return nil, err
 
 	}
