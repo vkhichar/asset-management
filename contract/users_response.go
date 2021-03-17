@@ -16,7 +16,7 @@ type User struct {
 }
 
 func DomainToContract(d *domain.User) User {
-	u := User{
+	user := User{
 		ID:        d.ID,
 		Name:      d.Name,
 		Email:     d.Email,
@@ -24,5 +24,5 @@ func DomainToContract(d *domain.User) User {
 		CreatedAt: d.CreatedAt,
 		UpdatedAt: d.UpdatedAt,
 	}
-	return u
+	return user
 }

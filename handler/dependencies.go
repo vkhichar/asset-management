@@ -16,19 +16,18 @@ var deps dependencies
 
 func InitDependencies() {
 	userRepo := repository.NewUserRepository()
-	assetRepo := repository.NewAssetRepository()
-	assetService := service.NewAssetService(assetRepo)
 
-	jwtTokenService := service.NewJwtService()
 	plainTokenService := service.NewPlainTokenService()
-
-	assetMaintainRepo := repository.NewAssetMaintainRepository()
-	assetMaintenanceService := service.NewAssetForMaintenance(assetMaintainRepo)
+	assetRepo := repository.NewAssetRepository()
 	eventSvc := service.NewEventService()
-	userService := service.NewUserService(userRepo, plainTokenService, eventSvc)
+	assetService := service.NewAssetService(assetRepo, eventSvc)
+	jwtTokenService := service.NewJwtService()
 
+	userService := service.NewUserService(userRepo, plainTokenService, eventSvc)
+	assetMaintenanceRepo := repository.NewAssetMaintainRepository()
+
+	deps.assetMaintenanceService = service.NewAssetForMaintenance(assetMaintenanceRepo, eventSvc)
 	deps.userService = userService
 	deps.assetService = assetService
 	deps.tokenService = jwtTokenService
-	deps.assetMaintenanceService = assetMaintenanceService
 }
