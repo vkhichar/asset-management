@@ -19,6 +19,7 @@ const EventResource = "/events"
 const AssetMaintenanceEvent = "ASSET_MAINTENANCE_ACTIVITY"
 
 type EventService interface {
+	PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error)
 	PostUserEvent(context.Context, *domain.User) (string, error)
 	PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error)
 }
@@ -33,6 +34,45 @@ func NewEventService() EventService {
 			Timeout: time.Second * time.Duration(config.GetEventApiTimeout()),
 		},
 	}
+}
+
+func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error) {
+	obj := contract.CreateAssetEvent{}
+	obj.EventType = "asset"
+	obj.Data = asset
+	postBody, err := json.Marshal(obj)
+	if err != nil {
+		fmt.Printf("Event Service: Error while marshaling %s", err.Error())
+		return "", err
+	}
+
+	responseBody := bytes.NewReader(postBody)
+
+	req, err := http.NewRequest("POST", "http://34.70.86.33:"+config.GetEventAppPort()+"/events", responseBody)
+
+	if err != nil {
+		fmt.Printf("Event Service: error during http request %s:", err.Error())
+		return "", err
+	}
+
+	var netClient = &http.Client{
+		Timeout: time.Second * 3,
+	}
+
+	response, err := netClient.Do(req)
+
+	if err != nil {
+		fmt.Printf("Event server: Request Timeout %s: Taking more than %v seconds", err.Error(), response)
+		return "", err
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Printf("Event Service : error while converting into byte stream: %s", err.Error())
+		return "", err
+	}
+
+	return string(body), nil
 }
 
 func (evSvc *eventSvc) PostUserEvent(ctx context.Context, user *domain.User) (string, error) {

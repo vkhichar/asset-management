@@ -164,7 +164,7 @@ func TestUserService_UpdateUser_When_UpdateUserReturnsError(t *testing.T) {
 	}
 
 	mockUserRepo.On("UpdateUser", ctx, id, req).Return(nil, errors.New("User of given id does not exist"))
-	mockEventService.On("PostUserEvent", ctx, user).Return(nil, nil)
+	mockEventService.On("PostUserEvent", ctx, user).Return("", nil)
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
 
@@ -241,7 +241,7 @@ func TestUserService_UpdateUser_When_UpdateUserReturnsNil(t *testing.T) {
 	}
 
 	mockUserRepo.On("UpdateUser", ctx, id, req).Return(nil, nil)
-	mockEventService.On("PostUserEvent", ctx, user).Return(nil, nil)
+	mockEventService.On("PostUserEvent", ctx, user).Return("", nil)
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
 

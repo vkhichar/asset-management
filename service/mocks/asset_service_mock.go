@@ -28,9 +28,7 @@ func (m *MockAssetService) ListAssets(ctx context.Context) ([]domain.Asset, erro
 	if args[0] == nil && args[1] == nil {
 		return assets, customerrors.NoAssetsExist
 	}
-
 	return assets, err
-
 }
 
 func (m *MockAssetService) UpdateAsset(ctx context.Context, Id uuid.UUID, req contract.UpdateRequest) (*domain.Asset, error) {
@@ -49,6 +47,7 @@ func (m *MockAssetService) UpdateAsset(ctx context.Context, Id uuid.UUID, req co
 	}
 	return asset, err
 }
+
 func (m *MockAssetService) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error) {
 	args := m.Called(ctx, Id)
 
@@ -63,5 +62,36 @@ func (m *MockAssetService) DeleteAsset(ctx context.Context, Id uuid.UUID) (*doma
 	if args[0] == nil && args[1] == nil {
 		return asset, customerrors.NoAssetsExist
 	}
+	return asset, err
+}
+
+func (m *MockAssetService) CreateAsset(ctx context.Context, asset_param *domain.Asset) (*domain.Asset, error) {
+	args := m.Called(ctx, asset_param)
+
+	var asset *domain.Asset
+	if args[0] != nil {
+		asset = args[0].(*domain.Asset)
+	}
+
+	var err error
+	if args[1] != nil {
+		err = args[1].(error)
+	}
+
+	return asset, err
+}
+
+func (m *MockAssetService) GetAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error) {
+	args := m.Called(ctx, Id)
+
+	var asset *domain.Asset
+	if args[0] != nil {
+		asset = args[0].(*domain.Asset)
+	}
+	var err error
+	if args[1] != nil {
+		err = args[1].(error)
+	}
+
 	return asset, err
 }
