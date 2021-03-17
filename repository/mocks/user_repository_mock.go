@@ -92,7 +92,7 @@ func (m *MockUserRepo) DeleteUser(ctx context.Context, id int) (*domain.User, er
 	}
 
 	if args[0] == nil && args[1] == nil {
-		return user, customerrors.NoUserExistForDelete
+		return user, customerrors.UserDoesNotExist
 	}
 	return user, err
 }

@@ -129,7 +129,7 @@ func (service *userService) DeleteUser(ctx context.Context, id int) (*domain.Use
 	}
 
 	if user == nil {
-		return user, customerrors.NoUserExistForDelete
+		return user, customerrors.UserDoesNotExist
 	}
 
 	return user, nil
