@@ -6,7 +6,6 @@ import (
 
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/customerrors"
-
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/repository"
 )

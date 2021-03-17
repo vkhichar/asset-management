@@ -13,6 +13,7 @@ type configs struct {
 	dbConfig        DBConfig
 	eventServiceUrl string
 	apiTimeout      int
+	jwtConfig       JwtConfig
 }
 
 type DBConfig struct {
@@ -23,7 +24,14 @@ type DBConfig struct {
 	Name     string
 }
 
+type JwtConfig struct {
+	TokenExpiry int
+	Secret      string
+}
+
 var config configs
+
+const DEFAULT_TOKEN_EXPIRY = 5 // in minutes
 
 func Init() error {
 	portStr := os.Getenv("APP_PORT")
@@ -55,6 +63,7 @@ func Init() error {
 		timeout = 3 // in seconds
 	}
 	config.apiTimeout = timeout
+	config.jwtConfig = initJwtConfig()
 	return nil
 }
 
@@ -94,4 +103,20 @@ func GetEventServiceUrl() string {
 
 func GetEventApiTimeout() int {
 	return config.apiTimeout
+}
+
+func initJwtConfig() JwtConfig {
+	tokenExpiry, err := strconv.Atoi(os.Getenv("TOKEN_EXPIRY"))
+	if err != nil {
+		fmt.Printf("config: couldn't read environment variable for token expiry: %s", err.Error())
+		tokenExpiry = DEFAULT_TOKEN_EXPIRY
+	}
+	return JwtConfig{
+		TokenExpiry: tokenExpiry,
+		Secret:      os.Getenv("JWT_SECRET"),
+	}
+}
+
+func GetJwtConfig() JwtConfig {
+	return config.jwtConfig
 }
