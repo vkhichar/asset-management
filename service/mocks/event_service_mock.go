@@ -11,7 +11,7 @@ type MockEventService struct {
 	mock.Mock
 }
 
-func (m *MockEventService) PostUserEvent(ctx context.Context, user *domain.User) (string, error) {
+func (m *MockEventService) PostUpdateUserEvent(ctx context.Context, user *domain.User) (string, error) {
 	args := m.Called(ctx, user)
 
 	var eventId string

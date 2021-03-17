@@ -107,11 +107,11 @@ func UpdateUsersHandler(userService service.UserService) http.HandlerFunc {
 			fmt.Printf("handler: Error while parameter conversion. Error: %s", errInConversion)
 			w.WriteHeader(http.StatusBadRequest)
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "Error while parameter conversion"})
-			w.Write(responseBytes)
-
 			if err != nil {
 				fmt.Printf("handler: Error while Marshal,%s", err)
+				return
 			}
+			w.Write(responseBytes)
 			return
 
 		}
@@ -123,29 +123,28 @@ func UpdateUsersHandler(userService service.UserService) http.HandlerFunc {
 			fmt.Printf("handler:Error while decoding request for update, %s", err)
 			w.WriteHeader(http.StatusBadRequest)
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "invalid request"})
-			w.Write(responseBytes)
-
 			if err != nil {
 				fmt.Printf("handler: Error while Marshal,%s", err)
-			}
-			return
-		}
-
-		user, err := userService.UpdateUser(r.Context(), id, req)
-
-		if err == customerrors.UserDoesNotExist {
-			fmt.Println("handler: User for this id does not exist")
-			w.WriteHeader(http.StatusNotFound)
-			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "User for this id does not exist"})
-			if err != nil {
-				fmt.Printf("handler: Error while converting error to json, error:%s", err)
 				return
 			}
 			w.Write(responseBytes)
 			return
 		}
 
+		user, err := userService.UpdateUser(r.Context(), id, req)
+
 		if err != nil {
+			if err == customerrors.UserDoesNotExist {
+				fmt.Println("handler: User for this id does not exist")
+				w.WriteHeader(http.StatusNotFound)
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "User for this id does not exist"})
+				if err != nil {
+					fmt.Printf("handler: Error while converting error to json, error:%s", err)
+					return
+				}
+				w.Write(responseBytes)
+				return
+			}
 			fmt.Printf("handler: error while searching for user,error= %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
@@ -165,6 +164,7 @@ func UpdateUsersHandler(userService service.UserService) http.HandlerFunc {
 		}
 		w.WriteHeader(http.StatusOK)
 		w.Write(responsebytes)
+		return
 	}
 }
 
@@ -190,19 +190,18 @@ func DeleteUserHandler(userService service.UserService) http.HandlerFunc {
 
 		user, err := userService.DeleteUser(r.Context(), id)
 
-		if err == customerrors.NoUserExistForDelete {
-			fmt.Println("Handler: No user of given id exist")
-			w.WriteHeader(http.StatusNotFound)
-			responseBytes, jsonErr := json.Marshal(contract.ErrorResponse{Error: "no user found"})
-			if jsonErr != nil {
-				fmt.Printf("handler: Error while converting error to json. Error: %s", jsonErr)
+		if err != nil {
+			if err == customerrors.UserDoesNotExist {
+				fmt.Println("Handler: No user of given id exist")
+				w.WriteHeader(http.StatusNotFound)
+				responseBytes, jsonErr := json.Marshal(contract.ErrorResponse{Error: "no user found"})
+				if jsonErr != nil {
+					fmt.Printf("handler: Error while converting error to json. Error: %s", jsonErr)
+					return
+				}
+				w.Write(responseBytes)
 				return
 			}
-			w.Write(responseBytes)
-			return
-		}
-
-		if err != nil {
 			fmt.Printf("handler: error while searching for user,error= %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 
@@ -221,5 +220,6 @@ func DeleteUserHandler(userService service.UserService) http.HandlerFunc {
 		}
 		w.WriteHeader(http.StatusOK)
 		w.Write(responsebytes)
+		return
 	}
 }

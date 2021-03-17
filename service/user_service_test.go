@@ -12,6 +12,7 @@ import (
 	mockRepo "github.com/vkhichar/asset-management/repository/mocks"
 	"github.com/vkhichar/asset-management/service"
 	mockService "github.com/vkhichar/asset-management/service/mocks"
+	"gopkg.in/h2non/gock.v1"
 )
 
 func TestUserService_Login_When_FindUserReturnsError(t *testing.T) {
@@ -164,7 +165,7 @@ func TestUserService_UpdateUser_When_UpdateUserReturnsError(t *testing.T) {
 	}
 
 	mockUserRepo.On("UpdateUser", ctx, id, req).Return(nil, errors.New("User of given id does not exist"))
-	mockEventService.On("PostUserEvent", ctx, user).Return(nil, nil)
+	mockEventService.On("PostUpdateUserEvent", ctx, user).Return("", nil)
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
 
@@ -203,7 +204,7 @@ func TestUserService_UpdateUser_When_Success(t *testing.T) {
 	}
 
 	mockUserRepo.On("UpdateUser", ctx, id, req).Return(user, nil)
-	mockEventService.On("PostUserEvent", ctx, user).Return(nil, nil)
+	mockEventService.On("PostUpdateUserEvent", ctx, user).Return("", nil)
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
 
@@ -241,7 +242,7 @@ func TestUserService_UpdateUser_When_UpdateUserReturnsNil(t *testing.T) {
 	}
 
 	mockUserRepo.On("UpdateUser", ctx, id, req).Return(nil, nil)
-	mockEventService.On("PostUserEvent", ctx, user).Return(nil, nil)
+	mockEventService.On("PostUpdateUserEvent", ctx, user).Return("", nil)
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
 
@@ -281,7 +282,7 @@ func TestUserService_UpdateUser_When_PostUserEventReturnsError(t *testing.T) {
 	}
 
 	mockUserRepo.On("UpdateUser", ctx, id, req).Return(user, nil)
-	mockEventService.On("PostUserEvent", ctx, user).Return("", errors.New("Error while creating event"))
+	mockEventService.On("PostUpdateUserEvent", ctx, user).Return("", errors.New("Error while creating event"))
 
 	userFromService, err := userService.UpdateUser(ctx, id, req)
 
@@ -322,7 +323,7 @@ func TestUserService_UpdateUser_When_PostUserEventReturnsId(t *testing.T) {
 	}
 
 	mockUserRepo.On("UpdateUser", ctx, id, req).Return(user, nil)
-	mockEventService.On("PostUserEvent", ctx, user).Return(eventId, nil)
+	mockEventService.On("PostUpdateUserEvent", ctx, user).Return(eventId, nil)
 
 	userFromService, err := userService.UpdateUser(ctx, id, req)
 
@@ -393,4 +394,51 @@ func TestUserService_DeleteUser_When_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, &user, dbUser)
+}
+
+func TestUserService_PostUserEvent_When_HTTPostReturnsSuccess(t *testing.T) {
+	ctx := context.Background()
+
+	// gock.New(config.GetIpAddress() + ":" + config.GetEventAppPort()).Post("/events").
+	// 	Reply(200).JSON(map[string]int{"id": 21})
+	gock.New("http://34.70.86.33:9035").Post("/events").
+		Reply(200).JSON(map[string]int{"id": 21})
+
+	user := domain.User{
+		ID:       1,
+		Name:     "Dummy",
+		Email:    "dummy@email",
+		Password: "12345",
+		IsAdmin:  true,
+	}
+
+	eventService := service.NewEventService()
+	eventId, err := eventService.PostUpdateUserEvent(ctx, &user)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "21", eventId)
+}
+
+func TestUserService_PostUserEvent_When_HTTPostReturnsError(t *testing.T) {
+	ctx := context.Background()
+
+	err := errors.New("Error while json unmarshal")
+
+	gock.New("http://34.70.86.33:9035").Post("/events").
+		ReplyError(err).JSON(map[string]string{"id": "21"})
+
+	user := domain.User{
+		ID:       1,
+		Name:     "Dummy",
+		Email:    "dummy@email",
+		Password: "12345",
+		IsAdmin:  true,
+	}
+
+	eventService := service.NewEventService()
+	eventId, err := eventService.PostUpdateUserEvent(ctx, &user)
+
+	assert.NotNil(t, err)
+	assert.Equal(t, "", eventId)
+	//assert.Equal(t, "Error Occured", err.Error())
 }

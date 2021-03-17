@@ -82,7 +82,7 @@ func (service *userService) UpdateUser(ctx context.Context, id int, req contract
 		return user, customerrors.UserDoesNotExist
 	}
 
-	eventId, errEvent := service.eventSvc.PostUserEvent(ctx, user)
+	eventId, errEvent := service.eventSvc.PostUpdateUserEvent(ctx, user)
 	if errEvent != nil {
 		fmt.Printf("Service: Error while creating event. Error: %s", errEvent.Error())
 		return user, errEvent
@@ -101,7 +101,7 @@ func (service *userService) DeleteUser(ctx context.Context, id int) (*domain.Use
 	}
 
 	if user == nil {
-		return user, customerrors.NoUserExistForDelete
+		return user, customerrors.UserDoesNotExist
 	}
 
 	return user, nil

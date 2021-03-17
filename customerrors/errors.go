@@ -8,5 +8,4 @@ var (
 	NoAssetsExist             = errors.New("No assets exist")
 	MaintenanceIdDoesNotExist = errors.New("Maintenance id does no exist")
 	UserDoesNotExist          = errors.New("The user for this id does not exist")
-	NoUserExistForDelete      = errors.New("No user present by this Id")
 )

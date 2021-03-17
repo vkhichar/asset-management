@@ -70,7 +70,7 @@ func (m *MockUserService) DeleteUser(ctx context.Context, id int) (*domain.User,
 		err = args[1].(error)
 	}
 	if args[0] == nil && args[1] == nil {
-		return nil, customerrors.NoUserExistForDelete
+		return nil, customerrors.UserDoesNotExist
 	}
 	return user, err
 }
