@@ -1,7 +1,0 @@
-export APP_PORT="9000"
-export DB_HOST="localhost"
-export DB_PORT="5432"
-export DB_USERNAME="postgres"
-export DB_PASSWORD="abc123"
-export DB_NAME="asset_management"
-export EVENT_PORT="9035"
