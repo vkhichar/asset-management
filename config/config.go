@@ -7,11 +7,9 @@ import (
 )
 
 type configs struct {
-	appPort   int
-	dbConfig  DBConfig
-	jwtConfig JwtConfig
 	appPort      int
 	eventAppPort int
+	jwtConfig    JwtConfig
 	dbConfig     DBConfig
 }
 
