@@ -19,8 +19,11 @@ const EventResource = "/events"
 const AssetMaintenanceEvent = "ASSET_MAINTENANCE_ACTIVITY"
 
 type EventService interface {
+	PostCreateUserEvent(ctx context.Context, user *domain.User) (string, error)
+	PostUpdateUserEvent(context.Context, *domain.User) (string, error)
+
 	PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error)
-	PostUserEvent(context.Context, *domain.User) (string, error)
+	// PostUserEvent(context.Context, *domain.User) (string, error)
 	PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error)
 }
 
@@ -34,6 +37,44 @@ func NewEventService() EventService {
 			Timeout: time.Second * time.Duration(config.GetEventApiTimeout()),
 		},
 	}
+}
+
+func (e *eventSvc) PostCreateUserEvent(ctx context.Context, user *domain.User) (string, error) {
+
+	object := contract.CreateUserEvent{
+		EventType: "user",
+		Data:      user,
+	}
+	postBody, err := json.Marshal(object)
+	if err != nil {
+		fmt.Printf("Error while marshaling in event service: %s", err.Error())
+		return "", err
+	}
+	responseBody := bytes.NewReader(postBody)
+
+	re, err := http.NewRequest("POST", "http://34.70.86.33:"+config.GetEventAppPort()+"/events", responseBody)
+	if err != nil {
+		fmt.Printf("event service: error while newrequest: %s", err.Error())
+		return "", err
+	}
+
+	client := http.Client{
+		Timeout: 3 * time.Second,
+	}
+
+	resp, err := client.Do(re)
+	if err != nil {
+		fmt.Printf("Error in event service while getting response in client.do: %s", err.Error())
+		return "", err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("Error in event service :%s", err.Error())
+
+	}
+
+	return string(body), nil
 }
 
 func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error) {
@@ -75,7 +116,7 @@ func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.
 	return string(body), nil
 }
 
-func (evSvc *eventSvc) PostUserEvent(ctx context.Context, user *domain.User) (string, error) {
+func (evSvc *eventSvc) PostUpdateUserEvent(ctx context.Context, user *domain.User) (string, error) {
 	request := contract.UpdateUserEventRequest{}
 	request.EventType = "user"
 	request.Data = user
