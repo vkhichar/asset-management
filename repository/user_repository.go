@@ -94,7 +94,7 @@ func (repo *userRepo) GetUserByID(ctx context.Context, id int) (*domain.User, er
 
 	fmt.Println(newUser)
 	if err == sql.ErrNoRows {
-		return nil, err
+		return nil, nil
 	}
 	if err != nil {
 		return nil, err

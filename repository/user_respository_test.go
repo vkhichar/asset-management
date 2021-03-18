@@ -63,10 +63,13 @@ func TestUserRepo_GetUserByID_When_GetUserByID_ReturnUserNotExist(t *testing.T) 
 	ID := 2
 	config.Init()
 	repository.InitDB()
-	// db := repository.GetDB()
+	db := repository.GetDB()
 	userRepo := repository.NewUserRepository()
-
+	tx := db.MustBegin()
+	tx.MustExec("DELETE FROM users WHERE id=$1", "2")
+	tx.Commit()
 	returnUser, err := userRepo.GetUserByID(ctx, ID)
+	fmt.Println(err)
 	assert.Empty(t, returnUser)
-	assert.Error(t, err)
+	assert.Nil(t, err)
 }

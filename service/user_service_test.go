@@ -190,7 +190,7 @@ func TestUserService_GetUserById_When_ReturnError_User_not_exist(t *testing.T) {
 	newUser, err := userService.GetUserByID(ctx, ID)
 
 	if err == nil {
-		fmt.Printf("Error while creating user")
+		fmt.Printf("Error while getting info of user")
 		t.FailNow()
 	}
 
@@ -212,7 +212,7 @@ func TestUserService_GetUserById_When_ReturnError(t *testing.T) {
 	newUser, err := userService.GetUserByID(ctx, ID)
 
 	if err == nil {
-		fmt.Printf("Error while creating user")
+		fmt.Printf("Error while getting info of user")
 		t.FailNow()
 	}
 
@@ -263,6 +263,7 @@ func TestEventService_PostCreateUserEvent_ReturnsSuccess(t *testing.T) {
 
 	obj, err := userService.CreateUser(ctx, user)
 
+	assert.Equal(t, &user, obj)
 	assert.NotNil(t, obj)
 	assert.NoError(t, err)
 
@@ -289,6 +290,7 @@ func TestEventService_PostCreateUserEvent_ReturnsError(t *testing.T) {
 
 	assert.NotNil(t, obj)
 	assert.Error(t, err)
+	assert.EqualError(t, err, "some error in event service")
 }
 
 func TestUserService_ListUsers_When_ListUsersReturnsNil(t *testing.T) {
