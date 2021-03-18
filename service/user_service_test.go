@@ -575,7 +575,7 @@ func TestUserService_PostUserEvent_When_HTTPostReturnsSuccess(t *testing.T) {
 
 	service.InitEnv()
 
-	gock.New(config.GetIpAddress() + config.GetEventAppPort()).Post(service.EventResource).
+	gock.New(config.GetEventServiceUrl()).Post(service.EventResource).
 		Reply(200).JSON(map[string]int{"id": 21})
 
 	user := domain.User{
@@ -598,7 +598,7 @@ func TestUserService_PostUserEvent_When_HTTPostReturnsError(t *testing.T) {
 
 	service.InitEnv()
 
-	gock.New(config.GetIpAddress() + config.GetEventAppPort()).Post("/events").
+	gock.New(config.GetEventServiceUrl()).Post("/events").
 		Reply(400)
 
 	user := domain.User{
