@@ -53,6 +53,7 @@ func (m *MockUserService) GetUserByID(ctx context.Context, ID int) (*domain.User
 	var err error
 
 	if args[1] != nil {
+		// fmt.Println("ferfdc")
 		err = args[1].(error)
 	}
 	return newUser, err
