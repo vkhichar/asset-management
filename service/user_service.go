@@ -79,8 +79,6 @@ func (service *userService) CreateUser(ctx context.Context, user domain.User) (*
 	id, err := service.eventSvc.PostCreateUserEvent(ctx, entry)
 	if err != nil {
 		fmt.Printf("user service: error while calling postuserevent: %s", err.Error())
-		fmt.Println()
-		return entry, err
 	}
 	fmt.Println(id)
 	return entry, nil

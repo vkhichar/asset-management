@@ -23,38 +23,37 @@ func TestAssetRepository_ListAssetsRepo_When_Success(t *testing.T) {
 	db := repository.GetDB()
 	tx := db.MustBegin()
 
-	tx.MustExec("delete from maintenance_activities")
 	tx.MustExec("Delete from assets")
+
 	tx.MustExec("insert into assets(id,status,category,purchase_at,purchase_cost,name,specifications) values($1,$2,$3,$4,$5,$6,$7)", "ffb4b1a4-7bf5-11ee-9339-0242ac130002", "active", "Laptop", "01/07/2020", 500, "Dell Latitude E5550", `{"RAM":"4GB","HDD":"500GB","Generation":"i8"}`)
 	tx.Commit()
 	db.Select(&expectedasset, "Select id,status,category,purchase_at,purchase_cost,name,specifications from assets")
 
 	assetRepo := repository.NewAssetRepository()
 
-	asset, _ := assetRepo.ListAssets(ctx)
+	asset, err := assetRepo.ListAssets(ctx)
 
 	assert.Equal(t, expectedasset, asset)
+	assert.Nil(t, err)
 }
 
 func TestAssetRepository_ListAssetsRepo_When_ReturnsError(t *testing.T) {
 	ctx := context.Background()
-	//expectedasset := errors.New("No assets exist")
 
 	config.Init()
 	repository.InitDB()
 	db := repository.GetDB()
 	tx := db.MustBegin()
 
-	tx.MustExec("delete from maintenance_activities")
 	tx.MustExec("Delete from assets")
 	tx.Commit()
 
 	assetRepo := repository.NewAssetRepository()
 
-	asset, _ := assetRepo.ListAssets(ctx)
+	asset, err := assetRepo.ListAssets(ctx)
 
-	assert.Empty(t, asset)
-	//assert.EqualError(t, expectedasset, err.Error())
+	assert.Nil(t, asset)
+	assert.Nil(t, err)
 
 }
 
@@ -79,12 +78,9 @@ func TestAssetRepository_UpdateAssetsRepo_When_ReturnsError(t *testing.T) {
 	repository.InitDB()
 	db := repository.GetDB()
 	tx := db.MustBegin()
-
-	tx.MustExec("delete from maintenance_activities")
 	tx.MustExec("Delete from assets")
 
 	tx.MustExec("insert into assets(id,status,category,purchase_at,purchase_cost,name,specifications) values($1,$2,$3,$4,$5,$6,$7)", "ffb4b1a4-7bf5-11ee-9339-0242ac130002", "active", "Laptop", "01/07/2020", 500, "Dell Latitude E5550", `{"RAM":"4GB","HDD":"500GB","Generation":"i8"}`)
-
 	tx.Commit()
 	assetRepo := repository.NewAssetRepository()
 
@@ -104,8 +100,8 @@ func TestAssetRepository_DeleteRepo_When_ReturnsError(t *testing.T) {
 	repository.InitDB()
 	db := repository.GetDB()
 	tx := db.MustBegin()
-	tx.MustExec("delete from maintenance_activities")
 	tx.MustExec("Delete from assets")
+	tx.Commit()
 
 	assetRepo := repository.NewAssetRepository()
 
@@ -139,10 +135,9 @@ func TestAssetRepository_UpdateAssetsRepo_When_Success(t *testing.T) {
 	db := repository.GetDB()
 	tx := db.MustBegin()
 
-	tx.MustExec("delete from maintenance_activities")
 	tx.MustExec("Delete from assets")
 
-	tx.MustExec("insert into assets(id,status,category,purchase_at,purchase_cost,name,specifications) values($1,$2,$3,$4,$5,$6,$7)", "ffb4b1a4-7bf5-11ee-9339-0242ac130002", "retired", "Laptop", "01/07/2020", 500, "Dell Latitude E5550", `{"RAM":"4GB","HDD":"500GB","Generation":"i8"}`)
+	tx.MustExec("insert into assets(id,status,category,purchase_at,purchase_cost,name,specifications) values($1,$2,$3,$4,$5,$6,$7)", "ffb4b1a4-7bf5-11ee-9339-0242ac130002", "active", "Laptop", "01/07/2020", 500, "Dell Latitude E5550", `{"RAM":"4GB","HDD":"500GB","Generation":"i8"}`)
 	tx.Commit()
 	fmt.Println("below")
 
@@ -159,20 +154,17 @@ func TestAssetRepository_UpdateAssetsRepo_When_Success(t *testing.T) {
 func TestAssetRepository_DeleteRepo_When_Success(t *testing.T) {
 	ctx := context.Background()
 	var expectedasset domain.Asset
-	fmt.Println("Above")
 	Id, _ := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
 
 	config.Init()
 	repository.InitDB()
 	db := repository.GetDB()
 	tx := db.MustBegin()
-	tx.MustExec("delete from maintenance_activities")
+
 	tx.MustExec("Delete from assets")
 
 	tx.MustExec("insert into assets(id,status,category,purchase_at,purchase_cost,name,specifications) values($1,$2,$3,$4,$5,$6,$7)", "ffb4b1a4-7bf5-11ee-9339-0242ac130002", "active", "Laptop", "01/07/2020", 500, "Dell Latitude E5550", `{"RAM":"4GB","HDD":"500GB","Generation":"i8"}`)
 	tx.Commit()
-
-	fmt.Println("below")
 
 	assetRepo := repository.NewAssetRepository()
 
