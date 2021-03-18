@@ -51,12 +51,11 @@ func Init() error {
 		eventPort = 9035
 	}
 
-	ipAddressStr := os.Getenv("IP_ADDRESS")
+	config.ipAddress = os.Getenv("IP_ADDRESS")
 
 	config.appPort = port
 
 	config.eventAppPort = eventPort
-	config.ipAddress = ipAddressStr
 
 	config.dbConfig = initDBConfig()
 
