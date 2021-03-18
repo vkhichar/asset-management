@@ -13,6 +13,8 @@ import (
 
 type AssetService interface {
 	ListAssets(ctx context.Context) ([]domain.Asset, error)
+	CreateAsset(ctx context.Context, asset *domain.Asset) (*domain.Asset, error)
+	GetAsset(ctx context.Context, ID uuid.UUID) (*domain.Asset, error)
 	UpdateAsset(ctx context.Context, Id uuid.UUID, req contract.UpdateRequest) (*domain.Asset, error)
 	DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error)
 }
@@ -22,10 +24,10 @@ type assetService struct {
 	eventSvc  EventService
 }
 
-func NewAssetService(repo repository.AssetRepository, es EventService) AssetService {
+func NewAssetService(repo repository.AssetRepository, event EventService) AssetService {
 	return &assetService{
 		assetRepo: repo,
-		eventSvc:  es,
+		eventSvc:  event,
 	}
 }
 func (service *assetService) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error) {
@@ -52,7 +54,6 @@ func (service *assetService) UpdateAsset(ctx context.Context, Id uuid.UUID, req 
 }
 
 func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, error) {
-
 	asset, err := service.assetRepo.ListAssets(ctx)
 	if err != nil {
 		return nil, err
@@ -61,4 +62,35 @@ func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, er
 		return nil, customerrors.NoAssetsExist
 	}
 	return asset, nil
+}
+
+func (service *assetService) CreateAsset(ctx context.Context, assetParam *domain.Asset) (*domain.Asset, error) {
+	asset, err := service.assetRepo.CreateAsset(ctx, assetParam)
+	if err != nil {
+		if err == customerrors.NoAssetsExist {
+			fmt.Printf("Asset service: asset does not exist: %s", err.Error())
+			return nil, err
+		}
+		fmt.Printf("asset_service error while creating asset: %s", err.Error())
+		return nil, err
+	}
+
+	id, err := service.eventSvc.PostAssetEventCreateAsset(ctx, asset)
+	if err != nil {
+		fmt.Printf("asset service: error during post asset event: %s", err.Error())
+		return nil, err
+	}
+	fmt.Println(id)
+
+	return asset, err
+}
+
+func (service *assetService) GetAsset(ctx context.Context, ID uuid.UUID) (*domain.Asset, error) {
+	asset, err := service.assetRepo.GetAsset(ctx, ID)
+	if err != nil {
+		fmt.Printf("asset_service error while getting asset by it's ID: %s", err.Error())
+		return nil, err
+	}
+
+	return asset, err
 }

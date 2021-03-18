@@ -3,6 +3,7 @@ package mocks
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/vkhichar/asset-management/domain"
 )
@@ -40,4 +41,30 @@ func (m *MockMaintenanceActivityService) DetailedMaintenanceActivity(ctx context
 	}
 
 	return maintenanceActivity, err
+}
+
+func (mock *MockMaintenanceActivityService) DeleteMaintenanceActivity(ctx context.Context, id int) (err error) {
+	args := mock.Called(ctx, id)
+
+	if args[0] != nil {
+		return args[0].(error)
+	}
+	return nil
+}
+
+func (mock *MockMaintenanceActivityService) GetAllForAssetId(ctx context.Context, assetId uuid.UUID) ([]domain.MaintenanceActivity, error) {
+	args := mock.Called(ctx, assetId)
+	if args[1] != nil {
+		return nil, args[1].(error)
+	}
+
+	return args[0].([]domain.MaintenanceActivity), nil
+}
+
+func (mock *MockMaintenanceActivityService) UpdateMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
+	args := mock.Called(ctx, req)
+	if args[1] != nil {
+		return nil, args[1].(error)
+	}
+	return args[0].(*domain.MaintenanceActivity), nil
 }
