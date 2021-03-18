@@ -34,18 +34,27 @@ type DetailAssetMaintenanceActivityResponse struct {
 
 func NewDetailAssetMaintenanceActivityResponse(domain *domain.MaintenanceActivity) DetailAssetMaintenanceActivityResponse {
 
-	resp := DetailAssetMaintenanceActivityResponse{
-		ID:          domain.ID,
-		AssetId:     domain.AssetId,
-		Cost:        domain.Cost,
-		StartedAt:   domain.StartedAt.Format("02-01-2006"),
-		EndedAt:     domain.EndedAt.Format("02-01-2006"),
-		Description: domain.Description,
+	if domain.EndedAt != nil {
+		resp := DetailAssetMaintenanceActivityResponse{
+			ID:          domain.ID,
+			AssetId:     domain.AssetId,
+			Cost:        domain.Cost,
+			StartedAt:   domain.StartedAt.Format("02-01-2006"),
+			EndedAt:     domain.EndedAt.Format("02-01-2006"),
+			Description: domain.Description,
+		}
+
+		return resp
+	} else {
+		resp := DetailAssetMaintenanceActivityResponse{
+			ID:          domain.ID,
+			AssetId:     domain.AssetId,
+			Cost:        domain.Cost,
+			StartedAt:   domain.StartedAt.Format("02-01-2006"),
+			EndedAt:     "",
+			Description: domain.Description,
+		}
+		return resp
 	}
 
-	if resp.EndedAt == "01-01-0001" {
-		resp.EndedAt = ""
-	}
-
-	return resp
 }

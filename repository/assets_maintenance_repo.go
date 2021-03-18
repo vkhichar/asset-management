@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -77,8 +76,8 @@ func (repo *assetMaintainRepo) DetailedMaintenanceActivity(ctx context.Context, 
 			return nil, err
 		}
 
-		maintenanceActivity.EndedAt = &time.Time{}
-		fmt.Println("Repo layer time:", maintenanceActivity.EndedAt)
+		maintenanceActivity.EndedAt = nil
+
 	}
 
 	return &maintenanceActivity, nil
