@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/vkhichar/asset-management/config"
@@ -61,7 +62,17 @@ func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.
 		return "", err
 	}
 
-	return string(body), nil
+	var responseObj contract.CreateAssetEventResponse
+	errJsonUnmarshal := json.Unmarshal(body, &responseObj)
+
+	if errJsonUnmarshal != nil {
+		fmt.Printf("Event Service: error while unmarshal :%s", errJsonUnmarshal.Error())
+		return "", errJsonUnmarshal
+	}
+
+	eventId := strconv.Itoa(responseObj.ID)
+
+	return string(eventId), nil
 }
 
 func (evSvc *eventSvc) PostUserEvent(ctx context.Context, user *domain.User) (string, error) {

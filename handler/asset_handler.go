@@ -245,12 +245,12 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
 		responseBytes, err := json.Marshal(contract.CreateAssetResponse{ID: returnedAsset.Id, Status: returnedAsset.Status, Category: returnedAsset.Category, PurchaseAt: returnedAsset.PurchaseAt.String(), PurchaseCost: returnedAsset.PurchaseCost, Name: returnedAsset.Name, Specifications: returnedAsset.Specifications})
 		if err != nil {
 			fmt.Printf("asset_handler: error while marshalling, %s", err.Error())
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		w.Write(responseBytes)
 		return
 	}

@@ -70,10 +70,11 @@ func (service *assetService) CreateAsset(ctx context.Context, assetParam *domain
 
 	id, err := service.eventSvc.PostAssetEventCreateAsset(ctx, asset)
 	if err != nil {
-		fmt.Printf("asset service: error during post asset event: %s", err.Error())
-		return nil, err
+		fmt.Printf("asset service: error during post create asset event: %s", err.Error())
+		return asset, err
+	} else {
+		fmt.Println("New event created successfully:", id)
 	}
-	fmt.Println(id)
 
 	return asset, err
 }

@@ -42,13 +42,11 @@ func Init() error {
 	eventPort, err := strconv.Atoi(eventPortStr)
 	if err != nil {
 		fmt.Printf("config: couldn't covert app_port from string to int: %s", err.Error())
-		port = 9035
+		eventPort = 9035
 	}
 
 	config.appPort = port
-
 	config.eventAppPort = eventPort
-
 	config.dbConfig = initDBConfig()
 	config.jwtConfig = initJwtConfig()
 	return nil
@@ -57,6 +55,7 @@ func Init() error {
 func initDBConfig() DBConfig {
 	cfg := DBConfig{
 		Host:     os.Getenv("DB_HOST"),
+		Port:     0,
 		Username: os.Getenv("DB_USERNAME"),
 		Password: os.Getenv("DB_PASSWORD"),
 		Name:     os.Getenv("DB_NAME"),
