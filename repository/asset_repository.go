@@ -97,7 +97,7 @@ func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 	err := repo.db.Select(&as, getAssetDetails)
 
 	if err == sql.ErrNoRows {
-
+		fmt.Println("In repo.", as)
 		return nil, customerrors.NoAssetsExist
 	}
 	if err != nil {

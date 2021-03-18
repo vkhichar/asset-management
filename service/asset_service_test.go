@@ -176,7 +176,7 @@ func TestAssetService_CreateAsset_When_PostAssetEventCreateAssetReturnsError(t *
 func TestAssetService_When_PostAssetEventSuccess(t *testing.T) {
 	ctx := context.Background()
 
-	gock.New("http://34.70.86.33:" + config.GetEventAppPort()).
+	gock.New(config.GetEventServiceUrl()).
 		Post("/events").
 		Reply(200).
 		JSON(map[string]string{"id": "123"})
@@ -206,7 +206,7 @@ func TestAssetService_When_PostAssetEventSuccess(t *testing.T) {
 func TestAssetService_When_PostAssetEventReturnsError(t *testing.T) {
 	ctx := context.Background()
 
-	gock.New("http://34.70.86.33:" + config.GetEventAppPort()).Post("/events").Reply(400)
+	gock.New(config.GetEventServiceUrl()).Post("/events").Reply(400)
 
 	m := make(map[string]interface{})
 	m["ram"] = "4GB"
