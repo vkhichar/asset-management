@@ -80,7 +80,6 @@ func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain
 	err := repo.db.Get(&newUser, createUserByQuery, user.Name, user.Email, user.Password, user.IsAdmin)
 
 	if err != nil {
-		fmt.Println(user.Name)
 		return nil, err
 
 	}
@@ -95,7 +94,7 @@ func (repo *userRepo) GetUserByID(ctx context.Context, id int) (*domain.User, er
 
 	fmt.Println(newUser)
 	if err == sql.ErrNoRows {
-		return nil, nil
+		return nil, err
 	}
 	if err != nil {
 		return nil, err
@@ -138,11 +137,12 @@ func (repo *userRepo) DeleteUser(ctx context.Context, id int) (*domain.User, err
 
 	err := repo.db.Get(&user, getUserByIDQuery, id)
 
+	if err == sql.ErrNoRows {
+		fmt.Printf("Repository: No users present")
+		return nil, nil
+	}
+
 	if err != nil {
-		if err == sql.ErrNoRows {
-			fmt.Printf("Repository: No users present")
-			return nil, customerrors.UserDoesNotExist
-		}
 		return nil, err
 	}
 

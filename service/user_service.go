@@ -93,6 +93,7 @@ func (service *userService) GetUserByID(ctx context.Context, ID int) (*domain.Us
 	if err != nil {
 		return nil, err
 	}
+
 	if user == nil {
 		return nil, customerrors.UserNotExist
 	}
