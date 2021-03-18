@@ -650,6 +650,7 @@ func TestAssetService_UpdateAsset_When_PostAssetEventReturnError(t *testing.T) {
 	assert.Equal(t, "some DB error", err.Error())
 
 }
+
 func TestAssetService_PostAssetEvent_When_Success(t *testing.T) {
 	ctx := context.Background()
 	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
@@ -673,7 +674,6 @@ func TestAssetService_PostAssetEvent_When_Success(t *testing.T) {
 	if errMarshal != nil {
 		fmt.Printf("Error while Marshaling %s", errMarshal.Error())
 	}
-	defer gock.Off()
 
 	gock.New("http://34.70.86.33:" + config.GetEventAppPort()).
 		Post("/events").
@@ -695,8 +695,8 @@ func TestAssetService_PostAssetEvent_When_Success(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.JSONEq(t, `{"id":"120"}`, id)
-
 }
+
 func TestAssetService_PostAssetEvent_When_ReturnsError(t *testing.T) {
 	ctx := context.Background()
 	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
@@ -737,9 +737,9 @@ func TestAssetService_PostAssetEvent_When_ReturnsError(t *testing.T) {
 	}
 
 	eventService := service.NewEventService()
-	id, err := eventService.PostAssetEvent(ctx, &asset)
+	eventId, err := eventService.PostAssetEvent(ctx, &asset)
 
-	assert.Equal(t, "", id)
-	assert.Nil(t, err)
+	assert.Equal(t, "", eventId)
+	assert.NotNil(t, err)
 
 }

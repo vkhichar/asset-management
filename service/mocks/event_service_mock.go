@@ -59,7 +59,7 @@ func (m *MockEventService) PostAssetEvent(ctx context.Context, asset *domain.Ass
 	args := m.Called(ctx, asset)
 
 	var eventId string
-	if args[0] != nil {
+	if args[0] != "" {
 		eventId = args[0].(string)
 	}
 	var err error

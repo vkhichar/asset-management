@@ -1,5 +1,5 @@
 package contract
 
 type AssetEventResponse struct {
-	ID int `json:"id"`
+	ID string `json:"id"`
 }

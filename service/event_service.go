@@ -104,14 +104,16 @@ func (e *eventSvc) PostAssetEvent(ctx context.Context, asset *domain.Asset) (str
 	body, errReadAll := ioutil.ReadAll(resp.Body)
 	if errReadAll != nil {
 		fmt.Printf("Error While Performing ReadAll %s", errReadAll.Error())
+		return "", errReadAll
 	}
 	var responseObj contract.AssetEventResponse
 	errJsonMarshal := json.Unmarshal(body, &responseObj)
 	if errJsonMarshal != nil {
 		fmt.Printf("Event Service : Error While UnMarshaling :%s", errJsonMarshal.Error())
+		return "", errJsonMarshal
 	}
-	eventId := strconv.Itoa(responseObj.ID)
-	return eventId, nil
+	// eventId := strconv.Itoa(responseObj.ID)
+	return string(responseObj.ID), nil
 }
 
 func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error) {
