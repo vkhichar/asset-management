@@ -1,54 +1,43 @@
 package repository_test
 
-import (
-	"context"
-	"fmt"
-	"testing"
+// func TestUserRepo_CreateUser_When_CreateUserReturnSuccess(t *testing.T) {
 
-	"github.com/stretchr/testify/assert"
-	"github.com/vkhichar/asset-management/config"
-	"github.com/vkhichar/asset-management/domain"
-	"github.com/vkhichar/asset-management/repository"
-)
+// 	ctx := context.Background()
+// 	user := domain.User{
+// 		ID:       104,
+// 		Name:     "Nikhil",
+// 		Email:    "nikhil@email",
+// 		Password: "1234",
+// 		IsAdmin:  true,
+// 	}
+// 	config.Init()
+// 	repository.InitDB()
+// 	db := repository.GetDB()
+// 	var newUser domain.User
+// 	userRepo := repository.NewUserRepository()
 
-func TestUserRepo_CreateUser_When_CreateUserReturnSuccess(t *testing.T) {
+// 	returnuser, err := userRepo.CreateUser(ctx, user)
+// 	if err != nil {
+// 		fmt.Printf("userRepo Mock:error while inserting data %s", err.Error())
+// 		return
+// 	}
 
-	ctx := context.Background()
-	user := domain.User{
-		ID:       104,
-		Name:     "Nikhil",
-		Email:    "nikhil@email",
-		Password: "1234",
-		IsAdmin:  true,
-	}
-	config.Init()
-	repository.InitDB()
-	db := repository.GetDB()
-	var newUser domain.User
-	userRepo := repository.NewUserRepository()
+// 	db.Get(&newUser, "SELECT * FROM users WHERE id= $1", 104)
 
-	returnuser, err := userRepo.CreateUser(ctx, user)
-	if err != nil {
-		fmt.Printf("userRepo Mock:error while inserting data %s", err.Error())
-		return
-	}
+// 	assert.Equal(t, &newUser, returnuser)
+// 	assert.NoError(t, err)
+// }
 
-	db.Get(&newUser, "SELECT * FROM users WHERE id= $1", 104)
+// func TestUserRepo_GetUserByID_When_GetUserByID_ReturnUserExist(t *testing.T) {
 
-	assert.Equal(t, &newUser, returnuser)
-	assert.NoError(t, err)
-}
+// 	ctx := context.Background()
 
-func TestUserRepo_GetUserByID_When_GetUserByID_ReturnUserExist(t *testing.T) {
+// 	ID := 5
+// 	config.Init()
+// 	repository.InitDB()
+// 	userRepo := repository.NewUserRepository()
 
-	ctx := context.Background()
-
-	ID := 5
-	config.Init()
-	repository.InitDB()
-	userRepo := repository.NewUserRepository()
-
-	returnUser, err := userRepo.GetUserByID(ctx, ID)
-	assert.NotEmpty(t, returnUser)
-	assert.NoError(t, err)
-}
+// 	returnUser, err := userRepo.GetUserByID(ctx, ID)
+// 	assert.NotEmpty(t, returnUser)
+// 	assert.NoError(t, err)
+// }

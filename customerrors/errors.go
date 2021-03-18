@@ -13,7 +13,6 @@ var (
 	MaintenanceIdDoesNotExist = errors.New("Maintenance id does no exist")
 	ResponseTimeLimitExceeded = errors.New("Response Time Limit Exceeded")
 	UserDoesNotExist          = errors.New("The user for this id does not exist")
-	NoUserExistForDelete      = errors.New("No user present by this Id")
 	ErrMissingToken           = errors.New("missing token")
 	ErrInvalidToken           = errors.New("invalid or expired token")
 	ErrForbidden              = errors.New("forbidden")

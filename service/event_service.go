@@ -24,7 +24,7 @@ type EventService interface {
 	PostCreateUserEvent(ctx context.Context, user *domain.User) (string, error)
 	PostUpdateUserEvent(context.Context, *domain.User) (string, error)
 	PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error)
-	PostMaintenanceActivity(ctx context.Context, req *domain.MaintenanceActivity) (string, error)
+	PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error)
 	PostAssetMaintenanceActivityEvent(ctx context.Context, resBody *domain.MaintenanceActivity) (string, error)
 }
 
@@ -166,7 +166,7 @@ func (evSvc *eventSvc) PostUpdateUserEvent(ctx context.Context, user *domain.Use
 	return eventId, nil
 }
 
-func (service *eventSvc) PostMaintenanceActivity(ctx context.Context, req *domain.MaintenanceActivity) (string, error) {
+func (service *eventSvc) PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error) {
 
 	reqBody, err := json.Marshal(req)
 	if err != nil {
@@ -206,7 +206,7 @@ func (evSvc *eventSvc) PostAssetMaintenanceActivityEvent(ctx context.Context, re
 	reqEvent, _ := json.Marshal(req)
 	r := bytes.NewReader(reqEvent)
 
-	reqst, err := http.NewRequest("POST", config.GetEventServiceUrl()+":"+config.GetEventAppPort()+"/events", r)
+	reqst, err := http.NewRequest("POST", config.GetEventServiceUrl()+"/events", r)
 	if err != nil {
 		fmt.Printf("Event service request: error:%s", err.Error())
 		return "", err

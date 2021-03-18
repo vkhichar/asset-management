@@ -78,8 +78,7 @@ func (repo *assetMaintainRepo) DetailedMaintenanceActivity(ctx context.Context, 
 		}
 
 		maintenanceActivity.EndedAt = &time.Time{}
-		return &maintenanceActivity, nil
-
+		fmt.Println("Repo layer time:", maintenanceActivity.EndedAt)
 	}
 
 	return &maintenanceActivity, nil

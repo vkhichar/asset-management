@@ -83,7 +83,7 @@ func (service *assetMaintenanceService) UpdateMaintenanceActivity(ctx context.Co
 	if err != nil {
 		return nil, err
 	}
-	id, err := service.eventSvc.PostMaintenanceActivity(ctx, activity)
+	id, err := service.eventSvc.PostMaintenanceActivity(ctx, *activity)
 
 	if err != nil {
 		fmt.Println("Failed to submit event: ", err)

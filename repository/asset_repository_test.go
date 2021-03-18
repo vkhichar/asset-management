@@ -1,152 +1,139 @@
 package repository_test
 
-import (
-	"context"
-	"fmt"
-	"testing"
-	"time"
+// func TestAssetRepository_CreateAsset_When_Success(t *testing.T) {
+// 	ctx := context.Background()
+// 	var assetExpected domain.Asset
+// 	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9016")
+// 	duration, err := time.Parse("01/01/0001", "01/01/0001")
+// 	spec := []byte(`{"ram":"4GB","brand":"acer"}`)
 
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/vkhichar/asset-management/config"
-	"github.com/vkhichar/asset-management/domain"
-	"github.com/vkhichar/asset-management/repository"
-)
+// 	dummy := domain.Asset{
+// 		Id:             id,
+// 		Status:         "active",
+// 		Category:       "laptop",
+// 		PurchaseAt:     duration,
+// 		PurchaseCost:   45000.00,
+// 		Name:           "aspire-5",
+// 		Specifications: spec,
+// 	}
 
-func TestAssetRepository_CreateAsset_When_Success(t *testing.T) {
-	ctx := context.Background()
-	var assetExpected domain.Asset
-	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9016")
-	duration, err := time.Parse("01/01/0001", "01/01/0001")
-	spec := []byte(`{"ram":"4GB","brand":"acer"}`)
+// 	config.Init()
+// 	repository.InitDB()
+// 	db := repository.GetDB()
 
-	dummy := domain.Asset{
-		Id:             id,
-		Status:         "active",
-		Category:       "laptop",
-		PurchaseAt:     duration,
-		PurchaseCost:   45000.00,
-		Name:           "aspire-5",
-		Specifications: spec,
-	}
+// 	tx := db.MustBegin()
+// 	tx.MustExec("delete from assets")
+// 	tx.Commit()
 
-	config.Init()
-	repository.InitDB()
-	db := repository.GetDB()
+// 	assetRepo := repository.NewAssetRepository()
 
-	tx := db.MustBegin()
-	tx.MustExec("delete from assets")
-	tx.Commit()
+// 	asset, err := assetRepo.CreateAsset(ctx, &dummy)
 
-	assetRepo := repository.NewAssetRepository()
+// 	fmt.Println()
+// 	db.Get(&assetExpected, "SELECT * FROM assets WHERE id = $1", id)
+// 	fmt.Println(assetExpected)
 
-	asset, err := assetRepo.CreateAsset(ctx, &dummy)
+// 	assert.Equal(t, &assetExpected, asset)
+// 	assert.Nil(t, err)
 
-	fmt.Println()
-	db.Get(&assetExpected, "SELECT * FROM assets WHERE id = $1", id)
-	fmt.Println(assetExpected)
+// 	fmt.Println()
+// }
 
-	assert.Equal(t, &assetExpected, asset)
-	assert.Nil(t, err)
+// func TestAssetRepository_CreateAsset_When_ReturnsError(t *testing.T) {
+// 	ctx := context.Background()
+// 	var assetExpected domain.Asset
+// 	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9016")
+// 	duration, err := time.Parse("01/01/0001", "01/01/0001")
+// 	spec := []byte(`{"ram":"4GB","brand":"acer"}`)
 
-	fmt.Println()
-}
+// 	dummy := domain.Asset{
+// 		Id:             id,
+// 		Status:         "active",
+// 		Category:       "laptop",
+// 		PurchaseAt:     duration,
+// 		PurchaseCost:   45000.00,
+// 		Name:           "aspire-5",
+// 		Specifications: spec,
+// 	}
 
-func TestAssetRepository_CreateAsset_When_ReturnsError(t *testing.T) {
-	ctx := context.Background()
-	var assetExpected domain.Asset
-	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9016")
-	duration, err := time.Parse("01/01/0001", "01/01/0001")
-	spec := []byte(`{"ram":"4GB","brand":"acer"}`)
+// 	config.Init()
+// 	repository.InitDB()
+// 	db := repository.GetDB()
 
-	dummy := domain.Asset{
-		Id:             id,
-		Status:         "active",
-		Category:       "laptop",
-		PurchaseAt:     duration,
-		PurchaseCost:   45000.00,
-		Name:           "aspire-5",
-		Specifications: spec,
-	}
+// 	tx := db.MustBegin()
+// 	tx.MustExec("delete from assets")
+// 	tx.Commit()
 
-	config.Init()
-	repository.InitDB()
-	db := repository.GetDB()
+// 	assetRepo := repository.NewAssetRepository()
 
-	tx := db.MustBegin()
-	tx.MustExec("delete from assets")
-	tx.Commit()
+// 	asset, err := assetRepo.CreateAsset(ctx, &dummy)
 
-	assetRepo := repository.NewAssetRepository()
+// 	fmt.Println()
+// 	db.Get(&assetExpected, "SELECT * FROM assets WHERE id = $1", id)
+// 	fmt.Println(assetExpected)
 
-	asset, err := assetRepo.CreateAsset(ctx, &dummy)
+// 	assert.Equal(t, &assetExpected, asset)
+// 	assert.Nil(t, err)
+// 	fmt.Println()
+// }
 
-	fmt.Println()
-	db.Get(&assetExpected, "SELECT * FROM assets WHERE id = $1", id)
-	fmt.Println(assetExpected)
+// func TestAssetRepository_GetAsset_When_Success(t *testing.T) {
+// 	ctx := context.Background()
+// 	var assetExpected domain.Asset
+// 	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9016")
+// 	if err != nil {
+// 		fmt.Printf("Error while parsing uuid: %s", err.Error())
+// 		return
+// 	}
+// 	config.Init()
+// 	repository.InitDB()
+// 	db := repository.GetDB()
 
-	assert.Equal(t, &assetExpected, asset)
-	assert.Nil(t, err)
-	fmt.Println()
-}
+// 	assetRepo := repository.NewAssetRepository()
 
-func TestAssetRepository_GetAsset_When_Success(t *testing.T) {
-	ctx := context.Background()
-	var assetExpected domain.Asset
-	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9016")
-	if err != nil {
-		fmt.Printf("Error while parsing uuid: %s", err.Error())
-		return
-	}
-	config.Init()
-	repository.InitDB()
-	db := repository.GetDB()
+// 	asset, err := assetRepo.GetAsset(ctx, id)
 
-	assetRepo := repository.NewAssetRepository()
+// 	fmt.Println()
+// 	db.Get(&assetExpected, "SELECT * FROM assets WHERE id = $1", id)
+// 	fmt.Println(assetExpected)
 
-	asset, err := assetRepo.GetAsset(ctx, id)
+// 	assert.NotNil(t, asset)
+// 	assert.Equal(t, &assetExpected, asset)
+// 	assert.Nil(t, err)
+// 	fmt.Println()
+// }
 
-	fmt.Println()
-	db.Get(&assetExpected, "SELECT * FROM assets WHERE id = $1", id)
-	fmt.Println(assetExpected)
+// func TestAssetRepository_GetAsset_When_ReturnsError(t *testing.T) {
+// 	ctx := context.Background()
+// 	id, err := uuid.Parse("642fc397-abec-4e1e-8473-03dbb9017")
+// 	if err != nil {
+// 		fmt.Printf("Error while parsing uuid: %s", err.Error())
+// 		return
+// 	}
 
-	assert.NotNil(t, asset)
-	assert.Equal(t, &assetExpected, asset)
-	assert.Nil(t, err)
-	fmt.Println()
-}
+// 	assetRepo := repository.NewAssetRepository()
 
-func TestAssetRepository_GetAsset_When_ReturnsError(t *testing.T) {
-	ctx := context.Background()
-	id, err := uuid.Parse("642fc397-abec-4e1e-8473-03dbb9017")
-	if err != nil {
-		fmt.Printf("Error while parsing uuid: %s", err.Error())
-		return
-	}
+// 	asset, err := assetRepo.GetAsset(ctx, id)
 
-	assetRepo := repository.NewAssetRepository()
+// 	fmt.Println()
+// 	assert.Nil(t, asset)
+// 	assert.NotNil(t, err)
+// 	fmt.Println()
+// }
 
-	asset, err := assetRepo.GetAsset(ctx, id)
+// func TestAssetRepository_GetAsset_When_AssetDoesNotExist(t *testing.T) {
+// 	ctx := context.Background()
+// 	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9017")
+// 	if err != nil {
+// 		fmt.Printf("Error while parsing uuid: %s", err.Error())
+// 		return
+// 	}
 
-	fmt.Println()
-	assert.Nil(t, asset)
-	assert.NotNil(t, err)
-	fmt.Println()
-}
+// 	assetRepo := repository.NewAssetRepository()
 
-func TestAssetRepository_GetAsset_When_AssetDoesNotExist(t *testing.T) {
-	ctx := context.Background()
-	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9017")
-	if err != nil {
-		fmt.Printf("Error while parsing uuid: %s", err.Error())
-		return
-	}
+// 	asset, err := assetRepo.GetAsset(ctx, id)
 
-	assetRepo := repository.NewAssetRepository()
-
-	asset, err := assetRepo.GetAsset(ctx, id)
-
-	assert.Nil(t, asset)
-	assert.NotNil(t, err)
-	fmt.Println()
-}
+// 	assert.Nil(t, asset)
+// 	assert.NotNil(t, err)
+// 	fmt.Println()
+// }

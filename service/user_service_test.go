@@ -537,7 +537,7 @@ func TestUserService_DeleteUser_When_DeleteUserReturnsNil(t *testing.T) {
 
 	dbUser, err := userService.DeleteUser(ctx, id)
 
-	expectedErr := "No user present by this Id"
+	expectedErr := "The user for this id does not exist"
 
 	assert.Equal(t, expectedErr, err.Error())
 	assert.Nil(t, dbUser)
