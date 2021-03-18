@@ -2,7 +2,6 @@ package repository_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -13,7 +12,42 @@ import (
 	"github.com/vkhichar/asset-management/repository"
 )
 
-// func TestAssetRepository_CreateAsset_When_Success(t *testing.T) {
+func TestAssetRepository_CreateAsset_When_Success(t *testing.T) {
+	ctx := context.Background()
+	var assetExpected domain.Asset
+	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9016")
+	duration, err := time.Parse("01/01/0001", "01/01/0001")
+	spec := []byte(`{"ram":"4GB","brand":"acer"}`)
+
+	dummy := domain.Asset{
+		Id:             id,
+		Status:         "active",
+		Category:       "laptop",
+		PurchaseAt:     duration,
+		PurchaseCost:   45000.00,
+		Name:           "aspire-5",
+		Specifications: spec,
+	}
+
+	config.Init()
+	repository.InitDB()
+	db := repository.GetDB()
+
+	tx := db.MustBegin()
+	tx.MustExec("delete from assets")
+	tx.Commit()
+
+	assetRepo := repository.NewAssetRepository()
+
+	asset, err := assetRepo.CreateAsset(ctx, &dummy)
+
+	db.Get(&assetExpected, "SELECT * FROM assets WHERE id = $1", id)
+
+	assert.Equal(t, &assetExpected, asset)
+	assert.Nil(t, err)
+}
+
+// func TestAssetRepository_CreateAsset_When_ReturnsError(t *testing.T) {
 // 	ctx := context.Background()
 // 	var assetExpected domain.Asset
 // 	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9016")
@@ -48,47 +82,8 @@ import (
 
 // 	assert.Equal(t, &assetExpected, asset)
 // 	assert.Nil(t, err)
-
 // 	fmt.Println()
 // }
-
-func TestAssetRepository_CreateAsset_When_ReturnsError(t *testing.T) {
-	ctx := context.Background()
-	var assetExpected domain.Asset
-	id, err := uuid.Parse("642fc397-abec-4e1e-8473-69803dbb9016")
-	duration, err := time.Parse("01/01/0001", "01/01/0001")
-	spec := []byte(`{"ram":"4GB","brand":"acer"}`)
-
-	dummy := domain.Asset{
-		Id:             id,
-		Status:         "active",
-		Category:       "laptop",
-		PurchaseAt:     duration,
-		PurchaseCost:   45000.00,
-		Name:           "aspire-5",
-		Specifications: spec,
-	}
-
-	config.Init()
-	repository.InitDB()
-	db := repository.GetDB()
-
-	tx := db.MustBegin()
-	tx.MustExec("delete from assets")
-	tx.Commit()
-
-	assetRepo := repository.NewAssetRepository()
-
-	asset, err := assetRepo.CreateAsset(ctx, &dummy)
-
-	fmt.Println()
-	db.Get(&assetExpected, "SELECT * FROM assets WHERE id = $1", id)
-	fmt.Println(assetExpected)
-
-	assert.Equal(t, &assetExpected, asset)
-	assert.Nil(t, err)
-	fmt.Println()
-}
 
 // func TestAssetRepository_GetAsset_When_Success(t *testing.T) {
 // 	ctx := context.Background()

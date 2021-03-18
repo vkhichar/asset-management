@@ -93,7 +93,9 @@ func (repo *assetRepo) UpdateAsset(ctx context.Context, Id uuid.UUID, req contra
 
 func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 	var as []domain.Asset
+
 	err := repo.db.Select(&as, getAssetDetails)
+
 	if err == sql.ErrNoRows {
 
 		return nil, customerrors.NoAssetsExist

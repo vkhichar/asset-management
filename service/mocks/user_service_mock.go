@@ -13,9 +13,49 @@ type MockUserService struct {
 	mock.Mock
 }
 
-func (m *MockUserService) Login(ctx context.Context, email, password string) (*domain.User, string, error) {
-	//login service
+func (m *MockUserService) FindUser(ctx context.Context, email string) (*domain.User, error) {
+	// TODO:
+	return nil, nil
+}
+
+func (m *MockUserService) Login(ctx context.Context, email, password string) (user *domain.User, token string, err error) {
 	return nil, "", nil
+}
+
+func (m *MockUserService) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
+
+	var newUser *domain.User
+	args := m.Called(ctx, user)
+	if args[0] != nil {
+		newUser = args[0].(*domain.User)
+	}
+
+	var err error
+
+	if args[1] != nil {
+		err = args[1].(error)
+	}
+	return newUser, err
+}
+
+func (m *MockUserService) GetUserByID(ctx context.Context, ID int) (*domain.User, error) {
+
+	var newUser *domain.User
+	args := m.Called(ctx, ID)
+
+	if args[0] == nil && args[1] == nil {
+		return nil, customerrors.UserNotExist
+	}
+	if args[0] != nil {
+		newUser = args[0].(*domain.User)
+	}
+
+	var err error
+
+	if args[1] != nil {
+		err = args[1].(error)
+	}
+	return newUser, err
 }
 
 func (m *MockUserService) ListUsers(ctx context.Context) ([]domain.User, error) {
@@ -34,11 +74,6 @@ func (m *MockUserService) ListUsers(ctx context.Context) ([]domain.User, error) 
 		return users, customerrors.NoUsersExist
 	}
 	return users, err
-}
-
-func (m *MockUserService) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
-	//create user service
-	return nil, nil
 }
 
 func (m *MockUserService) UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error) {
@@ -70,7 +105,7 @@ func (m *MockUserService) DeleteUser(ctx context.Context, id int) (*domain.User,
 		err = args[1].(error)
 	}
 	if args[0] == nil && args[1] == nil {
-		return nil, customerrors.NoUserExistForDelete
+		return nil, customerrors.UserDoesNotExist
 	}
 	return user, err
 }

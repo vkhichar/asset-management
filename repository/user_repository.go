@@ -14,16 +14,19 @@ import (
 
 const (
 	getUserByEmailQuery = "SELECT id, name, email, password, is_admin FROM users WHERE email= $1"
+	createUserByQuery   = "INSERT INTO users (name, email, password,is_admin) VALUES ($1, $2, $3, $4) RETURNING id, name, email, password, is_admin, created_at, updated_at"
 	selectAllUsers      = "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users"
-	getUserByIDQuery    = "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users WHERE id = $1"
-	updateUserColumns   = "UPDATE users SET name = $1, password = $2, updated_at = $3 WHERE id = $4"
-	deleteUserById      = "DELETE FROM users WHERE id=$1"
+
+	getUserByIDQuery  = "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users WHERE id = $1"
+	updateUserColumns = "UPDATE users SET name = $1, password = $2, updated_at = $3 WHERE id = $4"
+	deleteUserById    = "DELETE FROM users WHERE id=$1"
 )
 
 type UserRepository interface {
 	FindUser(ctx context.Context, email string) (*domain.User, error)
 	CreateUser(ctx context.Context, user domain.User) (*domain.User, error)
 	ListUsers(ctx context.Context) ([]domain.User, error)
+	GetUserByID(ctx context.Context, id int) (*domain.User, error)
 	UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error)
 	DeleteUser(ctx context.Context, id int) (*domain.User, error)
 }
@@ -53,6 +56,7 @@ func (repo *userRepo) FindUser(ctx context.Context, email string) (*domain.User,
 
 	return &user, nil
 }
+
 func (repo *userRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 	var user []domain.User
 	err := repo.db.Select(&user, selectAllUsers)
@@ -71,8 +75,33 @@ func (repo *userRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 }
 
 func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
-	//create user method
-	return nil, nil
+	var newUser domain.User
+
+	err := repo.db.Get(&newUser, createUserByQuery, user.Name, user.Email, user.Password, user.IsAdmin)
+
+	if err != nil {
+
+		return nil, err
+
+	}
+
+	return &newUser, nil
+}
+
+func (repo *userRepo) GetUserByID(ctx context.Context, id int) (*domain.User, error) {
+
+	var newUser domain.User
+	err := repo.db.Get(&newUser, getUserByIDQuery, id)
+
+	fmt.Println(newUser)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &newUser, nil
 }
 
 func (repo *userRepo) UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error) {
@@ -109,12 +138,11 @@ func (repo *userRepo) DeleteUser(ctx context.Context, id int) (*domain.User, err
 
 	err := repo.db.Get(&user, getUserByIDQuery, id)
 
-	if err == sql.ErrNoRows {
-		fmt.Printf("Repository: No users present")
-		return nil, nil
-	}
-
 	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Printf("Repository: No users present")
+			return nil, customerrors.UserDoesNotExist
+		}
 		return nil, err
 	}
 
