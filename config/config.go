@@ -8,12 +8,13 @@ import (
 )
 
 type configs struct {
+	ipAddress       string
+	jwtConfig       JwtConfig
 	appPort         int
 	eventAppPort    int
 	dbConfig        DBConfig
 	eventServiceUrl string
 	apiTimeout      int
-	jwtConfig       JwtConfig
 }
 
 type DBConfig struct {
@@ -50,9 +51,12 @@ func Init() error {
 		eventPort = 9035
 	}
 
+	ipAddressStr := os.Getenv("IP_ADDRESS")
+
 	config.appPort = port
 
 	config.eventAppPort = eventPort
+	config.ipAddress = ipAddressStr
 
 	config.dbConfig = initDBConfig()
 
@@ -95,6 +99,10 @@ func GetAppPort() string {
 
 func GetEventAppPort() string {
 	return strconv.Itoa(config.eventAppPort)
+}
+
+func GetIpAddress() string {
+	return config.ipAddress
 }
 
 func GetDBConfig() DBConfig {
