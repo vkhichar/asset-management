@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/vkhichar/asset-management/config"
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/domain"
 	mockRepo "github.com/vkhichar/asset-management/repository/mocks"
@@ -537,7 +538,7 @@ func TestUserService_DeleteUser_When_DeleteUserReturnsNil(t *testing.T) {
 
 	dbUser, err := userService.DeleteUser(ctx, id)
 
-	expectedErr := "No user present by this Id"
+	expectedErr := "The user for this id does not exist"
 
 	assert.Equal(t, expectedErr, err.Error())
 	assert.Nil(t, dbUser)
@@ -570,10 +571,11 @@ func TestUserService_DeleteUser_When_Success(t *testing.T) {
 
 func TestUserService_PostUserEvent_When_HTTPostReturnsSuccess(t *testing.T) {
 	ctx := context.Background()
+	defer gock.Off()
 
-	// gock.New(config.GetIpAddress() + ":" + config.GetEventAppPort()).Post("/events").
-	// 	Reply(200).JSON(map[string]int{"id": 21})
-	gock.New("http://34.70.86.33:9035").Post("/events").
+	service.InitEnv()
+
+	gock.New(config.GetEventServiceUrl()).Post(service.EventResource).
 		Reply(200).JSON(map[string]int{"id": 21})
 
 	user := domain.User{
@@ -594,10 +596,10 @@ func TestUserService_PostUserEvent_When_HTTPostReturnsSuccess(t *testing.T) {
 func TestUserService_PostUserEvent_When_HTTPostReturnsError(t *testing.T) {
 	ctx := context.Background()
 
-	err := errors.New("Error while json unmarshal")
+	service.InitEnv()
 
-	gock.New("http://34.70.86.33:9035").Post("/events").
-		ReplyError(err).JSON(map[string]string{"id": "21"})
+	gock.New(config.GetEventServiceUrl()).Post("/events").
+		Reply(400)
 
 	user := domain.User{
 		ID:       1,
@@ -612,5 +614,4 @@ func TestUserService_PostUserEvent_When_HTTPostReturnsError(t *testing.T) {
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "", eventId)
-	//assert.Equal(t, "Error Occured", err.Error())
 }
