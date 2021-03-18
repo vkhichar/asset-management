@@ -48,6 +48,7 @@ func (service *assetService) UpdateAsset(ctx context.Context, Id uuid.UUID, req 
 
 func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 	asset, err := service.assetRepo.ListAssets(ctx)
+
 	if err != nil {
 		return nil, err
 	}

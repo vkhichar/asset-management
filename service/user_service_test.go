@@ -462,9 +462,7 @@ func TestUserService_UpdateUser_When_PostUserEventReturnsError(t *testing.T) {
 	userFromService, err := userService.UpdateUser(ctx, id, req)
 
 	assert.NotNil(t, userFromService)
-	assert.NotNil(t, err)
-	assert.Equal(t, "Error while creating event", err.Error())
-
+	assert.Nil(t, err)
 }
 
 func TestUserService_UpdateUser_When_PostUserEventReturnsId(t *testing.T) {
