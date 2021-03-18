@@ -53,7 +53,6 @@ func (repo *assetMaintainRepo) InsertMaintenanceActivity(ctx context.Context, re
 		fmt.Printf("repolayer:Failed to insert asset maintenance activities due to %s", err.Error())
 		return nil, err
 	}
-
 	return &maintenanceActivity, nil
 }
 

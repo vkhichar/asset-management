@@ -209,17 +209,21 @@ func (evSvc *eventSvc) PostAssetMaintenanceActivityEvent(ctx context.Context, re
 	r := bytes.NewReader(reqEvent)
 
 	reqst, err := http.NewRequest("POST", config.GetEventServiceUrl()+"/events", r)
+	reqst.Header.Add("Content-type", "application/json")
 	if err != nil {
 		fmt.Printf("Event service request: error:%s", err.Error())
 		return "", err
 	}
-	client := http.Client{
-		Timeout: 3 * time.Second,
-	}
-	resp, err := client.Do(reqst)
+
+	resp, err := evSvc.client.Do(reqst)
 	if err != nil {
 		fmt.Printf("Event service error while getting response from client.Do: error:%s", err.Error())
 		return "", customerrors.ResponseTimeLimitExceeded
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("Error while creating event")
+		return "", errors.New("Event not created")
 	}
 	body, errRead := ioutil.ReadAll(resp.Body)
 	if errRead != nil {
