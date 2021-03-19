@@ -23,5 +23,9 @@ func NewAssetAllocationService(repo repository.AssetAllocationsRepository) Asset
 	}
 }
 
-func (service *assetAllocationsService) CreateAssetAllocation(ctx context.Context, req contract.CreateAssetAllocationRequest) (*domain.AssetAllocations, error)
-func (service *assetAllocationsService) AssetDeallocation(ctx context.Context, req contract.CreateAssetAllocationRequest) (*domain.AssetAllocations, error)
+func (service *assetAllocationsService) CreateAssetAllocation(ctx context.Context, req contract.CreateAssetAllocationRequest) (*domain.AssetAllocations, error) {
+	return nil, nil
+}
+func (service *assetAllocationsService) AssetDeallocation(ctx context.Context, req contract.CreateAssetAllocationRequest) (*domain.AssetAllocations, error) {
+	return nil, nil
+}
