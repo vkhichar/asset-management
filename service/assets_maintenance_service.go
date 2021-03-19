@@ -20,17 +20,17 @@ type AssetMaintenanceService interface {
 
 type assetMaintenanceService struct {
 	assetMaintainRepo repository.AssetMaintenanceRepo
-	eventService      EventService
+	eventSvc          EventService
 }
 
-func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo, eventService EventService) AssetMaintenanceService {
+func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo, es EventService) AssetMaintenanceService {
 	return &assetMaintenanceService{
 		assetMaintainRepo: repo,
-		eventService:      eventService,
+		eventSvc:          es,
 	}
 }
 
-func (service *assetMaintenanceService) CreateAssetMaintenance(ctx context.Context, req domain.MaintenanceActivity) (user *domain.MaintenanceActivity, err error) {
+func (service *assetMaintenanceService) CreateAssetMaintenance(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
 	assetsMaintenance, err := service.assetMaintainRepo.InsertMaintenanceActivity(ctx, req)
 
 	if err != nil {
@@ -38,6 +38,20 @@ func (service *assetMaintenanceService) CreateAssetMaintenance(ctx context.Conte
 		return nil, err
 	}
 
+	eventID, errEvent := service.eventSvc.PostAssetMaintenanceActivityEvent(ctx, assetsMaintenance)
+	if errEvent == customerrors.ResponseTimeLimitExceeded {
+		fmt.Printf("servicelayere events:%s", errEvent.Error())
+		return nil, errEvent
+	}
+
+	if errEvent != nil {
+		fmt.Println("Event cannot be created")
+		fmt.Printf("servicelayer:%s", errEvent.Error())
+
+		return assetsMaintenance, errEvent
+
+	}
+	fmt.Println("Event created with id:", eventID)
 	return assetsMaintenance, nil
 }
 
@@ -69,7 +83,7 @@ func (service *assetMaintenanceService) UpdateMaintenanceActivity(ctx context.Co
 	if err != nil {
 		return nil, err
 	}
-	id, err := service.eventService.PostMaintenanceActivity(ctx, *activity)
+	id, err := service.eventSvc.PostMaintenanceActivity(ctx, *activity)
 
 	if err != nil {
 		fmt.Println("Failed to submit event: ", err)
