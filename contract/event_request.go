@@ -2,7 +2,14 @@ package contract
 
 import (
 	"encoding/json"
+
+	"github.com/vkhichar/asset-management/domain"
 )
+
+type CreateAssetMaintenanceEventRequest struct {
+	EventType string
+	Data      *domain.MaintenanceActivity
+}
 
 type EventSubmitRequest struct {
 	Type string          `json:"type"`

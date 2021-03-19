@@ -55,19 +55,27 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 		if err != nil {
 			fmt.Printf("handler: incorrect date format: %s", err.Error())
 
-			w.WriteHeader(http.StatusNotFound)
+			w.WriteHeader(http.StatusBadRequest)
 			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "incorrect date format"})
 			w.Write(responseBytes)
 			return
 		}
 
 		assetMaintenance, err := assetMaintenanceService.CreateAssetMaintenance(r.Context(), createAssetMaintenance)
+		if err == customerrors.ResponseTimeLimitExceeded {
+			fmt.Println("handler: time exceeded")
+			w.WriteHeader(http.StatusInternalServerError)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "Response Time Limit Exceeded"})
+			w.Write(responseBytes)
+			return
+
+		}
 
 		if err != nil {
 			fmt.Printf("handler: error: %s", err.Error())
 
-			w.WriteHeader(http.StatusNotFound)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "This asset id does not exist... "})
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "This asset id does not exist..."})
 			w.Write(responseBytes)
 			return
 		}
@@ -83,6 +91,7 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 		}
 		w.WriteHeader(http.StatusCreated)
 		w.Write(responseBytes)
+		return
 	}
 }
 
@@ -101,7 +110,7 @@ func DetailedMaintenanceActivityHandler(service service.AssetMaintenanceService)
 
 		if err == customerrors.MaintenanceIdDoesNotExist {
 			fmt.Println("handler: Maintenance Id does not exist")
-			w.WriteHeader(http.StatusNotFound)
+			w.WriteHeader(http.StatusBadRequest)
 			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "id not found"})
 			w.Write(responseBytes)
 			return
@@ -125,6 +134,7 @@ func DetailedMaintenanceActivityHandler(service service.AssetMaintenanceService)
 		}
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseBytes)
+		return
 	}
 }
 

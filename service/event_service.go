@@ -13,6 +13,7 @@ import (
 
 	"github.com/vkhichar/asset-management/config"
 	"github.com/vkhichar/asset-management/contract"
+	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 )
 
@@ -24,6 +25,7 @@ type EventService interface {
 	PostUpdateUserEvent(context.Context, *domain.User) (string, error)
 	PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error)
 	PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error)
+	PostAssetMaintenanceActivityEvent(ctx context.Context, resBody *domain.MaintenanceActivity) (string, error)
 }
 
 type eventSvc struct {
@@ -209,4 +211,42 @@ func (service *eventSvc) PostMaintenanceActivity(ctx context.Context, req domain
 	}
 
 	return string(resBody), err
+}
+func (evSvc *eventSvc) PostAssetMaintenanceActivityEvent(ctx context.Context, resBody *domain.MaintenanceActivity) (string, error) {
+	req := contract.CreateAssetMaintenanceEventRequest{}
+	req.EventType = "maintenanceactivity"
+	req.Data = resBody
+	reqEvent, _ := json.Marshal(req)
+	r := bytes.NewReader(reqEvent)
+
+	reqst, err := http.NewRequest("POST", config.GetEventServiceUrl()+"/events", r)
+	reqst.Header.Add("Content-type", "application/json")
+	if err != nil {
+		fmt.Printf("Event service request: error:%s", err.Error())
+		return "", err
+	}
+
+	resp, err := evSvc.client.Do(reqst)
+	if err != nil {
+		fmt.Printf("Event service error while getting response from client.Do: error:%s", err.Error())
+		return "", customerrors.ResponseTimeLimitExceeded
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("Error while creating event")
+		return "", errors.New("Event not created")
+	}
+	body, errRead := ioutil.ReadAll(resp.Body)
+	if errRead != nil {
+		fmt.Printf("Event service read: error:%s", errRead.Error())
+		return "", errRead
+	}
+
+	errJsonUnmarshl := json.Unmarshal(body, &contract.CreateMaintenanceActivityEvent)
+	if errJsonUnmarshl != nil {
+		fmt.Printf("Event service error in unmarshaling: error:%s", errJsonUnmarshl.Error())
+		return "", errJsonUnmarshl
+	}
+	eventConvert := strconv.Itoa(contract.CreateMaintenanceActivityEvent.Id)
+	return eventConvert, nil
 }

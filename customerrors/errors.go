@@ -11,6 +11,7 @@ var (
 	NoUsersExist              = errors.New("No users exist at present")
 	NoAssetsExist             = errors.New("No assets exist")
 	MaintenanceIdDoesNotExist = errors.New("Maintenance id does no exist")
+	ResponseTimeLimitExceeded = errors.New("Response Time Limit Exceeded")
 	UserDoesNotExist          = errors.New("The user for this id does not exist")
 	ErrMissingToken           = errors.New("missing token")
 	ErrInvalidToken           = errors.New("invalid or expired token")
