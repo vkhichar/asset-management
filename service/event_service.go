@@ -68,14 +68,25 @@ func (e *eventSvc) PostCreateUserEvent(ctx context.Context, user *domain.User) (
 		fmt.Printf("Error in event service while getting response in client.do: %s", err.Error())
 		return "", err
 	}
-
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("Error in event service :%s", err.Error())
 
 	}
 
-	return string(body), nil
+	// return string(body), nil
+	var respObj contract.CreateUserEventResponse
+
+	errJsonUnmar := json.Unmarshal(body, &respObj)
+
+	if errJsonUnmar != nil {
+		fmt.Printf("Event service: Error while json unmarshal. Error: %s", errJsonUnmar.Error())
+		return "", errJsonUnmar
+	}
+
+	eventId := strconv.Itoa(respObj.Id)
+	return eventId, nil
 }
 
 func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error) {

@@ -10,6 +10,7 @@ type dependencies struct {
 	assetService            service.AssetService
 	tokenService            service.TokenService
 	assetMaintenanceService service.AssetMaintenanceService
+	assetAllocationService  service.AssetAllocationService
 }
 
 var deps dependencies
@@ -27,4 +28,7 @@ func InitDependencies() {
 	deps.userService = userService
 	deps.assetService = assetService
 	deps.tokenService = plainTokenService
+	assetAllocationsRepo := repository.NewAssetAllocationRepository()
+	assetAllocationService := service.NewAssetAllocationService(assetAllocationsRepo)
+	deps.assetAllocationService = assetAllocationService
 }
