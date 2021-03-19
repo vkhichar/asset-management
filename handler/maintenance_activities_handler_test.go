@@ -40,7 +40,7 @@ func TestMaintenanceActivitiesHandler_CreateMaintenanceHandler_When_CreateAssetM
 		StartedAt:   tym,
 		Description: "hardware issue",
 	}
-	expectedErr := string(`{"error":"This asset id does not exist... "}`)
+	expectedErr := string(`{"error":"This asset id does not exist..."}`)
 
 	mockAssetMaintenanceService := &mockService.MockMaintenanceActivityService{}
 	mockAssetMaintenanceService.On("CreateAssetMaintenance", mock.Anything, inpt).Return(nil, errors.New("This asset id does not exist..."))

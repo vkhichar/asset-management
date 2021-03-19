@@ -34,5 +34,8 @@ func Routes() *mux.Router {
 
 	router.HandleFunc("/token/verify", VerifyTokenHandler(deps.tokenService)).Methods("GET")
 	router.HandleFunc("/token/generate", GenerateTokenHandler(deps.tokenService)).Methods("POST")
+
+	router.HandleFunc("/assets/{asset_id}/allocate", AuthenticationHandler(deps.tokenService,
+		CreateAssetAllocationHandler(deps.assetAllocationService), true)).Methods("POST")
 	return router
 }

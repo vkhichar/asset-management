@@ -74,8 +74,6 @@ func (e *eventSvc) PostCreateUserEvent(ctx context.Context, user *domain.User) (
 
 	}
 
-	// return string(body), nil
-
 	var respObj contract.CreateUserEventResponse
 
 	errJsonUnmar := json.Unmarshal(body, &respObj)
