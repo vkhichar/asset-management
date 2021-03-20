@@ -2,7 +2,7 @@ package contract
 
 import (
 	"errors"
-	"regexp"
+	"fmt"
 	"strings"
 	"time"
 
@@ -24,6 +24,7 @@ type AssetMaintain struct {
 type UpdateMaintenanceActivityReq struct {
 	Cost        float64 `json:"cost"`
 	EndedAt     string  `json:"ended_at"`
+	StartedAt   string  `json:"started_at"`
 	Description string  `json:"description"`
 }
 
@@ -54,33 +55,59 @@ func NewMaintenanceActivityResp(domain domain.MaintenanceActivity) MaintenanceAc
 func (activity UpdateMaintenanceActivityReq) ToDomain() (*domain.MaintenanceActivity, error) {
 	var endedAt *time.Time
 	if activity.EndedAt != "" {
-		date, err := time.Parse(DateFormat, activity.EndedAt)
-		if err != nil {
-			return nil, err
-		}
+		date, _ := time.Parse(DateFormat, activity.EndedAt)
 		endedAt = &date
 	}
+	startedAt, _ := time.Parse(DateFormat, activity.StartedAt)
 	return &domain.MaintenanceActivity{
 		Cost:        activity.Cost,
 		EndedAt:     endedAt,
 		Description: activity.Description,
+		StartedAt:   startedAt,
 	}, nil
 }
 
 func (req UpdateMaintenanceActivityReq) Validate() error {
 	if req.Cost < 0.0 {
-		return errors.New("Cost cannot be negative")
+		return errors.New("cost cannot be negative")
 	}
 
-	if strings.TrimSpace(req.Description) == "" {
-		return errors.New("Missing description")
+	if req.Description = strings.TrimSpace(req.Description); req.Description == "" {
+		return errors.New("missing description")
 	}
 
-	if strings.TrimSpace(req.EndedAt) != "" {
-		if matched, _ := regexp.MatchString(DateRegex, req.EndedAt); !matched {
-			return errors.New("Invalid date ended_at")
+	currentTime := time.Now()
+
+	if req.StartedAt = strings.TrimSpace(req.StartedAt); req.StartedAt == "" {
+		return errors.New("missing date started_at")
+	}
+	startedAt, err := parseAndVerifyDate(currentTime, req.StartedAt, "started_at")
+	if err != nil {
+		return err
+	}
+
+	if req.EndedAt = strings.TrimSpace(req.EndedAt); req.EndedAt != "" {
+		endedAt, err := parseAndVerifyDate(currentTime, strings.TrimSpace(req.EndedAt), "ended_at")
+		if err != nil {
+			return err
+		}
+		if endedAt.Before(*startedAt) {
+			return errors.New("invalid data ended_at: cannot be before started_at")
 		}
 	}
-
 	return nil
+}
+
+func parseAndVerifyDate(currentTime time.Time, date string, jsonKey string) (*time.Time, error) {
+	parsedDate, err := time.Parse(DateFormat, date)
+	if err != nil {
+		fmt.Println("parsing date error ", err.Error())
+		return nil, errors.New(fmt.Sprintf("invalid date %s", jsonKey))
+	}
+
+	if parsedDate.After(currentTime) {
+		return nil, errors.New(fmt.Sprintf("date %s cannot be in future", jsonKey))
+	}
+
+	return &parsedDate, nil
 }

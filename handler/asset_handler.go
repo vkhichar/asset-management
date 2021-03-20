@@ -329,3 +329,9 @@ func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		return
 	}
 }
+
+func AllocateAssetHandler(service service.AssetService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
+}

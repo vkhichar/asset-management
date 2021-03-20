@@ -21,12 +21,14 @@ type AssetMaintenanceService interface {
 type assetMaintenanceService struct {
 	assetMaintainRepo repository.AssetMaintenanceRepo
 	eventSvc          EventService
+	assetRepo         repository.AssetRepository
 }
 
-func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo, es EventService) AssetMaintenanceService {
+func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo, es EventService, assetRepo repository.AssetRepository) AssetMaintenanceService {
 	return &assetMaintenanceService{
 		assetMaintainRepo: repo,
 		eventSvc:          es,
+		assetRepo:         assetRepo,
 	}
 }
 
@@ -75,20 +77,13 @@ func (service *assetMaintenanceService) DeleteMaintenanceActivity(ctx context.Co
 }
 
 func (service *assetMaintenanceService) GetAllForAssetId(ctx context.Context, assetId uuid.UUID) ([]domain.MaintenanceActivity, error) {
+	_, err := service.assetRepo.GetAsset(ctx, assetId)
+	if err != nil {
+		return nil, err
+	}
 	return service.assetMaintainRepo.GetAllByAssetId(ctx, assetId)
 }
 
 func (service *assetMaintenanceService) UpdateMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
-	activity, err := service.assetMaintainRepo.UpdateMaintenanceActivity(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	id, err := service.eventSvc.PostMaintenanceActivity(ctx, *activity)
-
-	if err != nil {
-		fmt.Println("Failed to submit event: ", err)
-	} else {
-		fmt.Println("Successfully submitted event ", id)
-	}
-	return activity, nil
+	return service.assetMaintainRepo.UpdateMaintenanceActivity(ctx, req)
 }

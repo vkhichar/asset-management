@@ -283,7 +283,7 @@ func TestMaintenanceActivitiesHandler_DeleteById_When_Error(t *testing.T) {
 	r.ServeHTTP(resRec, req)
 
 	assert.Equal(t, http.StatusInternalServerError, resRec.Result().StatusCode)
-	assert.JSONEq(t, string(`{ "error" : "Something went wrong"}`), resRec.Body.String())
+	assert.JSONEq(t, string(`{ "error" : "something went wrong"}`), resRec.Body.String())
 
 }
 
@@ -341,7 +341,7 @@ func TestMaintenanceActivitiesHandler_ListAllByAssetId_When_Error(t *testing.T) 
 	r.ServeHTTP(resRec, req)
 
 	assert.Equal(t, http.StatusInternalServerError, resRec.Result().StatusCode)
-	assert.JSONEq(t, string(`{ "error" : "Something went wrong"}`), resRec.Body.String())
+	assert.JSONEq(t, string(`{ "error" : "something went wrong"}`), resRec.Body.String())
 }
 
 func TestMaintenanceActivitiesHandler_ListAllByAssetId_When_NonEmptyResult(t *testing.T) {
@@ -410,6 +410,7 @@ func TestMaintenanceActivitiesHandler_UpdateById_When_DbError(t *testing.T) {
 		Cost:        20,
 		Description: "descr",
 		EndedAt:     "2020-03-03",
+		StartedAt:   "2019-03-03",
 	}
 
 	mockMaintenanceService := &mockService.MockMaintenanceActivityService{}
@@ -432,7 +433,7 @@ func TestMaintenanceActivitiesHandler_UpdateById_When_DbError(t *testing.T) {
 	r.ServeHTTP(resRec, req)
 
 	assert.Equal(t, http.StatusInternalServerError, resRec.Result().StatusCode)
-	assert.JSONEq(t, string(`{ "error" : "Something went wrong"}`), resRec.Body.String())
+	assert.JSONEq(t, string(`{ "error" : "something went wrong"}`), resRec.Body.String())
 }
 
 func TestMaintenanceActivitiesHandler_UpdateById_When_ErrNotFound(t *testing.T) {
@@ -441,10 +442,11 @@ func TestMaintenanceActivitiesHandler_UpdateById_When_ErrNotFound(t *testing.T) 
 		Cost:        20,
 		Description: "description",
 		EndedAt:     "2020-03-03",
+		StartedAt:   "2019-03-03",
 	}
 
 	mockMaintenanceService := &mockService.MockMaintenanceActivityService{}
-	mockMaintenanceService.On("UpdateMaintenanceActivity", mock.Anything, mock.Anything).Return(nil, customerrors.ErrNotFound)
+	mockMaintenanceService.On("UpdateMaintenanceActivity", mock.Anything, mock.Anything).Return(nil, customerrors.MaintenanceIdDoesNotExist)
 
 	body, err := json.Marshal(reqBody)
 	if err != nil {
@@ -472,6 +474,7 @@ func TestMaintenanceActivitiesHandler_UpdateById_When_InvalidRequest(t *testing.
 		Cost:        20,
 		Description: "description",
 		EndedAt:     "dsds",
+		StartedAt:   "2019-03-03",
 	}
 
 	mockMaintenanceService := &mockService.MockMaintenanceActivityService{}
@@ -493,7 +496,7 @@ func TestMaintenanceActivitiesHandler_UpdateById_When_InvalidRequest(t *testing.
 	r.ServeHTTP(resRec, req)
 
 	assert.Equal(t, http.StatusBadRequest, resRec.Result().StatusCode)
-	assert.JSONEq(t, string(`{ "error" : "Invalid date ended_at"}`), resRec.Body.String())
+	assert.JSONEq(t, string(`{ "error" : "invalid date ended_at"}`), resRec.Body.String())
 }
 
 func TestMaintenanceActivitiesHandler_UpdateById_When_Success(t *testing.T) {
@@ -502,6 +505,7 @@ func TestMaintenanceActivitiesHandler_UpdateById_When_Success(t *testing.T) {
 		Cost:        25,
 		Description: "description",
 		EndedAt:     "2020-01-28",
+		StartedAt:   "2020-01-28",
 	}
 
 	date, err := time.Parse(contract.DateFormat, reqBody.EndedAt)

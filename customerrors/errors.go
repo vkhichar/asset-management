@@ -9,7 +9,7 @@ var (
 	ErrInvalidAssetStatus     = errors.New("Invalid asset status")
 	ErrInvalidEmailPassword   = errors.New("invalid email or password")
 	NoUsersExist              = errors.New("No users exist at present")
-	NoAssetsExist             = errors.New("No assets exist")
+	NoAssetsExist             = errors.New("no assets exist")
 	MaintenanceIdDoesNotExist = errors.New("Maintenance id does no exist")
 	ResponseTimeLimitExceeded = errors.New("Response Time Limit Exceeded")
 	UserDoesNotExist          = errors.New("The user for this id does not exist")
