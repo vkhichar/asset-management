@@ -43,6 +43,7 @@ func NewAssetRepository() AssetRepository {
 
 func (repo *assetRepo) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error) {
 	var m domain.Asset
+	var asset domain.Asset
 	sample := "retired"
 	err := repo.db.Get(&m, getAssetDelete, Id, sample)
 	if err != nil {
@@ -51,12 +52,17 @@ func (repo *assetRepo) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.A
 	tx := repo.db.MustBegin()
 	tx.MustExec(getAssetDeletefun, sample, Id)
 	tx.Commit()
-
-	return nil, nil
+	err = repo.db.Get(&asset, getAsset, Id)
+	fmt.Println(err)
+	if err != nil {
+		return nil, err
+	}
+	return &asset, nil
 
 }
 func (repo *assetRepo) UpdateAsset(ctx context.Context, Id uuid.UUID, req contract.UpdateRequest) (*domain.Asset, error) {
 	var m domain.Asset
+	var asset domain.Asset
 	sample := "retired"
 	err := repo.db.Get(&m, getAssetName, Id, sample)
 
@@ -78,8 +84,11 @@ func (repo *assetRepo) UpdateAsset(ctx context.Context, Id uuid.UUID, req contra
 
 	tx.MustExec(UpdateAssetDetails, *req.Status, req.Specifications, Id)
 	tx.Commit()
-
-	return nil, nil
+	err = repo.db.Get(&asset, getAsset, Id)
+	if err != nil {
+		return nil, err
+	}
+	return &asset, nil
 }
 
 func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {

@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vkhichar/asset-management/config"
 	"github.com/vkhichar/asset-management/contract"
-	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 	mockRepo "github.com/vkhichar/asset-management/repository/mocks"
 	"github.com/vkhichar/asset-management/service"
@@ -174,63 +173,6 @@ func TestAssetService_CreateAsset_When_PostAssetEventCreateAssetReturnsError(t *
 	assert.Nil(t, dbAsset)
 }
 
-func TestAssetService_When_PostAssetEventSuccess(t *testing.T) {
-	ctx := context.Background()
-
-	gock.New(config.GetEventServiceUrl()).
-		Post("/events").
-		Reply(200).
-		JSON(map[string]string{"id": "123"})
-
-	m := make(map[string]interface{})
-	m["ram"] = "4GB"
-	m["brand"] = "acer"
-	b, _ := json.Marshal(m)
-
-	obj := domain.Asset{
-		Id:             uuid.New(),
-		Status:         "retired",
-		Category:       "Laptops",
-		PurchaseAt:     time.Now(),
-		PurchaseCost:   50000.00,
-		Name:           "aspire-5",
-		Specifications: b,
-	}
-
-	eventSvc := service.NewEventService()
-	id, err := eventSvc.PostAssetEventCreateAsset(ctx, &obj)
-
-	assert.Nil(t, err)
-	assert.JSONEq(t, `{"id": "123"}`, id)
-}
-
-func TestAssetService_When_PostAssetEventReturnsError(t *testing.T) {
-	ctx := context.Background()
-
-	gock.New(config.GetEventServiceUrl()).Post("/events").Reply(400)
-
-	m := make(map[string]interface{})
-	m["ram"] = "4GB"
-	m["brand"] = "acer"
-	b, _ := json.Marshal(m)
-
-	obj := domain.Asset{
-		Id:             uuid.New(),
-		Status:         "retired",
-		Category:       "Laptops",
-		PurchaseAt:     time.Now(),
-		PurchaseCost:   50000.00,
-		Name:           "aspire-5",
-		Specifications: b,
-	}
-
-	eventSvc := service.NewEventService()
-	id, err := eventSvc.PostAssetEventCreateAsset(ctx, &obj)
-
-	assert.Nil(t, err)
-	assert.Equal(t, "", id)
-}
-
 func TestAssetService_UpdateAsset_When_Success(t *testing.T) {
 	ctx := context.Background()
 	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
@@ -264,7 +206,6 @@ func TestAssetService_UpdateAsset_When_Success(t *testing.T) {
 		Name:           "Dell Latitude E5550",
 		Specifications: b,
 	}
-	eventId := "123"
 	js := make(map[string]interface{})
 	m["RAM"] = "8GB"
 	m["HDD"] = "1TB"
@@ -280,11 +221,10 @@ func TestAssetService_UpdateAsset_When_Success(t *testing.T) {
 	}
 	mockAssetRepo := &mockRepo.MockAssetRepo{}
 	mockEventSvc := &mockEventSvc.MockEventService{}
-
+	eventId := "120"
 	mockAssetRepo.On("UpdateAsset", ctx, Id, req).Return(&asset, nil)
 	mockEventSvc.On("PostAssetEvent", ctx, &asset).Return(eventId, nil)
 	assetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
-
 	DBasset, err := assetService.UpdateAsset(ctx, Id, req)
 	if err != nil {
 		fmt.Printf("Something went Wrong %s", err.Error())
@@ -300,19 +240,46 @@ func TestAssetService_DeleteAsset_Success(t *testing.T) {
 	if errParse != nil {
 		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
 	}
+	layout := "2006-01-02T15:04:05.000Z"
+	str := "2014-11-12T11:45:26.371Z"
+	dat, errParseDate := time.Parse(layout, str)
+	if errParseDate != nil {
+		fmt.Printf("Error While Parsing %s", errParseDate.Error())
+	}
+	cost, errParseFloat := strconv.ParseFloat("5000", 32)
+	if errParseFloat != nil {
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
+	}
+	m := make(map[string]interface{})
+	m["RAM"] = "4GB"
+	m["HDD"] = "1TB"
+	b, errMarshal := json.Marshal(m)
+	if errMarshal != nil {
+		fmt.Printf("Error While Marshaling %s", errMarshal.Error())
+	}
 
+	asset := domain.Asset{
+
+		Id:           Id,
+		Status:       "active",
+		Category:     "Laptop",
+		PurchaseAt:   dat,
+		PurchaseCost: cost,
+
+		Name:           "Dell Latitude E5550",
+		Specifications: b,
+	}
 	mockAssetRepo := &mockRepo.MockAssetRepo{}
 	mockEventSvc := &mockEventSvc.MockEventService{}
 
-	mockAssetRepo.On("DeleteAsset", ctx, Id).Return(nil, nil)
+	mockAssetRepo.On("DeleteAsset", ctx, Id).Return(&asset, nil)
 	assetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
-
 	DBasset, err := assetService.DeleteAsset(ctx, Id)
 	if err != nil {
 		fmt.Printf("Something went Wrong %s", err.Error())
 	}
 	assert.NoError(t, err)
-	assert.Nil(t, DBasset)
+	assert.Equal(t, &asset, DBasset)
 
 }
 
@@ -358,7 +325,6 @@ func TestAssetService_ListAllAsset_Success(t *testing.T) {
 	mockEventSvc := &mockEventSvc.MockEventService{}
 
 	assetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
-
 	DBasset, err := assetService.ListAssets(ctx)
 	if err != nil {
 		fmt.Printf("Something went Wrong %s", err.Error())
@@ -374,13 +340,11 @@ func TestAssetService_DeleteAsset_When_DeleteAssetReturnsError(t *testing.T) {
 		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
 	}
 	mockAssetRepo := &mockRepo.MockAssetRepo{}
-
 	mockEventSvc := &mockEventSvc.MockEventService{}
 
 	mockAssetRepo.On("DeleteAsset", ctx, Id).Return(nil, errors.New("Some DB Error"))
 
 	assetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
-
 	asset, err := assetService.DeleteAsset(ctx, Id)
 	if err != nil {
 		fmt.Printf("Something went Wrong %s", err.Error())
@@ -399,12 +363,10 @@ func TestAssetService_DeleteAsset_When_DeleteAssetReturnsNil(t *testing.T) {
 	}
 
 	mockAssetRepo := &mockRepo.MockAssetRepo{}
-
 	mockEventSvc := &mockEventSvc.MockEventService{}
 
-	mockAssetRepo.On("DeleteAsset", ctx, Id).Return(nil, customerrors.NoAssetsExist)
+	mockAssetRepo.On("DeleteAsset", ctx, Id).Return(nil, nil)
 	assetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
-
 	asset, err := assetService.DeleteAsset(ctx, Id)
 	if err != nil {
 		fmt.Printf("Something went Wrong %s", err.Error())
@@ -420,9 +382,17 @@ func TestAssetService_UpdateAsset_When_ReturnsError(t *testing.T) {
 	if errParse != nil {
 		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
 	}
-	mockAssetRepo := &mockRepo.MockAssetRepo{}
 
-	Status := "active"
+	layout := "2006-01-02T15:04:05.000Z"
+	str := "2014-11-12T11:45:26.371Z"
+	dat, errParseDate := time.Parse(layout, str)
+	if errParseDate != nil {
+		fmt.Printf("Error While Parsing %s", errParseDate.Error())
+	}
+	cost, errParseFloat := strconv.ParseFloat("5000", 32)
+	if errParseFloat != nil {
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
+	}
 	m := make(map[string]interface{})
 	m["RAM"] = "4GB"
 	m["HDD"] = "1TB"
@@ -430,23 +400,43 @@ func TestAssetService_UpdateAsset_When_ReturnsError(t *testing.T) {
 	if errMarshal != nil {
 		fmt.Printf("Error While Marshaling %s", errMarshal.Error())
 	}
-	Specifications := b
+
+	asset := domain.Asset{
+
+		Id:           Id,
+		Status:       "active",
+		Category:     "Laptop",
+		PurchaseAt:   dat,
+		PurchaseCost: cost,
+
+		Name:           "Dell Latitude E5550",
+		Specifications: b,
+	}
+	mockAssetRepo := &mockRepo.MockAssetRepo{}
+	mockEventSvc := &mockEventSvc.MockEventService{}
+	Status := "active"
+	ms := make(map[string]interface{})
+	m["RAM"] = "4GB"
+	m["HDD"] = "1TB"
+	n, errMarshal := json.Marshal(ms)
+	if errMarshal != nil {
+		fmt.Printf("Error While Marshaling %s", errMarshal.Error())
+	}
+	Specifications := n
 	req := contract.UpdateRequest{
 		Status:         &Status,
 		Specifications: Specifications,
 	}
 
 	mockAssetRepo.On("UpdateAsset", ctx, Id, req).Return(nil, errors.New("some DB error"))
-
-	mockEventSvc := &mockEventSvc.MockEventService{}
+	mockEventSvc.On("PostAssetEvent", ctx, &asset).Return("", errors.New("some DB error"))
 
 	AssetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
-
-	asset, err := AssetService.UpdateAsset(ctx, Id, req)
+	dbasset, err := AssetService.UpdateAsset(ctx, Id, req)
 	if err != nil {
 		fmt.Printf("Something went Wrong %s", err.Error())
 	}
-	assert.Nil(t, asset)
+	assert.Nil(t, dbasset)
 	assert.Error(t, err)
 	assert.Equal(t, "some DB error", err.Error())
 
@@ -456,12 +446,10 @@ func TestAssetService_ListAllAsset_When_ListAssetReturnsError(t *testing.T) {
 	ctx := context.Background()
 
 	mockAssetRepo := &mockRepo.MockAssetRepo{}
-
 	mockEventSvc := &mockEventSvc.MockEventService{}
 
 	mockAssetRepo.On("ListAssets", ctx).Return(nil, errors.New("No Asset Exists"))
 	assetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
-
 	asset, err := assetService.ListAssets(ctx)
 	if err != nil {
 		fmt.Printf("Something went Wrong %s", err.Error())
@@ -479,7 +467,6 @@ func TestAssetService_ListAllAsset_When_ListAssetReturnsNil(t *testing.T) {
 
 	mockAssetRepo.On("ListAssets", ctx).Return(nil, nil)
 	assetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
-
 	asset, err := assetService.ListAssets(ctx)
 	if err != nil {
 		fmt.Printf("Something went Wrong %s", err.Error())
@@ -515,7 +502,6 @@ func TestAssetService_UpdateAsset_When_ReturnsNil(t *testing.T) {
 	mockAssetRepo.On("UpdateAsset", ctx, Id, req).Return(nil, nil)
 
 	AssetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
-
 	asset, err := AssetService.UpdateAsset(ctx, Id, req)
 	if err != nil {
 		fmt.Printf("Something went Wrong %s", err.Error())
@@ -523,105 +509,6 @@ func TestAssetService_UpdateAsset_When_ReturnsNil(t *testing.T) {
 
 	assert.Nil(t, asset)
 	assert.NotNil(t, err)
-}
-func TestAssetService_UpdateAsset_When_PostAssetReturnSucess(t *testing.T) {
-	ctx := context.Background()
-	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
-	if errParse != nil {
-		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
-	}
-	layout := "2006-01-02T15:04:05.000Z"
-	str := "2014-11-12T11:45:26.371Z"
-	dat, errParseDate := time.Parse(layout, str)
-	if errParseDate != nil {
-		fmt.Printf("Error While Parsing %s", errParseDate.Error())
-	}
-	cost, errParseFloat := strconv.ParseFloat("5000", 32)
-	if errParseFloat != nil {
-		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
-	}
-	m := make(map[string]interface{})
-	m["RAM"] = "8GB"
-	m["HDD"] = "1TB"
-	b, errMarshal := json.Marshal(m)
-	if errMarshal != nil {
-		fmt.Printf("Error while Marshaling %s", errMarshal.Error())
-	}
-	eventId := "112"
-	asset := domain.Asset{
-
-		Id:             Id,
-		Status:         "active",
-		Category:       "Laptop",
-		PurchaseAt:     dat,
-		PurchaseCost:   cost,
-		Name:           "Dell Latitude E5550",
-		Specifications: b,
-	}
-
-	js := make(map[string]interface{})
-	m["RAM"] = "8GB"
-	m["HDD"] = "1TB"
-	jsr, errMarshal := json.Marshal(js)
-	if errMarshal != nil {
-		fmt.Printf("Error While Marshaling %s", errMarshal.Error())
-	}
-	Specifications := jsr
-	Status := "active"
-	req := contract.UpdateRequest{
-		Status:         &Status,
-		Specifications: Specifications,
-	}
-	mockAssetRepo := &mockRepo.MockAssetRepo{}
-	mockEventSvc := &mockEventSvc.MockEventService{}
-
-	mockAssetRepo.On("UpdateAsset", ctx, Id, req).Return(&asset, nil)
-	mockEventSvc.On("PostAssetEvent", ctx, &asset).Return(eventId, nil)
-	assetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
-	DBasset, err := assetService.UpdateAsset(ctx, Id, req)
-	if err != nil {
-		fmt.Printf("Something went Wrong %s", err.Error())
-	}
-
-	assert.Nil(t, err)
-	assert.Equal(t, &asset, DBasset)
-
-}
-func TestAssetService_UpdateAsset_When_PostAssetEventReturnError(t *testing.T) {
-	ctx := context.Background()
-	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
-	if errParse != nil {
-		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
-	}
-	mockAssetRepo := &mockRepo.MockAssetRepo{}
-	mockEventSvc := &mockEventSvc.MockEventService{}
-
-	Status := "active"
-	m := make(map[string]interface{})
-	m["RAM"] = "4GB"
-	m["HDD"] = "1TB"
-	b, errMarshal := json.Marshal(m)
-	if errMarshal != nil {
-		fmt.Printf("Error While Marshaling %s", errMarshal.Error())
-	}
-	Specifications := b
-	req := contract.UpdateRequest{
-		Status:         &Status,
-		Specifications: Specifications,
-	}
-
-	mockAssetRepo.On("UpdateAsset", ctx, Id, req).Return(nil, errors.New("some DB error"))
-	mockEventSvc.On("PostAssetEvent", ctx, nil).Return("", errors.New("Error in PostAssetEvent"))
-
-	AssetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
-	asset, err := AssetService.UpdateAsset(ctx, Id, req)
-	if err != nil {
-		fmt.Printf("Something went Wrong %s", err.Error())
-	}
-	assert.Nil(t, asset)
-	assert.Error(t, err)
-	assert.Equal(t, "some DB error", err.Error())
-
 }
 
 func TestAssetService_PostAssetEvent_When_Success(t *testing.T) {
