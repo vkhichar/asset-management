@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -16,11 +17,14 @@ func AuthenticationHandler(tokenService service.TokenService, next http.HandlerF
 			WriteErrorResponse(w, err)
 			return
 		}
-		_, err = VerifyToken(tokenService, token, adminApi)
+		claims, err := VerifyToken(tokenService, token, adminApi)
 		if err != nil {
 			WriteErrorResponse(w, err)
 			return
 		}
+
+		context := context.WithValue(r.Context(), "claims", claims)
+		r.WithContext(context)
 		next.ServeHTTP(w, r)
 	})
 
