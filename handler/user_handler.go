@@ -170,20 +170,6 @@ func CreateUserHandler(userService service.UserService) http.HandlerFunc {
 
 		user, err := userService.CreateUser(r.Context(), createdUser)
 
-		if err == customerrors.ErrInvalidEmailPassword {
-			fmt.Printf("handler: invalid email or password for email: %s", req.Email)
-
-			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, invalidErr := json.Marshal(contract.ErrorResponse{Error: "invalid email or password"})
-
-			if invalidErr != nil {
-				fmt.Fprintf(w, "handler: error while marshaling invalid email or password for email")
-				return
-			}
-			w.Write(responseBytes)
-			return
-		}
-
 		if err != nil {
 			fmt.Printf("handler: error while creating user for email: %s, error: %s", req.Email, err.Error())
 

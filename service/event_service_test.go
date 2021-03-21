@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -56,4 +57,49 @@ func TestPostAssetMaintenanceActivity_When_TimeoutError(t *testing.T) {
 
 	assert.NotNil(t, err)
 
+}
+func TestPostAssetMaintenanceActivityEvent_When_HTTPostReturnsSuccess(t *testing.T) {
+	ctx := context.Background()
+	defer gock.Off()
+
+	service.InitEnv()
+
+	gock.New(config.GetEventServiceUrl()).Post(service.EventResource).
+		Reply(200).JSON(map[string]int{"id": 21})
+
+	activity := domain.MaintenanceActivity{
+		ID:          1,
+		AssetId:     uuid.New(),
+		Cost:        1000,
+		StartedAt:   time.Now(),
+		Description: "battery issue",
+	}
+
+	eventService := service.NewEventService()
+	eventId, err := eventService.PostAssetMaintenanceActivityEvent(ctx, &activity)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "21", eventId)
+}
+
+func TestPostAssetMaintenanceActivityEvent_When_HTTPostReturnsError(t *testing.T) {
+	ctx := context.Background()
+
+	service.InitEnv()
+
+	gock.New(config.GetEventServiceUrl()).Post("/events").
+		Reply(400)
+
+	activity := domain.MaintenanceActivity{
+		ID:          1,
+		AssetId:     uuid.New(),
+		Cost:        1000,
+		StartedAt:   time.Now(),
+		Description: "battery issue",
+	}
+	eventService := service.NewEventService()
+	eventId, err := eventService.PostAssetMaintenanceActivityEvent(ctx, &activity)
+
+	assert.NotNil(t, err)
+	assert.Equal(t, "", eventId)
 }

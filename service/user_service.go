@@ -79,10 +79,9 @@ func (service *userService) CreateUser(ctx context.Context, user domain.User) (*
 	id, err := service.eventSvc.PostCreateUserEvent(ctx, entry)
 	if err != nil {
 		fmt.Printf("user service: error while calling postuserevent: %s", err.Error())
-		fmt.Println()
-		return entry, err
+	} else {
+		fmt.Println("New event created:", id)
 	}
-	fmt.Println(id)
 	return entry, nil
 
 }
@@ -113,7 +112,7 @@ func (service *userService) UpdateUser(ctx context.Context, id int, req contract
 	eventId, errEvent := service.eventSvc.PostUpdateUserEvent(ctx, user)
 	if errEvent != nil {
 		fmt.Printf("Service: Error while creating event. Error: %s", errEvent.Error())
-		return user, errEvent
+		return user, nil
 	} else {
 		fmt.Println("New event created:", eventId)
 	}

@@ -13,6 +13,7 @@ import (
 
 	"github.com/vkhichar/asset-management/config"
 	"github.com/vkhichar/asset-management/contract"
+	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 )
 
@@ -25,6 +26,7 @@ type EventService interface {
 	PostUpdateUserEvent(context.Context, *domain.User) (string, error)
 	PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error)
 	PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error)
+	PostAssetMaintenanceActivityEvent(ctx context.Context, resBody *domain.MaintenanceActivity) (string, error)
 }
 
 type eventSvc struct {
@@ -52,7 +54,7 @@ func (e *eventSvc) PostCreateUserEvent(ctx context.Context, user *domain.User) (
 	}
 	responseBody := bytes.NewReader(postBody)
 
-	re, err := http.NewRequest("POST", "http://34.70.86.33:"+config.GetEventAppPort()+"/events", responseBody)
+	re, err := http.NewRequest("POST", config.GetEventServiceUrl()+"/events", responseBody)
 	if err != nil {
 		fmt.Printf("event service: error while newrequest: %s", err.Error())
 		return "", err
@@ -67,14 +69,25 @@ func (e *eventSvc) PostCreateUserEvent(ctx context.Context, user *domain.User) (
 		fmt.Printf("Error in event service while getting response in client.do: %s", err.Error())
 		return "", err
 	}
-
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("Error in event service :%s", err.Error())
 
 	}
 
-	return string(body), nil
+	// return string(body), nil
+	var respObj contract.CreateUserEventResponse
+
+	errJsonUnmar := json.Unmarshal(body, &respObj)
+
+	if errJsonUnmar != nil {
+		fmt.Printf("Event service: Error while json unmarshal. Error: %s", errJsonUnmar.Error())
+		return "", errJsonUnmar
+	}
+
+	eventId := strconv.Itoa(respObj.Id)
+	return eventId, nil
 }
 
 func (e *eventSvc) PostAssetEvent(ctx context.Context, asset *domain.Asset) (string, error) {
@@ -87,7 +100,7 @@ func (e *eventSvc) PostAssetEvent(ctx context.Context, asset *domain.Asset) (str
 		return "", err
 	}
 	r := bytes.NewReader(Revent)
-	rec, errReq := http.NewRequest("POST", "http://34.70.86.33:"+config.GetEventAppPort()+"/events", r)
+	rec, errReq := http.NewRequest("POST", config.GetEventServiceUrl()+"/events", r)
 	if errReq != nil {
 		fmt.Printf("Error in http request %s", errReq.Error())
 		return "", errReq
@@ -128,7 +141,7 @@ func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.
 
 	responseBody := bytes.NewReader(postBody)
 
-	req, err := http.NewRequest("POST", "http://34.70.86.33:"+config.GetEventAppPort()+"/events", responseBody)
+	req, err := http.NewRequest("POST", config.GetEventServiceUrl()+"/events", responseBody)
 
 	if err != nil {
 		fmt.Printf("Event Service: error during http request %s:", err.Error())
@@ -167,25 +180,27 @@ func (evSvc *eventSvc) PostUpdateUserEvent(ctx context.Context, user *domain.Use
 		return "", errJson
 	}
 
-	r := bytes.NewReader(reqEvent)
-
-	//req, errNewReq := http.NewRequest("POST", config.GetIpAddress()+":"+config.GetEventAppPort()+"/events", r)
-	req, errNewReq := http.NewRequest("POST", "http://34.70.86.33:9035/events", r)
+	req, errNewReq := http.NewRequest("POST", config.GetEventServiceUrl()+EventResource, bytes.NewReader(reqEvent))
 	if errNewReq != nil {
-		fmt.Printf("Event service: Error while sending Post request to event. Error: %s", errNewReq.Error())
+		fmt.Printf("Event service: Error while creating Post request. Error: %s", errNewReq.Error())
 		return "", errNewReq
 	}
-	client := &http.Client{
-		Timeout: time.Second * 3,
-	}
-	resp, errPost := client.Do(req)
 
+	req.Header.Add("Content-type", "application/json")
+	resp, errPost := evSvc.client.Do(req)
 	if errPost != nil {
 		fmt.Printf("Event service: Error while sending Post request to event. Error: %s", errPost.Error())
 		return "", errPost
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("Event Service: Event not created. %d", resp.StatusCode)
+		return "", errors.New("Event not created")
+	}
+
 	body, errBodyRead := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
 	if errBodyRead != nil {
 		fmt.Printf("Event service: Error while reading response body. Error: %s", errBodyRead.Error())
 		return "", errBodyRead
@@ -236,4 +251,42 @@ func (service *eventSvc) PostMaintenanceActivity(ctx context.Context, req domain
 	}
 
 	return string(resBody), err
+}
+func (evSvc *eventSvc) PostAssetMaintenanceActivityEvent(ctx context.Context, resBody *domain.MaintenanceActivity) (string, error) {
+	req := contract.CreateAssetMaintenanceEventRequest{}
+	req.EventType = "maintenanceactivity"
+	req.Data = resBody
+	reqEvent, _ := json.Marshal(req)
+	r := bytes.NewReader(reqEvent)
+
+	reqst, err := http.NewRequest("POST", config.GetEventServiceUrl()+"/events", r)
+	reqst.Header.Add("Content-type", "application/json")
+	if err != nil {
+		fmt.Printf("Event service request: error:%s", err.Error())
+		return "", err
+	}
+
+	resp, err := evSvc.client.Do(reqst)
+	if err != nil {
+		fmt.Printf("Event service error while getting response from client.Do: error:%s", err.Error())
+		return "", customerrors.ResponseTimeLimitExceeded
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("Error while creating event")
+		return "", errors.New("Event not created")
+	}
+	body, errRead := ioutil.ReadAll(resp.Body)
+	if errRead != nil {
+		fmt.Printf("Event service read: error:%s", errRead.Error())
+		return "", errRead
+	}
+
+	errJsonUnmarshl := json.Unmarshal(body, &contract.CreateMaintenanceActivityEvent)
+	if errJsonUnmarshl != nil {
+		fmt.Printf("Event service error in unmarshaling: error:%s", errJsonUnmarshl.Error())
+		return "", errJsonUnmarshl
+	}
+	eventConvert := strconv.Itoa(contract.CreateMaintenanceActivityEvent.Id)
+	return eventConvert, nil
 }

@@ -101,7 +101,6 @@ func TestGetUserById_When_ReturnError_UserDoesNotExist(t *testing.T) {
 	assert.JSONEq(t, expectedError, response.Body.String())
 
 }
-
 func TestGetUserById_When_ReturnError_SomethingWentWrong(t *testing.T) {
 
 	ID := 5

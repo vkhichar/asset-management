@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/vkhichar/asset-management/config"
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/domain"
 	mockRepo "github.com/vkhichar/asset-management/repository/mocks"
@@ -190,7 +191,7 @@ func TestUserService_GetUserById_When_ReturnError_User_not_exist(t *testing.T) {
 	newUser, err := userService.GetUserByID(ctx, ID)
 
 	if err == nil {
-		fmt.Printf("Error while creating user")
+		fmt.Printf("Error while getting info of user")
 		t.FailNow()
 	}
 
@@ -212,7 +213,7 @@ func TestUserService_GetUserById_When_ReturnError(t *testing.T) {
 	newUser, err := userService.GetUserByID(ctx, ID)
 
 	if err == nil {
-		fmt.Printf("Error while creating user")
+		fmt.Printf("Error while getting info of user")
 		t.FailNow()
 	}
 
@@ -263,6 +264,7 @@ func TestEventService_PostCreateUserEvent_ReturnsSuccess(t *testing.T) {
 
 	obj, err := userService.CreateUser(ctx, user)
 
+	assert.Equal(t, &user, obj)
 	assert.NotNil(t, obj)
 	assert.NoError(t, err)
 
@@ -288,7 +290,7 @@ func TestEventService_PostCreateUserEvent_ReturnsError(t *testing.T) {
 	obj, err := userService.CreateUser(ctx, user)
 
 	assert.NotNil(t, obj)
-	assert.Error(t, err)
+	assert.Nil(t, err)
 }
 
 func TestUserService_ListUsers_When_ListUsersReturnsNil(t *testing.T) {
@@ -460,9 +462,7 @@ func TestUserService_UpdateUser_When_PostUserEventReturnsError(t *testing.T) {
 	userFromService, err := userService.UpdateUser(ctx, id, req)
 
 	assert.NotNil(t, userFromService)
-	assert.NotNil(t, err)
-	assert.Equal(t, "Error while creating event", err.Error())
-
+	assert.Nil(t, err)
 }
 
 func TestUserService_UpdateUser_When_PostUserEventReturnsId(t *testing.T) {
@@ -571,10 +571,11 @@ func TestUserService_DeleteUser_When_Success(t *testing.T) {
 
 func TestUserService_PostUserEvent_When_HTTPostReturnsSuccess(t *testing.T) {
 	ctx := context.Background()
+	defer gock.Off()
 
-	// gock.New(config.GetIpAddress() + ":" + config.GetEventAppPort()).Post("/events").
-	// 	Reply(200).JSON(map[string]int{"id": 21})
-	gock.New("http://34.70.86.33:9035").Post("/events").
+	service.InitEnv()
+
+	gock.New(config.GetEventServiceUrl()).Post(service.EventResource).
 		Reply(200).JSON(map[string]int{"id": 21})
 
 	user := domain.User{
@@ -595,10 +596,10 @@ func TestUserService_PostUserEvent_When_HTTPostReturnsSuccess(t *testing.T) {
 func TestUserService_PostUserEvent_When_HTTPostReturnsError(t *testing.T) {
 	ctx := context.Background()
 
-	err := errors.New("Error while json unmarshal")
+	service.InitEnv()
 
-	gock.New("http://34.70.86.33:9035").Post("/events").
-		ReplyError(err).JSON(map[string]string{"id": "21"})
+	gock.New(config.GetEventServiceUrl()).Post("/events").
+		Reply(400)
 
 	user := domain.User{
 		ID:       1,
@@ -613,5 +614,51 @@ func TestUserService_PostUserEvent_When_HTTPostReturnsError(t *testing.T) {
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "", eventId)
-	//assert.Equal(t, "Error Occured", err.Error())
+}
+
+func TestEventService_PostCreateUserEvent_When_HTTPostReturnsSuccess(t *testing.T) {
+	ctx := context.Background()
+	defer gock.Off()
+
+	service.InitEnv()
+
+	gock.New(config.GetEventServiceUrl()).Post(service.EventResource).
+		Reply(200).JSON(map[string]int{"id": 21})
+
+	user := domain.User{
+		ID:       1,
+		Name:     "Dummy",
+		Email:    "dummy@email",
+		Password: "12345",
+		IsAdmin:  true,
+	}
+
+	eventService := service.NewEventService()
+	eventId, err := eventService.PostCreateUserEvent(ctx, &user)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "21", eventId)
+}
+
+func TestEventService_PostCreateUserEvent_When_HTTPostReturnsError(t *testing.T) {
+	ctx := context.Background()
+
+	service.InitEnv()
+
+	gock.New(config.GetEventServiceUrl()).Post("/events").
+		Reply(400)
+
+	user := domain.User{
+		ID:       1,
+		Name:     "Dummy",
+		Email:    "dummy@email",
+		Password: "12345",
+		IsAdmin:  true,
+	}
+
+	eventService := service.NewEventService()
+	eventId, err := eventService.PostCreateUserEvent(ctx, &user)
+
+	assert.NotNil(t, err)
+	assert.Equal(t, "", eventId)
 }

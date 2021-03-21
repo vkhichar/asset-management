@@ -1,136 +1,147 @@
 package repository_test
 
-// func TestUserRepository_ListUsers_When_Nil(t *testing.T) {
-// 	ctx := context.Background()
-// 	config.Init()
-// 	repository.InitDB()
-// 	db := repository.GetDB()
-// 	tx := db.MustBegin()
-// 	tx.MustExec("delete from users")
-// 	tx.Commit()
+import (
+	"context"
+	"testing"
 
-// 	userRepo := repository.NewUserRepository()
+	"github.com/stretchr/testify/assert"
+	"github.com/vkhichar/asset-management/config"
+	"github.com/vkhichar/asset-management/contract"
+	"github.com/vkhichar/asset-management/domain"
+	"github.com/vkhichar/asset-management/repository"
+)
 
-// 	user, err := userRepo.ListUsers(ctx)
-// 	assert.Nil(t, err)
-// 	assert.Nil(t, user)
-// }
+func TestUserRepository_ListUsers_When_Nil(t *testing.T) {
+	ctx := context.Background()
+	config.Init()
+	repository.InitDB()
+	db := repository.GetDB()
+	tx := db.MustBegin()
+	tx.MustExec("delete from users")
+	tx.Commit()
 
-// func TestUserRepository_ListUsers_When_Success(t *testing.T) {
-// 	ctx := context.Background()
-// 	var userExpected []domain.User
+	userRepo := repository.NewUserRepository()
 
-// 	config.Init()
-// 	repository.InitDB()
-// 	db := repository.GetDB()
-// 	tx := db.MustBegin()
-// 	tx.MustExec("delete from users")
-// 	tx.MustExec("insert into users (name,email,password,is_admin) values ($1,$2,$3,$4)", "Jan Doe", "jandoe@gmail.com", "12345", true)
-// 	tx.MustExec("insert into users (name,email,password,is_admin) values ($1,$2,$3,$4)", "Alisa Ray", "alisaray@gmail.com", "hello", false)
-// 	tx.Commit()
+	user, err := userRepo.ListUsers(ctx)
+	assert.Nil(t, err)
+	assert.Nil(t, user)
+}
 
-// 	db.Select(&userExpected, "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users")
-// 	userRepo := repository.NewUserRepository()
+func TestUserRepository_ListUsers_When_Success(t *testing.T) {
+	ctx := context.Background()
+	var userExpected []domain.User
 
-// 	user, err := userRepo.ListUsers(ctx)
-// 	assert.Nil(t, err)
-// 	assert.Equal(t, userExpected, user)
-// }
+	config.Init()
+	repository.InitDB()
+	db := repository.GetDB()
+	tx := db.MustBegin()
+	tx.MustExec("delete from users")
+	tx.MustExec("insert into users (name,email,password,is_admin) values ($1,$2,$3,$4)", "Jan Doe", "jandoe@gmail.com", "12345", true)
+	tx.MustExec("insert into users (name,email,password,is_admin) values ($1,$2,$3,$4)", "Alisa Ray", "alisaray@gmail.com", "hello", false)
+	tx.Commit()
 
-// func TestUserRepository_UpdateUsers_When_Nil(t *testing.T) {
-// 	ctx := context.Background()
+	db.Select(&userExpected, "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users")
+	userRepo := repository.NewUserRepository()
 
-// 	name := "fatema"
-// 	password := "12345"
+	user, err := userRepo.ListUsers(ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, userExpected, user)
+}
 
-// 	userReq := contract.UpdateUserRequest{
-// 		Name:     &name,
-// 		Password: &password,
-// 	}
+func TestUserRepository_UpdateUsers_When_Nil(t *testing.T) {
+	ctx := context.Background()
 
-// 	id := 3
+	name := "fatema"
+	password := "12345"
 
-// 	config.Init()
-// 	repository.InitDB()
-// 	db := repository.GetDB()
-// 	tx := db.MustBegin()
-// 	tx.MustExec("delete from users")
-// 	tx.MustExec("insert into users (name,email,password,is_admin) values ($1,$2,$3,$4)", "Jan Doe", "jandoe@gmail.com", "12345", true)
-// 	tx.Commit()
+	userReq := contract.UpdateUserRequest{
+		Name:     &name,
+		Password: &password,
+	}
 
-// 	userRepo := repository.NewUserRepository()
+	id := 3
 
-// 	user, err := userRepo.UpdateUser(ctx, id, userReq)
-// 	expectedErr := "The user for this id does not exist"
-// 	assert.Equal(t, expectedErr, err.Error())
-// 	assert.Nil(t, user)
-// }
+	config.Init()
+	repository.InitDB()
+	db := repository.GetDB()
+	tx := db.MustBegin()
+	tx.MustExec("delete from users")
+	tx.MustExec("insert into users (name,email,password,is_admin) values ($1,$2,$3,$4)", "Jan Doe", "jandoe@gmail.com", "12345", true)
+	tx.Commit()
 
-// func TestUserRepository_UpdateUsers_When_Success(t *testing.T) {
-// 	ctx := context.Background()
-// 	var userExpected domain.User
+	userRepo := repository.NewUserRepository()
 
-// 	name := "fatema"
-// 	password := "hello"
+	user, err := userRepo.UpdateUser(ctx, id, userReq)
+	expectedErr := "The user for this id does not exist"
+	assert.Equal(t, expectedErr, err.Error())
+	assert.Nil(t, user)
+}
 
-// 	userReq := contract.UpdateUserRequest{
-// 		Name:     &name,
-// 		Password: &password,
-// 	}
+func TestUserRepository_UpdateUsers_When_Success(t *testing.T) {
+	ctx := context.Background()
+	var userExpected domain.User
 
-// 	id := 12
-// 	config.Init()
-// 	repository.InitDB()
-// 	db := repository.GetDB()
-// 	tx := db.MustBegin()
-// 	tx.MustExec("delete from users")
-// 	tx.MustExec("insert into users (id, name,email,password,is_admin) values ($1,$2,$3,$4,$5)", 12, "Jan Doe", "jandoe@gmail.com", "12345", true)
-// 	tx.Commit()
+	name := "fatema"
+	password := "hello"
 
-// 	userRepo := repository.NewUserRepository()
+	userReq := contract.UpdateUserRequest{
+		Name:     &name,
+		Password: &password,
+	}
 
-// 	user, err := userRepo.UpdateUser(ctx, id, userReq)
+	id := 12
+	config.Init()
+	repository.InitDB()
+	db := repository.GetDB()
+	tx := db.MustBegin()
+	tx.MustExec("delete from users")
+	tx.MustExec("insert into users (id, name,email,password,is_admin) values ($1,$2,$3,$4,$5)", 12, "Jan Doe", "jandoe@gmail.com", "12345", true)
+	tx.Commit()
 
-// 	db.Get(&userExpected, "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users WHERE id = $1", id)
-// 	assert.Equal(t, &userExpected, user)
-// 	assert.Nil(t, err)
-// }
+	userRepo := repository.NewUserRepository()
 
-// func TestUserRepository_DeleteUser_When_DeleteUserReturnsError(t *testing.T) {
-// 	ctx := context.Background()
+	user, err := userRepo.UpdateUser(ctx, id, userReq)
 
-// 	id := 1
-// 	config.Init()
-// 	repository.InitDB()
-// 	db := repository.GetDB()
+	db.Get(&userExpected, "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users WHERE id = $1", id)
+	assert.Equal(t, &userExpected, user)
+	assert.Nil(t, err)
+}
 
-// 	tx := db.MustBegin()
-// 	tx.MustExec("delete from users")
+func TestUserRepository_DeleteUser_When_DeleteUserReturnsError(t *testing.T) {
+	ctx := context.Background()
 
-// 	userRepo := repository.NewUserRepository()
+	id := 1
+	config.Init()
+	repository.InitDB()
+	db := repository.GetDB()
 
-// 	user, err := userRepo.DeleteUser(ctx, id)
+	tx := db.MustBegin()
+	tx.MustExec("delete from users")
+	tx.Commit()
+	userRepo := repository.NewUserRepository()
 
-// 	assert.Nil(t, user)
-// 	assert.NotNil(t, err)
-// }
+	user, err := userRepo.DeleteUser(ctx, id)
 
-// func TestUserRepository_DeleteUsers_When_Success(t *testing.T) {
-// 	ctx := context.Background()
-// 	var userExpected domain.User
-// 	id := 1
+	assert.Nil(t, user)
+	assert.Nil(t, err)
+}
 
-// 	config.Init()
-// 	repository.InitDB()
-// 	db := repository.GetDB()
-// 	tx := db.MustBegin()
-// 	tx.MustExec("delete from users")
-// 	tx.MustExec("insert into users (id, name,email,password,is_admin) values ($1,$2,$3,$4,$5)", id, "Jan Doe", "jandoe@gmail.com", "12345", true)
-// 	tx.Commit()
-// 	db.Get(&userExpected, "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users WHERE id = $1", id)
+func TestUserRepository_DeleteUsers_When_Success(t *testing.T) {
+	ctx := context.Background()
+	var userExpected domain.User
+	id := 1
 
-// 	userRepo := repository.NewUserRepository()
-// 	user, err := userRepo.DeleteUser(ctx, id)
-// 	assert.Equal(t, &userExpected, user)
-// 	assert.Nil(t, err)
-// }
+	config.Init()
+	repository.InitDB()
+	db := repository.GetDB()
+	tx := db.MustBegin()
+	tx.MustExec("delete from users")
+	tx.MustExec("insert into users (id, name,email,password,is_admin) values ($1,$2,$3,$4,$5)", id, "Jan Doe", "jandoe@gmail.com", "12345", true)
+	tx.Commit()
+	db.Get(&userExpected, "SELECT id, name, email, password, is_admin, created_at, updated_at FROM users WHERE id = $1", id)
+
+	userRepo := repository.NewUserRepository()
+	user, err := userRepo.DeleteUser(ctx, id)
+	assert.Equal(t, &userExpected, user)
+	assert.Nil(t, err)
+}
