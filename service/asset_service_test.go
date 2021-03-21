@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/vkhichar/asset-management/config"
 	"github.com/vkhichar/asset-management/contract"
+	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 	mockRepo "github.com/vkhichar/asset-management/repository/mocks"
 	"github.com/vkhichar/asset-management/service"
@@ -299,39 +300,11 @@ func TestAssetService_DeleteAsset_Success(t *testing.T) {
 	if errParse != nil {
 		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
 	}
-	layout := "2006-01-02T15:04:05.000Z"
-	str := "2014-11-12T11:45:26.371Z"
-	dat, errParseDate := time.Parse(layout, str)
-	if errParseDate != nil {
-		fmt.Printf("Error While Parsing %s", errParseDate.Error())
-	}
-	cost, errParseFloat := strconv.ParseFloat("5000", 32)
-	if errParseFloat != nil {
-		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
-	}
-	m := make(map[string]interface{})
-	m["RAM"] = "4GB"
-	m["HDD"] = "1TB"
-	b, errMarshal := json.Marshal(m)
-	if errMarshal != nil {
-		fmt.Printf("Error While Marshaling %s", errMarshal.Error())
-	}
 
-	asset := domain.Asset{
-
-		Id:           Id,
-		Status:       "active",
-		Category:     "Laptop",
-		PurchaseAt:   dat,
-		PurchaseCost: cost,
-
-		Name:           "Dell Latitude E5550",
-		Specifications: b,
-	}
 	mockAssetRepo := &mockRepo.MockAssetRepo{}
 	mockEventSvc := &mockEventSvc.MockEventService{}
 
-	mockAssetRepo.On("DeleteAsset", ctx, Id).Return(&asset, nil)
+	mockAssetRepo.On("DeleteAsset", ctx, Id).Return(nil, nil)
 	assetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
 
 	DBasset, err := assetService.DeleteAsset(ctx, Id)
@@ -339,7 +312,7 @@ func TestAssetService_DeleteAsset_Success(t *testing.T) {
 		fmt.Printf("Something went Wrong %s", err.Error())
 	}
 	assert.NoError(t, err)
-	assert.Equal(t, &asset, DBasset)
+	assert.Nil(t, DBasset)
 
 }
 
@@ -429,7 +402,7 @@ func TestAssetService_DeleteAsset_When_DeleteAssetReturnsNil(t *testing.T) {
 
 	mockEventSvc := &mockEventSvc.MockEventService{}
 
-	mockAssetRepo.On("DeleteAsset", ctx, Id).Return(nil, nil)
+	mockAssetRepo.On("DeleteAsset", ctx, Id).Return(nil, customerrors.NoAssetsExist)
 	assetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
 
 	asset, err := assetService.DeleteAsset(ctx, Id)
