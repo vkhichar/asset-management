@@ -651,95 +651,95 @@ func TestAssetService_UpdateAsset_When_PostAssetEventReturnError(t *testing.T) {
 
 }
 
-// func TestAssetService_PostAssetEvent_When_Success(t *testing.T) {
-// 	ctx := context.Background()
-// 	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
-// 	if errParse != nil {
-// 		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
-// 	}
-// 	layout := "2006-01-02T15:04:05.000Z"
-// 	str := "2014-11-12T11:45:26.371Z"
-// 	dat, errParseDate := time.Parse(layout, str)
-// 	if errParseDate != nil {
-// 		fmt.Printf("Error While Parsing %s", errParseDate.Error())
-// 	}
-// 	cost, errParseFloat := strconv.ParseFloat("5000", 32)
-// 	if errParseFloat != nil {
-// 		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
-// 	}
-// 	m := make(map[string]interface{})
-// 	m["RAM"] = "8GB"
-// 	m["HDD"] = "1TB"
-// 	b, errMarshal := json.Marshal(m)
-// 	if errMarshal != nil {
-// 		fmt.Printf("Error while Marshaling %s", errMarshal.Error())
-// 	}
+func TestAssetService_PostAssetEvent_When_Success(t *testing.T) {
+	ctx := context.Background()
+	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParse != nil {
+		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
+	}
+	layout := "2006-01-02T15:04:05.000Z"
+	str := "2014-11-12T11:45:26.371Z"
+	dat, errParseDate := time.Parse(layout, str)
+	if errParseDate != nil {
+		fmt.Printf("Error While Parsing %s", errParseDate.Error())
+	}
+	cost, errParseFloat := strconv.ParseFloat("5000", 32)
+	if errParseFloat != nil {
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
+	}
+	m := make(map[string]interface{})
+	m["RAM"] = "8GB"
+	m["HDD"] = "1TB"
+	b, errMarshal := json.Marshal(m)
+	if errMarshal != nil {
+		fmt.Printf("Error while Marshaling %s", errMarshal.Error())
+	}
 
-// 	gock.New(config.GetEventServiceUrl()).
-// 		Post("/events").
-// 		Reply(200).
-// 		JSON(map[string]string{"id": "120"})
-// 	asset := domain.Asset{
+	gock.New(config.GetEventServiceUrl()).
+		Post("/events").
+		Reply(200).
+		JSON(map[string]int{"id": 120})
+	asset := domain.Asset{
 
-// 		Id:             Id,
-// 		Status:         "active",
-// 		Category:       "Laptop",
-// 		PurchaseAt:     dat,
-// 		PurchaseCost:   cost,
-// 		Name:           "Dell Latitude E5550",
-// 		Specifications: b,
-// 	}
+		Id:             Id,
+		Status:         "active",
+		Category:       "Laptop",
+		PurchaseAt:     dat,
+		PurchaseCost:   cost,
+		Name:           "Dell Latitude E5550",
+		Specifications: b,
+	}
 
-// 	eventService := service.NewEventService()
-// 	id, err := eventService.PostAssetEvent(ctx, &asset)
+	eventService := service.NewEventService()
+	id, err := eventService.PostAssetEvent(ctx, &asset)
 
-// 	assert.Nil(t, err)
-// 	assert.JSONEq(t, `{"id":"120"}`, id)
-// }
+	assert.Nil(t, err)
+	assert.JSONEq(t, "120", id)
+}
 
-// func TestAssetService_PostAssetEvent_When_ReturnsError(t *testing.T) {
-// 	ctx := context.Background()
-// 	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
-// 	if errParse != nil {
-// 		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
-// 	}
-// 	layout := "2006-01-02T15:04:05.000Z"
-// 	str := "2014-11-12T11:45:26.371Z"
-// 	dat, errParseDate := time.Parse(layout, str)
-// 	if errParseDate != nil {
-// 		fmt.Printf("Error While Parsing %s", errParseDate.Error())
-// 	}
-// 	cost, errParseFloat := strconv.ParseFloat("5000", 32)
-// 	if errParseFloat != nil {
-// 		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
-// 	}
-// 	m := make(map[string]interface{})
-// 	m["RAM"] = "8GB"
-// 	m["HDD"] = "1TB"
-// 	b, errMarshal := json.Marshal(m)
-// 	if errMarshal != nil {
-// 		fmt.Printf("Error while Marshaling %s", errMarshal.Error())
-// 	}
-// 	defer gock.Off()
+func TestAssetService_PostAssetEvent_When_ReturnsError(t *testing.T) {
+	ctx := context.Background()
+	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParse != nil {
+		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
+	}
+	layout := "2006-01-02T15:04:05.000Z"
+	str := "2014-11-12T11:45:26.371Z"
+	dat, errParseDate := time.Parse(layout, str)
+	if errParseDate != nil {
+		fmt.Printf("Error While Parsing %s", errParseDate.Error())
+	}
+	cost, errParseFloat := strconv.ParseFloat("5000", 32)
+	if errParseFloat != nil {
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
+	}
+	m := make(map[string]interface{})
+	m["RAM"] = "8GB"
+	m["HDD"] = "1TB"
+	b, errMarshal := json.Marshal(m)
+	if errMarshal != nil {
+		fmt.Printf("Error while Marshaling %s", errMarshal.Error())
+	}
+	defer gock.Off()
 
-// 	gock.New(config.GetEventServiceUrl()).
-// 		Post("/events").
-// 		Reply(400)
-// 	asset := domain.Asset{
+	gock.New(config.GetEventServiceUrl()).
+		Post("/events").
+		Reply(400)
+	asset := domain.Asset{
 
-// 		Id:             Id,
-// 		Status:         "active",
-// 		Category:       "Laptop",
-// 		PurchaseAt:     dat,
-// 		PurchaseCost:   cost,
-// 		Name:           "Dell Latitude E5550",
-// 		Specifications: b,
-// 	}
+		Id:             Id,
+		Status:         "active",
+		Category:       "Laptop",
+		PurchaseAt:     dat,
+		PurchaseCost:   cost,
+		Name:           "Dell Latitude E5550",
+		Specifications: b,
+	}
 
-// 	eventService := service.NewEventService()
-// 	eventId, err := eventService.PostAssetEvent(ctx, &asset)
+	eventService := service.NewEventService()
+	eventId, err := eventService.PostAssetEvent(ctx, &asset)
 
-// 	assert.Equal(t, "", eventId)
-// 	assert.NotNil(t, err)
+	assert.Equal(t, "", eventId)
+	assert.NotNil(t, err)
 
-// }
+}

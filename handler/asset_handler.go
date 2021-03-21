@@ -57,18 +57,16 @@ func DeleteAssetHandler(asset service.AssetService) http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		assetRep := contract.DomainToContractassets(asset)
-		responseBytes, errMarshal := json.Marshal(assetRep)
-		if errMarshal != nil {
-			fmt.Printf("handler:Something went wrong while marshalingh assetRep %s", errMarshal.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+		if asset == nil && err == nil {
+			responseBytes, err := json.Marshal(contract.SuccessResponse{Success: "Delete Operation Done Successfully"})
+			if err != nil {
+				fmt.Printf("handler: error while Marshaling %s", err.Error())
+
+			}
+			w.Write(responseBytes)
+			w.WriteHeader(http.StatusOK)
 			return
 		}
-
-		w.WriteHeader(http.StatusOK)
-		w.Write(responseBytes)
-		return
-
 	}
 }
 
@@ -126,18 +124,15 @@ func UpdateAssetHandler(asset service.AssetService) http.HandlerFunc {
 			w.Write(responseBytes)
 			return
 		}
-
-		assetRep := contract.DomainToContractassets(asset)
-		responseBytes, errMarshal := json.Marshal(assetRep)
-		if errMarshal != nil {
-			fmt.Printf("handler:Something went wrong while marshalingh assetRep %s", errMarshal.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+		if asset == nil && err == nil {
+			responseBytes, err := json.Marshal(contract.SuccessResponse{Success: "Update Operation Done Successfully"})
+			if err != nil {
+				fmt.Printf("handler:error while marshaling %s", err.Error())
+			}
+			w.Write(responseBytes)
+			w.WriteHeader(http.StatusOK)
 			return
 		}
-
-		w.WriteHeader(http.StatusOK)
-		w.Write(responseBytes)
-		return
 
 	}
 

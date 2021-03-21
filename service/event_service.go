@@ -125,8 +125,8 @@ func (e *eventSvc) PostAssetEvent(ctx context.Context, asset *domain.Asset) (str
 		fmt.Printf("Event Service : Error While UnMarshaling :%s", errJsonMarshal.Error())
 		return "", errJsonMarshal
 	}
-	// eventId := strconv.Itoa(responseObj.ID)
-	return string(responseObj.ID), nil
+	eventId := strconv.Itoa(responseObj.ID)
+	return eventId, nil
 }
 
 func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error) {

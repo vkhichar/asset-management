@@ -3,7 +3,6 @@ package repository_test
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -114,8 +113,6 @@ func TestAssetRepository_DeleteRepo_When_ReturnsError(t *testing.T) {
 
 func TestAssetRepository_UpdateAssetsRepo_When_Success(t *testing.T) {
 	ctx := context.Background()
-	var expectedasset domain.Asset
-	fmt.Println("Above")
 	Id, _ := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
 	status := "active"
 	m := make(map[string]interface{})
@@ -124,36 +121,28 @@ func TestAssetRepository_UpdateAssetsRepo_When_Success(t *testing.T) {
 	m["Genration"] = "i8"
 	b, _ := json.Marshal(m)
 	specifications := b
-
 	req := contract.UpdateRequest{
 		Status:         &status,
 		Specifications: specifications,
 	}
-
 	config.Init()
 	repository.InitDB()
 	db := repository.GetDB()
 	tx := db.MustBegin()
-
 	tx.MustExec("Delete from assets")
-
 	tx.MustExec("insert into assets(id,status,category,purchase_at,purchase_cost,name,specifications) values($1,$2,$3,$4,$5,$6,$7)", "ffb4b1a4-7bf5-11ee-9339-0242ac130002", "active", "Laptop", "01/07/2020", 500, "Dell Latitude E5550", `{"RAM":"4GB","HDD":"500GB","Generation":"i8"}`)
 	tx.Commit()
-	fmt.Println("below")
-
 	assetRepo := repository.NewAssetRepository()
 
 	asset, err := assetRepo.UpdateAsset(ctx, Id, req)
-	db.Get(&expectedasset, "Select id,status,category,purchase_at,purchase_cost,name,specifications from assets where id=$1", Id)
 
-	assert.Equal(t, &expectedasset, asset)
+	assert.Nil(t, asset)
 	assert.Nil(t, err)
 
 }
 
 func TestAssetRepository_DeleteRepo_When_Success(t *testing.T) {
 	ctx := context.Background()
-	var expectedasset domain.Asset
 	Id, _ := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
 
 	config.Init()
@@ -169,9 +158,7 @@ func TestAssetRepository_DeleteRepo_When_Success(t *testing.T) {
 	assetRepo := repository.NewAssetRepository()
 
 	asset, err := assetRepo.DeleteAsset(ctx, Id)
-	db.Get(&expectedasset, "select id,status,category,purchase_at,purchase_cost,name,specifications from assets where id=$1", Id)
-
-	assert.Equal(t, &expectedasset, asset)
+	assert.Nil(t, asset)
 	assert.Nil(t, err)
 
 }
