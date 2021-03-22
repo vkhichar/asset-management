@@ -29,7 +29,6 @@ func CreateAssetAllocationHandler(assetAllocationService service.AssetAllocation
 
 		var request contract.CreateAssetAllocationRequestForJson
 		claims := r.Context().Value("claims")
-		//fmt.Println("Handle:", claims)
 		allocatedBy := claims.(*service.Claims).UserID
 
 		err = json.NewDecoder(r.Body).Decode(&request)

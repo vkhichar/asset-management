@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -37,9 +36,6 @@ func NewAssetAllocationRepository(uRepo UserRepository, aRepo AssetRepository) A
 }
 
 func (repo *assetAllocationsRepo) CreateAssetAllocation(ctx context.Context, req contract.CreateAssetAllocationRequest) (*domain.AssetAllocations, error) {
-	var assetAllocated1 domain.AssetAllocations
-
-	fmt.Println(req.UserId)
 	user, err := repo.userRepo.GetUserByID(ctx, req.UserId)
 	if user == nil {
 		return nil, customerrors.UserNotExist
@@ -69,14 +65,11 @@ func (repo *assetAllocationsRepo) CreateAssetAllocation(ctx context.Context, req
 		return nil, customerrors.AdminDoesNotExist
 	}
 	err = repo.db.Get(&assetAllocated, createAssetAllocation, req.UserId, req.AssetId, admin.Name, time.Now())
-	fmt.Println("Asset allocated:", assetAllocated)
 	repo.db.MustBegin().Commit()
 	if err != nil {
 		return nil, err
 	}
 
-	repo.db.Select(&assetAllocated1, "Select * from asset_allocations where id=$1", assetAllocated.ID)
-	fmt.Println(assetAllocated1)
 	return &assetAllocated, nil
 }
 func (repo *assetAllocationsRepo) AssetDeallocation(ctx context.Context, req contract.CreateAssetAllocationRequest) (*domain.AssetAllocations, error) {
