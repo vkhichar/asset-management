@@ -74,7 +74,7 @@ func (service *assetService) CreateAsset(ctx context.Context, assetParam *domain
 		fmt.Printf("asset service: error during post asset event: %s", err.Error())
 		return nil, err
 	}
-	fmt.Println(id)
+	fmt.Printf("Asset created with id: %s", id)
 
 	return asset, err
 }
