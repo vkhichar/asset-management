@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
