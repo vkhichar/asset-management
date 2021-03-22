@@ -64,18 +64,31 @@ func (e *eventSvc) PostCreateUserEvent(ctx context.Context, user *domain.User) (
 	}
 
 	resp, err := client.Do(re)
+
 	if err != nil {
 		fmt.Printf("Error in event service while getting response in client.do: %s", err.Error())
 		return "", err
 	}
-
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("Error in event service :%s", err.Error())
 
 	}
 
-	return string(body), nil
+	var respObj contract.CreateUserEventResponse
+
+	errJsonUnmar := json.Unmarshal(body, &respObj)
+
+	if errJsonUnmar != nil {
+		fmt.Printf("Event service: Error while json unmarshal. Error: %s", errJsonUnmar.Error())
+		return "", errJsonUnmar
+	}
+
+	eventId := strconv.Itoa(respObj.Id)
+
+	return eventId, nil
+
 }
 
 func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error) {
@@ -201,6 +214,7 @@ func (service *eventSvc) PostMaintenanceActivity(ctx context.Context, req domain
 
 	return string(resBody), err
 }
+
 func (evSvc *eventSvc) PostAssetMaintenanceActivityEvent(ctx context.Context, resBody *domain.MaintenanceActivity) (string, error) {
 	req := contract.CreateAssetMaintenanceEventRequest{}
 	req.EventType = "maintenanceactivity"
