@@ -21,6 +21,7 @@ const EventResource = "/events"
 const AssetMaintenanceEvent = "ASSET_MAINTENANCE_ACTIVITY"
 
 type EventService interface {
+	PostAssetEvent(context.Context, *domain.Asset) (string, error)
 	PostCreateUserEvent(ctx context.Context, user *domain.User) (string, error)
 	PostUpdateUserEvent(context.Context, *domain.User) (string, error)
 	PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error)
@@ -91,6 +92,45 @@ func (e *eventSvc) PostCreateUserEvent(ctx context.Context, user *domain.User) (
 
 }
 
+func (e *eventSvc) PostAssetEvent(ctx context.Context, asset *domain.Asset) (string, error) {
+	object := contract.UpdateAssetEvent{}
+	object.EvenType = "asset"
+	object.Data = asset
+	Revent, err := json.Marshal(object)
+	if err != nil {
+		fmt.Printf("Error while Marshaling %s", err.Error())
+		return "", err
+	}
+	r := bytes.NewReader(Revent)
+	rec, errReq := http.NewRequest("POST", config.GetEventServiceUrl()+"/events", r)
+	if errReq != nil {
+		fmt.Printf("Error in http request %s", errReq.Error())
+		return "", errReq
+	}
+	client := http.Client{
+		Timeout: 3 * time.Second,
+	}
+	resp, errPost := client.Do(rec)
+	if errPost != nil {
+		fmt.Printf("Event service: Error while sending Post request to event. Error: %s", errPost.Error())
+		return "", errPost
+	}
+
+	body, errReadAll := ioutil.ReadAll(resp.Body)
+	if errReadAll != nil {
+		fmt.Printf("Error While Performing ReadAll %s", errReadAll.Error())
+		return "", errReadAll
+	}
+	var responseObj contract.AssetEventResponse
+	errJsonMarshal := json.Unmarshal(body, &responseObj)
+	if errJsonMarshal != nil {
+		fmt.Printf("Event Service : Error While UnMarshaling :%s", errJsonMarshal.Error())
+		return "", errJsonMarshal
+	}
+	eventId := strconv.Itoa(responseObj.ID)
+	return eventId, nil
+}
+
 func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error) {
 	obj := contract.CreateAssetEvent{}
 	obj.EventType = "asset"
@@ -131,6 +171,7 @@ func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.
 }
 
 func (evSvc *eventSvc) PostUpdateUserEvent(ctx context.Context, user *domain.User) (string, error) {
+
 	request := contract.UpdateUserEventRequest{}
 	request.EventType = "user"
 	request.Data = user
@@ -166,7 +207,6 @@ func (evSvc *eventSvc) PostUpdateUserEvent(ctx context.Context, user *domain.Use
 		fmt.Printf("Event service: Error while reading response body. Error: %s", errBodyRead.Error())
 		return "", errBodyRead
 	}
-
 	var responseObj contract.UpdateUserEventResponse
 
 	errJsonUnmar := json.Unmarshal(body, &responseObj)

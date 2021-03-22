@@ -58,11 +58,24 @@ func (m *MockEventService) PostAssetEventCreateAsset(ctx context.Context, asset 
 func (m *MockEventService) PostUpdateUserEvent(ctx context.Context, user *domain.User) (string, error) {
 	args := m.Called(ctx, user)
 
+	var EventId string
+	if args[0] != "" {
+		EventId = args[0].(string)
+	}
+	var err error
+	if args[1] != nil {
+		err = args[1].(error)
+	}
+	return EventId, err
+}
+
+func (m *MockEventService) PostAssetEvent(ctx context.Context, asset *domain.Asset) (string, error) {
+	args := m.Called(ctx, asset)
+
 	var eventId string
 	if args[0] != "" {
 		eventId = args[0].(string)
 	}
-
 	var err error
 	if args[1] != nil {
 		err = args[1].(error)

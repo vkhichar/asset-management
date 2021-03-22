@@ -28,7 +28,7 @@ func InitDependencies() {
 	deps.userService = userService
 	deps.assetService = assetService
 	deps.tokenService = plainTokenService
-	assetAllocationsRepo := repository.NewAssetAllocationRepository(userRepo, assetRepo)
+	assetAllocationsRepo := repository.NewAssetAllocationRepository(assetRepo)
 	assetAllocationService := service.NewAssetAllocationService(assetAllocationsRepo)
 	deps.assetAllocationService = assetAllocationService
 }
