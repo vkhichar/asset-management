@@ -27,7 +27,27 @@ func NewAssetAllocationService(repo repository.AssetAllocationsRepository) Asset
 }
 
 func (service *assetAllocationsService) CreateAssetAllocation(ctx context.Context, req contract.CreateAssetAllocationRequest) (*domain.AssetAllocations, error) {
-	return nil, nil
+	assetAllocation, err := service.assetAllocationsRepo.CreateAssetAllocation(ctx, req)
+
+	if err != nil {
+		if err == customerrors.UserNotExist {
+			return nil, customerrors.UserNotExist
+		}
+		if err == customerrors.AssetDoesNotExist {
+			return nil, customerrors.AssetDoesNotExist
+		}
+		if err == customerrors.AdminDoesNotExist {
+			return nil, customerrors.AdminDoesNotExist
+		}
+		if err == customerrors.AssetCannotBeAllocated {
+			return nil, customerrors.AssetCannotBeAllocated
+		}
+		if err == customerrors.AssetAlreadyAllocated {
+			return nil, customerrors.AssetAlreadyAllocated
+		}
+		return nil, err
+	}
+	return assetAllocation, nil
 }
 func (service *assetAllocationsService) AssetDeallocation(ctx context.Context, id uuid.UUID) (*string, error) {
 
