@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -18,61 +19,44 @@ func CreateAssetAllocationHandler(assetAllocationService service.AssetAllocation
 		vars := mux.Vars(r)
 
 		assetId, err := uuid.Parse(vars["asset_id"])
-
 		if err != nil {
 			fmt.Printf("handler:incorrect asset id")
 			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "invalid asset id"})
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "invalid format for asset id"})
+			if err != nil {
+				fmt.Printf("handler: error while converting error to json, error:%s", err)
+				return
+			}
 			w.Write(responseBytes)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
 
-		var request contract.CreateAssetAllocationRequestForJson
+		userId, err := strconv.Atoi(vars["user_id"])
+		if err != nil {
+			fmt.Printf("handler:enter user id in valid format")
+			w.WriteHeader(http.StatusBadRequest)
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "invalid format for user id"})
+			if err != nil {
+				fmt.Printf("handler: error while converting error to json, error:%s", err)
+				return
+			}
+			w.Write(responseBytes)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
 		claims := r.Context().Value("claims")
 		allocatedBy := claims.(*service.Claims).UserID
 
-		err = json.NewDecoder(r.Body).Decode(&request)
-		if err != nil {
-			fmt.Printf("handler: error while decoding request for creating maintenance activity for assets: %s", err.Error())
-
-			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "invalid request"})
-			w.Write(responseBytes)
-			return
-		}
-
-		req := contract.NewAssetAllocationRequest(assetId, allocatedBy, request)
+		req := contract.NewAssetAllocationRequest(assetId, allocatedBy, userId)
 
 		assetAllocation, err := assetAllocationService.CreateAssetAllocation(r.Context(), req)
 
 		if err != nil {
-			if err == customerrors.UserNotExist {
-				fmt.Println("handler: user for this id does not exist")
-				w.WriteHeader(http.StatusBadRequest)
-				responseBytes, err := json.Marshal(contract.ErrorResponse{customerrors.UserNotExist.Error()})
-				if err != nil {
-					fmt.Printf("handler: error while converting error to json, error:%s", err)
-					return
-				}
-				w.Write(responseBytes)
-				return
-			}
 			if err == customerrors.AssetDoesNotExist {
 				fmt.Println("handler: asset for this id does not exist")
 				w.WriteHeader(http.StatusBadRequest)
-				responseBytes, err := json.Marshal(contract.ErrorResponse{customerrors.AssetDoesNotExist.Error()})
-				if err != nil {
-					fmt.Printf("handler: error while converting error to json, error:%s", err)
-					return
-				}
-				w.Write(responseBytes)
-				return
-			}
-			if err == customerrors.AdminDoesNotExist {
-				fmt.Println("handler: admin id is incorrect")
-				w.WriteHeader(http.StatusBadRequest)
-				responseBytes, err := json.Marshal(contract.ErrorResponse{customerrors.AdminDoesNotExist.Error()})
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
 				if err != nil {
 					fmt.Printf("handler: error while converting error to json, error:%s", err)
 					return
@@ -83,7 +67,7 @@ func CreateAssetAllocationHandler(assetAllocationService service.AssetAllocation
 			if err == customerrors.AssetCannotBeAllocated {
 				fmt.Println("handler: this asset is either retired or is under maintenance")
 				w.WriteHeader(http.StatusBadRequest)
-				responseBytes, err := json.Marshal(contract.ErrorResponse{customerrors.AssetCannotBeAllocated.Error()})
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
 				if err != nil {
 					fmt.Printf("handler: error while converting error to json, error:%s", err)
 					return
@@ -94,7 +78,7 @@ func CreateAssetAllocationHandler(assetAllocationService service.AssetAllocation
 			if err == customerrors.AssetAlreadyAllocated {
 				fmt.Println("handler: this asset is already allocated to another user")
 				w.WriteHeader(http.StatusBadRequest)
-				responseBytes, err := json.Marshal(contract.ErrorResponse{customerrors.AssetAlreadyAllocated.Error()})
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
 				if err != nil {
 					fmt.Printf("handler: error while converting error to json, error:%s", err)
 					return
