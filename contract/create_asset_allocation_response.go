@@ -9,8 +9,9 @@ type CreateAssetAllocationResponse struct {
 	ID            int       `json:"id"`
 	AssetId       uuid.UUID `json:"asset_id"`
 	UserId        int       `json:"user_id"`
-	AllocatedBy   string    `json:"allocated_by"`
+	AllocatedBy   int       `json:"allocated_by"`
 	AllocatedFrom string    `json:"allocated_from"`
+	AllocatedTill string    `json:"allocated_till"`
 }
 
 func NewCreateAssetAllocationResponse(domain *domain.AssetAllocations) CreateAssetAllocationResponse {
@@ -20,6 +21,7 @@ func NewCreateAssetAllocationResponse(domain *domain.AssetAllocations) CreateAss
 		UserId:        domain.UserId,
 		AllocatedBy:   domain.AllocatedBy,
 		AllocatedFrom: domain.AllocatedFrom.Format(DateFormat),
+		//AllocatedTill: domain.AllocatedTill.String(),
 	}
 	return resp
 }

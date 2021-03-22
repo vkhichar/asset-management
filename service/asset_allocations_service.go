@@ -30,21 +30,6 @@ func (service *assetAllocationsService) CreateAssetAllocation(ctx context.Contex
 	assetAllocation, err := service.assetAllocationsRepo.CreateAssetAllocation(ctx, req)
 
 	if err != nil {
-		if err == customerrors.UserNotExist {
-			return nil, customerrors.UserNotExist
-		}
-		if err == customerrors.AssetDoesNotExist {
-			return nil, customerrors.AssetDoesNotExist
-		}
-		if err == customerrors.AdminDoesNotExist {
-			return nil, customerrors.AdminDoesNotExist
-		}
-		if err == customerrors.AssetCannotBeAllocated {
-			return nil, customerrors.AssetCannotBeAllocated
-		}
-		if err == customerrors.AssetAlreadyAllocated {
-			return nil, customerrors.AssetAlreadyAllocated
-		}
 		return nil, err
 	}
 	return assetAllocation, nil
