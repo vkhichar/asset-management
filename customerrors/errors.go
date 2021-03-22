@@ -18,4 +18,8 @@ var (
 	ErrForbidden              = errors.New("forbidden")
 	ErrBadRequest             = errors.New("bad request")
 	ErrNotFound               = errors.New("not found")
+	ErrDeallocatedAlready     = errors.New("asset deallocated already")
+	AssetDoesNotExist         = errors.New("asset for this id does not exist")
+	AssetCannotBeAllocated    = errors.New("this asset is either retired or is under maintenance")
+	AssetAlreadyAllocated     = errors.New("this asset is already allocated to another user")
 )
