@@ -34,6 +34,9 @@ func (service *assetAllocationsService) CreateAssetAllocation(ctx context.Contex
 		if err == customerrors.AssetDoesNotExist {
 			return nil, customerrors.AssetDoesNotExist
 		}
+		if err == customerrors.AdminDoesNotExist {
+			return nil, customerrors.AdminDoesNotExist
+		}
 		if err == customerrors.AssetCannotBeAllocated {
 			return nil, customerrors.AssetCannotBeAllocated
 		}

@@ -24,8 +24,8 @@ func AuthenticationHandler(tokenService service.TokenService, next http.HandlerF
 		}
 
 		context := context.WithValue(r.Context(), "claims", claims)
-		r.WithContext(context)
-		next.ServeHTTP(w, r)
+		//r.WithContext(context)
+		next.ServeHTTP(w, r.WithContext(context))
 	})
 
 }

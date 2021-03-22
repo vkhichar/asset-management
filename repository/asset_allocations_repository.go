@@ -37,16 +37,15 @@ func NewAssetAllocationRepository(uRepo UserRepository, aRepo AssetRepository) A
 }
 
 func (repo *assetAllocationsRepo) CreateAssetAllocation(ctx context.Context, req contract.CreateAssetAllocationRequest) (*domain.AssetAllocations, error) {
-	var assetAllocated1 *domain.AssetAllocations
-	repo.db.Get(&assetAllocated1, "Select * from asset_allocations where user_id=$1", 71)
-	fmt.Println(assetAllocated1)
+	var assetAllocated1 domain.AssetAllocations
 
-	user, _ := repo.userRepo.GetUserByID(ctx, req.UserId)
+	fmt.Println(req.UserId)
+	user, err := repo.userRepo.GetUserByID(ctx, req.UserId)
 	if user == nil {
 		return nil, customerrors.UserNotExist
 	}
 
-	asset, _ := repo.assetRepo.GetAsset(ctx, req.AssetId)
+	asset, err := repo.assetRepo.GetAsset(ctx, req.AssetId)
 	if asset == nil {
 		return nil, customerrors.AssetDoesNotExist
 	}
@@ -56,9 +55,8 @@ func (repo *assetAllocationsRepo) CreateAssetAllocation(ctx context.Context, req
 	}
 
 	var assetAllocated domain.AssetAllocations
-	err := repo.db.Get(&assetAllocated, checkIfAssetIsAllocated, req.AssetId)
+	err = repo.db.Get(&assetAllocated, checkIfAssetIsAllocated, req.AssetId)
 	if err != sql.ErrNoRows && err != nil {
-		fmt.Printf("repo layer line 58: %s", err.Error())
 		return nil, err
 	}
 
@@ -66,13 +64,19 @@ func (repo *assetAllocationsRepo) CreateAssetAllocation(ctx context.Context, req
 		return nil, customerrors.AssetAlreadyAllocated
 	}
 
-	admin, _ := repo.userRepo.GetUserByID(ctx, req.AllocatedBy)
+	admin, err := repo.userRepo.GetUserByID(ctx, req.AllocatedBy)
+	if admin == nil {
+		return nil, customerrors.AdminDoesNotExist
+	}
 	err = repo.db.Get(&assetAllocated, createAssetAllocation, req.UserId, req.AssetId, admin.Name, time.Now())
-	//fmt.Println(assetAllocated)
+	fmt.Println("Asset allocated:", assetAllocated)
+	repo.db.MustBegin().Commit()
 	if err != nil {
-		fmt.Printf("repo layer line 70: %s", err.Error())
 		return nil, err
 	}
+
+	repo.db.Select(&assetAllocated1, "Select * from asset_allocations where id=$1", assetAllocated.ID)
+	fmt.Println(assetAllocated1)
 	return &assetAllocated, nil
 }
 func (repo *assetAllocationsRepo) AssetDeallocation(ctx context.Context, req contract.CreateAssetAllocationRequest) (*domain.AssetAllocations, error) {

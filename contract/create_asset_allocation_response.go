@@ -19,7 +19,7 @@ func NewCreateAssetAllocationResponse(domain *domain.AssetAllocations) CreateAss
 		AssetId:       domain.AssetId,
 		UserId:        domain.UserId,
 		AllocatedBy:   domain.AllocatedBy,
-		AllocatedFrom: domain.AllocatedFrom.String(),
+		AllocatedFrom: domain.AllocatedFrom.Format(DateFormat),
 	}
 	return resp
 }

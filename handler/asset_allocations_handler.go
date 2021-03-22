@@ -27,10 +27,10 @@ func CreateAssetAllocationHandler(assetAllocationService service.AssetAllocation
 		}
 		w.Header().Set("Content-Type", "application/json")
 
-		//var req contract.CreateAssetAllocationRequest
 		var request contract.CreateAssetAllocationRequestForJson
-		// claims := r.Context().Value("claims")
-		// req.AllocatedBy = claims.(service.Claims).UserID
+		claims := r.Context().Value("claims")
+		//fmt.Println("Handle:", claims)
+		allocatedBy := claims.(*service.Claims).UserID
 
 		err = json.NewDecoder(r.Body).Decode(&request)
 		if err != nil {
@@ -42,7 +42,7 @@ func CreateAssetAllocationHandler(assetAllocationService service.AssetAllocation
 			return
 		}
 
-		req := contract.NewAssetAllocationRequest(assetId, 72, request)
+		req := contract.NewAssetAllocationRequest(assetId, allocatedBy, request)
 
 		assetAllocation, err := assetAllocationService.CreateAssetAllocation(r.Context(), req)
 
@@ -62,6 +62,17 @@ func CreateAssetAllocationHandler(assetAllocationService service.AssetAllocation
 				fmt.Println("handler: asset for this id does not exist")
 				w.WriteHeader(http.StatusBadRequest)
 				responseBytes, err := json.Marshal(contract.ErrorResponse{customerrors.AssetDoesNotExist.Error()})
+				if err != nil {
+					fmt.Printf("handler: error while converting error to json, error:%s", err)
+					return
+				}
+				w.Write(responseBytes)
+				return
+			}
+			if err == customerrors.AdminDoesNotExist {
+				fmt.Println("handler: admin id is incorrect")
+				w.WriteHeader(http.StatusBadRequest)
+				responseBytes, err := json.Marshal(contract.ErrorResponse{customerrors.AdminDoesNotExist.Error()})
 				if err != nil {
 					fmt.Printf("handler: error while converting error to json, error:%s", err)
 					return
