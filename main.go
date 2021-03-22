@@ -20,7 +20,6 @@ func main() {
 	// initialise db connection
 	repository.InitDB()
 	handler.InitDependencies()
-
 	err = http.ListenAndServe(":"+config.GetAppPort(), handler.Routes())
 
 	if err != nil {
