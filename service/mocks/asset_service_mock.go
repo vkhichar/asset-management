@@ -43,7 +43,7 @@ func (m *MockAssetService) UpdateAsset(ctx context.Context, Id uuid.UUID, req co
 		err = args[1].(error)
 	}
 	if args[0] == nil && args[1] == nil {
-		return asset, customerrors.NoAssetsExist
+		return nil, customerrors.NoAssetsExist
 	}
 	return asset, err
 }
@@ -60,7 +60,7 @@ func (m *MockAssetService) DeleteAsset(ctx context.Context, Id uuid.UUID) (*doma
 		err = args[1].(error)
 	}
 	if args[0] == nil && args[1] == nil {
-		return asset, customerrors.NoAssetsExist
+		return nil, customerrors.NoAssetsExist
 	}
 	return asset, err
 }
