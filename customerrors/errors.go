@@ -18,4 +18,5 @@ var (
 	ErrForbidden              = errors.New("forbidden")
 	ErrBadRequest             = errors.New("bad request")
 	ErrNotFound               = errors.New("not found")
+	ErrDeallocatedAlready     = errors.New("asset deallocated already")
 )
