@@ -43,6 +43,13 @@ func (service *assetService) UpdateAsset(ctx context.Context, Id uuid.UUID, req 
 	if err != nil {
 		return nil, err
 	}
+	res, errevent := service.eventSvc.PostAssetEvent(ctx, asset)
+	if errevent != nil {
+		fmt.Println("Service :Error in PostAssetEvent")
+
+	} else {
+		fmt.Println("New Id Created", res)
+	}
 	return asset, nil
 }
 

@@ -378,6 +378,7 @@ func TestUserService_UpdateUser_When_Success(t *testing.T) {
 	}
 
 	mockUserRepo.On("UpdateUser", ctx, id, req).Return(user, nil)
+
 	mockEventService.On("PostUpdateUserEvent", ctx, user).Return("", nil)
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
