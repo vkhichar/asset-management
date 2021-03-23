@@ -18,6 +18,7 @@ import (
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/handler"
+	"github.com/vkhichar/asset-management/service"
 	mockService "github.com/vkhichar/asset-management/service/mocks"
 )
 
@@ -263,21 +264,6 @@ func TestUserHandler_ListUsersHandler_When_ListUsersReturnsNil(t *testing.T) {
 	assert.JSONEq(t, string(expectedErr), rr.Body.String())
 }
 
-func TestUserHandler_UpdateUsersHandler_When_IdInvalid(t *testing.T) {
-	body := fmt.Sprintf(`{"name": "fatema", "password": "12345"}`)
-	request, err := http.NewRequest("PUT", "/profile", strings.NewReader(body))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	resp := httptest.NewRecorder()
-	mockUserService := &mockService.MockUserService{}
-	r := mux.NewRouter()
-	r.HandleFunc("/users/{id}", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
-	r.ServeHTTP(resp, request)
-	expectedErr := string(`{"error":"Error while parameter conversion"}`)
-	assert.JSONEq(t, string(expectedErr), resp.Body.String())
-}
 func TestUserHandler_UpdateUsersHandler_When_UpdateUsersReturnsError(t *testing.T) {
 	id := 1
 	name := "fatema"
@@ -289,6 +275,11 @@ func TestUserHandler_UpdateUsersHandler_When_UpdateUsersReturnsError(t *testing.
 		Password: &password,
 	}
 
+	claims := &service.Claims{
+		UserID:  1,
+		IsAdmin: false,
+	}
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -297,7 +288,10 @@ func TestUserHandler_UpdateUsersHandler_When_UpdateUsersReturnsError(t *testing.
 	mockUserService.On("UpdateUser", mock.Anything, id, userReq).Return(nil, errors.New("something went wrong"))
 	r := mux.NewRouter()
 	r.HandleFunc("/profile", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
-	r.ServeHTTP(resp, request)
+	context := context.WithValue(request.Context(), "claims", claims)
+	r.ServeHTTP(resp, request.WithContext(context))
+
+	//r.ServeHTTP(resp, request)
 	expectedErr := string(`{"error":"something went wrong"}`)
 	assert.JSONEq(t, expectedErr, resp.Body.String())
 }
@@ -337,13 +331,18 @@ func TestUserHandler_UpdateUsersHandler_When_Success(t *testing.T) {
 		CreatedAt: timeNow,
 		UpdatedAt: timeNow,
 	}
+	claims := &service.Claims{
+		UserID:  1,
+		IsAdmin: false,
+	}
 
 	resp := httptest.NewRecorder()
 	mockUserService := &mockService.MockUserService{}
 	mockUserService.On("UpdateUser", mock.Anything, id, userReq).Return(userResp, nil)
 	r := mux.NewRouter()
 	r.HandleFunc("/profile", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
-	r.ServeHTTP(resp, request)
+	context := context.WithValue(request.Context(), "claims", claims)
+	r.ServeHTTP(resp, request.WithContext(context))
 
 	assert.JSONEq(t, string(expectedUserResp), resp.Body.String())
 }
