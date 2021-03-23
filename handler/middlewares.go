@@ -24,7 +24,6 @@ func AuthenticationHandler(tokenService service.TokenService, next http.HandlerF
 		}
 
 		context := context.WithValue(r.Context(), "claims", claims)
-		//r.WithContext(context)
 		next.ServeHTTP(w, r.WithContext(context))
 	})
 
@@ -57,4 +56,22 @@ func VerifyToken(tokenService service.TokenService, token string, adminApi bool)
 		return nil, customerrors.ErrForbidden
 	}
 	return claims, nil
+}
+
+func UserAuthenticationHandler(tokenService service.TokenService, next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token, err := ReadToken(r)
+		if err != nil {
+			WriteErrorResponse(w, err)
+			return
+		}
+		claims, err := tokenService.ValidateToken(token)
+		if err != nil {
+			fmt.Printf("handler: %s\n", err.Error())
+			return
+		}
+
+		context := context.WithValue(r.Context(), "claims", claims)
+		next.ServeHTTP(w, r.WithContext(context))
+	})
 }
