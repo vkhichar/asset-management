@@ -173,10 +173,12 @@ func TestAssetService_CreateAsset_When_PostAssetEventCreateAssetReturnsError(t *
 	assert.Nil(t, dbAsset)
 }
 
-func TestAssetService_When_PostAssetEventSuccess(t *testing.T) {
+func TestAssetService_When_HTTPostReturnsSuccess(t *testing.T) {
 	ctx := context.Background()
+	defer gock.Off()
+	service.InitEnv()
 
-	gock.New(config.GetEventServiceUrl() + config.GetEventAppPort()).Post("/events").Reply(200).JSON(map[string]string{"id": "123"})
+	gock.New(config.GetEventServiceUrl()).Post(service.EventResource).Reply(200).JSON(map[string]int{"id": 123})
 
 	m := make(map[string]interface{})
 	m["ram"] = "4GB"
@@ -200,10 +202,10 @@ func TestAssetService_When_PostAssetEventSuccess(t *testing.T) {
 	assert.Equal(t, "123", id)
 }
 
-func TestAssetService_When_PostAssetEventReturnsError(t *testing.T) {
+func TestPostAssetService_When_HTTPostReturnsError(t *testing.T) {
 	ctx := context.Background()
 
-	gock.New(config.GetEventServiceUrl() + config.GetEventAppPort()).Post("/events").Reply(200).JSON(map[string]string{"id": "13"})
+	gock.New(config.GetEventServiceUrl()).Post("/events").Reply(400)
 
 	m := make(map[string]interface{})
 	m["ram"] = "4GB"
@@ -224,7 +226,7 @@ func TestAssetService_When_PostAssetEventReturnsError(t *testing.T) {
 	id, err := eventSvc.PostAssetEventCreateAsset(ctx, &obj)
 
 	assert.NotEqual(t, "123", id)
-	assert.Nil(t, err)
+	assert.NotNil(t, err)
 }
 
 func TestAssetService_UpdateAsset_When_Success(t *testing.T) {

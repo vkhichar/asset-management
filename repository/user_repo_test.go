@@ -117,13 +117,13 @@ func TestUserRepository_DeleteUser_When_DeleteUserReturnsError(t *testing.T) {
 
 	tx := db.MustBegin()
 	tx.MustExec("delete from users")
-
+	tx.Commit()
 	userRepo := repository.NewUserRepository()
 
 	user, err := userRepo.DeleteUser(ctx, id)
 
 	assert.Nil(t, user)
-	assert.NotNil(t, err)
+	assert.Nil(t, err)
 }
 
 func TestUserRepository_DeleteUsers_When_Success(t *testing.T) {

@@ -51,7 +51,8 @@ func (e *eventSvc) PostCreateUserEvent(ctx context.Context, user *domain.User) (
 	}
 	responseBody := bytes.NewReader(postBody)
 
-	re, err := http.NewRequest("POST", "http://34.70.86.33"+":"+config.GetEventAppPort()+"/events", responseBody)
+	re, err := http.NewRequest("POST", config.GetEventServiceUrl()+"/events", responseBody)
+
 	if err != nil {
 		fmt.Printf("event service: error while newrequest: %s", err.Error())
 		return "", err
@@ -80,38 +81,39 @@ func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.
 	obj := contract.CreateAssetEvent{}
 	obj.EventType = "asset"
 	obj.Data = asset
-	postBody, err := json.Marshal(obj)
-	if err != nil {
-		fmt.Printf("Event Service: Error while marshaling %s", err.Error())
-		return "", err
+	postBody, errJson := json.Marshal(obj)
+	if errJson != nil {
+		fmt.Printf("Event Service: Error while marshaling %s", errJson.Error())
+		return "", errJson
 	}
 
 	responseBody := bytes.NewReader(postBody)
 
-	req, err := http.NewRequest("POST", "http://34.70.86.33:9035"+"/events", responseBody)
+	req, errNewReq := http.NewRequest("POST", config.GetEventServiceUrl()+"/events", responseBody)
 
-	if err != nil {
-		fmt.Printf("Event Service: error during http request %s:", err.Error())
-		return "", err
+	if errNewReq != nil {
+		fmt.Printf("Event Service: error during http request %s:", errNewReq.Error())
+		return "", errNewReq
 	}
 
-	var netClient = &http.Client{
-		Timeout: time.Second * 3,
+	req.Header.Add("Content-type", "application/json")
+	resp, errPost := e.client.Do(req)
+	if errPost != nil {
+		fmt.Printf("Event service: Error while sending Post request to event. Error: %s", errPost.Error())
+		return "", errPost
 	}
 
-	response, err := netClient.Do(req)
-
-	if err != nil {
-		fmt.Printf("Event server: Request Timeout %s: Taking more than %v seconds", err.Error(), response)
-		return "", err
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("Event Service: Event not created. %d", resp.StatusCode)
+		return "", errors.New("Event not created")
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
-	defer response.Body.Close()
+	body, errIORead := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
 
-	if err != nil {
-		fmt.Printf("Event Service : error while converting into byte stream: %s", err.Error())
-		return "", err
+	if errIORead != nil {
+		fmt.Printf("Event Service : error while converting into byte stream: %s", errIORead.Error())
+		return "", errIORead
 	}
 
 	var responseObj contract.CreateAssetEventResponse
@@ -121,10 +123,9 @@ func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.
 		fmt.Printf("Event Service: error while unmarshal :%s", errJsonUnmarshal.Error())
 		return "", errJsonUnmarshal
 	}
-
 	eventId := strconv.Itoa(responseObj.ID)
 
-	return string(eventId), nil
+	return eventId, nil
 }
 
 func (evSvc *eventSvc) PostUpdateUserEvent(ctx context.Context, user *domain.User) (string, error) {
@@ -138,25 +139,27 @@ func (evSvc *eventSvc) PostUpdateUserEvent(ctx context.Context, user *domain.Use
 		return "", errJson
 	}
 
-	r := bytes.NewReader(reqEvent)
-
-	//req, errNewReq := http.NewRequest("POST", config.GetIpAddress()+":"+config.GetEventAppPort()+"/events", r)
-	req, errNewReq := http.NewRequest("POST", "http://34.70.86.33:9035/events", r)
+	req, errNewReq := http.NewRequest("POST", config.GetEventServiceUrl()+EventResource, bytes.NewReader(reqEvent))
 	if errNewReq != nil {
-		fmt.Printf("Event service: Error while sending Post request to event. Error: %s", errNewReq.Error())
+		fmt.Printf("Event service: Error while creating Post request. Error: %s", errNewReq.Error())
 		return "", errNewReq
 	}
-	client := &http.Client{
-		Timeout: time.Second * 3,
-	}
-	resp, errPost := client.Do(req)
 
+	req.Header.Add("Content-type", "application/json")
+	resp, errPost := evSvc.client.Do(req)
 	if errPost != nil {
 		fmt.Printf("Event service: Error while sending Post request to event. Error: %s", errPost.Error())
 		return "", errPost
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("Event Service: Event not created. %d", resp.StatusCode)
+		return "", errors.New("Event not created")
+	}
+
 	body, errBodyRead := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
 	if errBodyRead != nil {
 		fmt.Printf("Event service: Error while reading response body. Error: %s", errBodyRead.Error())
 		return "", errBodyRead

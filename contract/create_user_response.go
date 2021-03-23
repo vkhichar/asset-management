@@ -7,6 +7,7 @@ import (
 )
 
 type CreateUserResponse struct {
+	Id        int       `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
@@ -17,7 +18,7 @@ type CreateUserResponse struct {
 
 func DomaintoContract(user *domain.User) (contractUser CreateUserResponse) {
 
-	contractUser = CreateUserResponse{Name: user.Name, Email: user.Email, Password: user.Password, IsAdmin: user.IsAdmin, CreatedAt: user.CreatedAt, UpdatedAt: user.UpdatedAt}
+	contractUser = CreateUserResponse{Id: user.ID, Name: user.Name, Email: user.Email, Password: user.Password, IsAdmin: user.IsAdmin, CreatedAt: user.CreatedAt, UpdatedAt: user.UpdatedAt}
 	return contractUser
 
 }

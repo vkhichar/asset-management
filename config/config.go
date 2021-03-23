@@ -66,7 +66,7 @@ func Init() error {
 	timeout, err := strconv.Atoi(os.Getenv("EVENT_API_TIMEOUT"))
 	if err != nil {
 		fmt.Println("config: Invalid timeout value: ", err)
-		timeout = 3 // in seconds
+		timeout = 3
 	}
 	config.apiTimeout = timeout
 	config.jwtConfig = initJwtConfig()
