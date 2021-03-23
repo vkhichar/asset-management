@@ -161,6 +161,7 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		asset, err := asset.ListAssets(r.Context())
+		//time.Sleep(8 * time.Second)
 
 		if err == customerrors.NoAssetsExist {
 			fmt.Println("handler: No assets exist")

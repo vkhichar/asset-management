@@ -1,8 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/vkhichar/asset-management/config"
 	"github.com/vkhichar/asset-management/handler"
@@ -20,10 +26,31 @@ func main() {
 	// initialise db connection
 	repository.InitDB()
 	handler.InitDependencies()
-	err = http.ListenAndServe(":"+config.GetAppPort(), handler.Routes())
-
-	if err != nil {
-		fmt.Printf("main: error while starting server: %s", err.Error())
-		return
+	srv := &http.Server{
+		Addr:    ":" + config.GetAppPort(),
+		Handler: handler.Routes(),
 	}
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		err = srv.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatalf("main: error while starting server: %s", err)
+		}
+	}()
+
+	log.Print("Server Started")
+	<-done
+	log.Print("Server Stopped")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer func() {
+		cancel()
+	}()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server Shutdown Failed:%+v", err)
+	}
+	log.Print("Server Exited Properly")
+
 }
