@@ -336,7 +336,7 @@ func DeleteUserHandler(userService service.UserService) http.HandlerFunc {
 		claims := r.Context().Value("claims")
 		id := claims.(*service.Claims).UserID
 
-		user, err := userService.DeleteUser(r.Context(), id)
+		result, err := userService.DeleteUser(r.Context(), id)
 
 		if err != nil {
 			if err == customerrors.UserDoesNotExist {
@@ -361,9 +361,9 @@ func DeleteUserHandler(userService service.UserService) http.HandlerFunc {
 			w.Write(responseBytes)
 			return
 		}
-		responsebytes, jsonErr := json.Marshal(user)
+		responsebytes, jsonErr := json.Marshal(result)
 		if jsonErr != nil {
-			fmt.Printf("handler: Error while converting user to json.Error: %s", jsonErr)
+			fmt.Printf("handler: Error while converting result string to json.Error: %s", jsonErr)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
