@@ -23,8 +23,6 @@ func TestUserRepo_CreateUser_When_CreateUserReturnSuccess(t *testing.T) {
 	}
 	config.Init()
 	repository.InitDB()
-	// db := repository.GetDB()
-	// var newUser domain.User
 	userRepo := repository.NewUserRepository()
 
 	returnuser, err := userRepo.CreateUser(ctx, user)
@@ -32,8 +30,6 @@ func TestUserRepo_CreateUser_When_CreateUserReturnSuccess(t *testing.T) {
 		fmt.Printf("userRepo Mock:error while inserting data %s", err.Error())
 		return
 	}
-
-	// db.Get(&newUser, "SELECT * FROM users WHERE id= $1", 12)
 
 	assert.NotNil(t, returnuser)
 	assert.NoError(t, err)
@@ -69,7 +65,6 @@ func TestUserRepo_GetUserByID_When_GetUserByID_ReturnUserNotExist(t *testing.T) 
 	tx.MustExec("DELETE FROM users WHERE id=$1", "2")
 	tx.Commit()
 	returnUser, err := userRepo.GetUserByID(ctx, ID)
-	fmt.Println(err)
 	assert.Empty(t, returnUser)
 	assert.Nil(t, err)
 }

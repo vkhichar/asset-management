@@ -8,6 +8,7 @@ import (
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/repository"
+	repo "github.com/vkhichar/asset-management/repository"
 )
 
 type UserService interface {
@@ -34,7 +35,7 @@ func NewUserService(repo repository.UserRepository, ts TokenService, event Event
 }
 
 func (service *userService) Login(ctx context.Context, email string, password string) (*domain.User, string, error) {
-	user, err := service.userRepo.FindUser(ctx, email)
+	user, err := service.userRepo.FindUser(ctx, email, password)
 	if err != nil {
 		return nil, "", err
 	}
@@ -43,7 +44,11 @@ func (service *userService) Login(ctx context.Context, email string, password st
 		return nil, "", customerrors.ErrInvalidEmailPassword
 	}
 
-	if user.Password != password {
+	pwdHash := []byte(password)
+
+	found := repo.ComparePasswords(user.Password, pwdHash)
+
+	if found == false {
 		return nil, "", customerrors.ErrInvalidEmailPassword
 	}
 

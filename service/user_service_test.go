@@ -84,10 +84,10 @@ func TestUserService_CreatUser_CreateUserReturnsError(t *testing.T) {
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockevent)
 	newUser, err := userService.CreateUser(ctx, user)
 
-	if err == nil {
-		fmt.Printf("Error while creating user")
-		t.FailNow()
-	}
+	// if err == nil {
+	// 	fmt.Printf("Error while creating user")
+	// 	t.FailNow()
+	// }
 
 	assert.Error(t, err)
 	assert.Equal(t, "some db error", err.Error())
