@@ -17,7 +17,7 @@ const (
 	createAssetQuery   = "INSERT INTO assets (id, status, category, purchase_at, purchase_cost, name, specifications) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *"
 	getAssetByIDQuery  = "SELECT * FROM assets WHERE id=$1"
 	getAssetName       = "SELECT status, specifications from assets WHERE id=$1 AND status!=$2"
-	UpdateAssetDetails = "UPDATE assets SET status=$1, specifications=$2 WHERE id=$3"
+	UpdateAssetDetails = "UPDATE assets SET status=$1,purchase_cost=$2,specifications=$3 WHERE id=$4"
 	getAssetDelete     = "SELECT status FROM assets WHERE id=$1 AND status!=$2"
 	getAssetDeletefun  = "UPDATE assets SET status=$1 WHERE id=$2"
 	getAsset           = "SELECT id, category, status, purchase_at, purchase_cost, name, specifications FROM assets WHERE id=$1"
@@ -73,16 +73,18 @@ func (repo *assetRepo) UpdateAsset(ctx context.Context, Id uuid.UUID, req contra
 	if req.Status == nil {
 		req.Status = &m.Status
 	}
-
-	if req.Specifications == nil {
-
-		req.Specifications = m.Specifications
-
+	if req.PurchaseCost == nil {
+		req.PurchaseCost = &m.PurchaseCost
 	}
-
+	if req.Specifications == nil {
+		req.Specifications = m.Specifications
+	}
+	if (*req.PurchaseCost) < 0 {
+		return nil, customerrors.ErrBadRequest
+	}
 	tx := repo.db.MustBegin()
 
-	tx.MustExec(UpdateAssetDetails, *req.Status, req.Specifications, Id)
+	tx.MustExec(UpdateAssetDetails, *req.Status, *req.PurchaseCost, req.Specifications, Id)
 	tx.Commit()
 	err = repo.db.Get(&asset, getAsset, Id)
 	if err != nil {
