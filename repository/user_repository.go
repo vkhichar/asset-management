@@ -28,7 +28,7 @@ type UserRepository interface {
 	ListUsers(ctx context.Context) ([]domain.User, error)
 	GetUserByID(ctx context.Context, id int) (*domain.User, error)
 	UpdateUser(ctx context.Context, id int, req contract.UpdateUserRequest) (*domain.User, error)
-	DeleteUser(ctx context.Context, id int) (*domain.User, error)
+	DeleteUser(ctx context.Context, id int) (string, error)
 }
 
 type userRepo struct {
@@ -131,23 +131,16 @@ func (repo *userRepo) UpdateUser(ctx context.Context, id int, req contract.Updat
 	return &user, nil
 }
 
-func (repo *userRepo) DeleteUser(ctx context.Context, id int) (*domain.User, error) {
-	var user domain.User
-
-	err := repo.db.Get(&user, getUserByIDQuery, id)
-
-	if err == sql.ErrNoRows {
-		fmt.Printf("Repository: No users present")
-		return nil, nil
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
+func (repo *userRepo) DeleteUser(ctx context.Context, id int) (string, error) {
 	tx := repo.db.MustBegin()
-	tx.MustExec(deleteUserById, id)
+	rows := tx.MustExec(deleteUserById, id)
+	affectedRows, _ := rows.RowsAffected()
+	if affectedRows == 0 {
+		return "", nil
+	}
 	tx.Commit()
 
-	return &user, nil
+	result := "user is successfully deleted"
+
+	return result, nil
 }

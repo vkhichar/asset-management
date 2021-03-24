@@ -514,14 +514,14 @@ func TestUserService_DeleteUser_When_DeleteUserReturnsError(t *testing.T) {
 	mockEventService := &mockService.MockEventService{}
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
 
-	mockUserRepo.On("DeleteUser", ctx, id).Return(nil, errors.New("Some Internal Server Error"))
+	mockUserRepo.On("DeleteUser", ctx, id).Return("", errors.New("Some Internal Server Error"))
 
-	dbUser, err := userService.DeleteUser(ctx, id)
+	result, err := userService.DeleteUser(ctx, id)
 
 	expectedErr := "Some Internal Server Error"
 
 	assert.NotNil(t, err)
-	assert.Nil(t, dbUser)
+	assert.Equal(t, "", result)
 	assert.Equal(t, expectedErr, err.Error())
 }
 
@@ -534,39 +534,33 @@ func TestUserService_DeleteUser_When_DeleteUserReturnsNil(t *testing.T) {
 	mockEventService := &mockService.MockEventService{}
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
 
-	mockUserRepo.On("DeleteUser", ctx, id).Return(nil, nil)
+	mockUserRepo.On("DeleteUser", ctx, id).Return("", nil)
 
-	dbUser, err := userService.DeleteUser(ctx, id)
+	result, err := userService.DeleteUser(ctx, id)
 
 	expectedErr := "The user for this id does not exist"
 
 	assert.Equal(t, expectedErr, err.Error())
-	assert.Nil(t, dbUser)
+	assert.Equal(t, "", result)
 }
 
 func TestUserService_DeleteUser_When_Success(t *testing.T) {
 	ctx := context.Background()
 	id := 1
 
-	user := domain.User{
-		ID:       1,
-		Name:     "Dummy",
-		Email:    "dummy@email",
-		Password: "12345",
-		IsAdmin:  true,
-	}
+	resultExpected := "User successfully deleted"
 
 	mockUserRepo := &mockRepo.MockUserRepo{}
 	mockTokenService := &mockService.MockTokenService{}
 	mockEventService := &mockService.MockEventService{}
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
 
-	mockUserRepo.On("DeleteUser", ctx, id).Return(&user, nil)
+	mockUserRepo.On("DeleteUser", ctx, id).Return(resultExpected, nil)
 
-	dbUser, err := userService.DeleteUser(ctx, id)
+	result, err := userService.DeleteUser(ctx, id)
 
 	assert.NoError(t, err)
-	assert.Equal(t, &user, dbUser)
+	assert.Equal(t, result, resultExpected)
 }
 
 func TestUserService_PostUserEvent_When_HTTPostReturnsSuccess(t *testing.T) {

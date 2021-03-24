@@ -94,19 +94,19 @@ func (m *MockUserService) UpdateUser(ctx context.Context, id int, req contract.U
 	return user, err
 }
 
-func (m *MockUserService) DeleteUser(ctx context.Context, id int) (*domain.User, error) {
+func (m *MockUserService) DeleteUser(ctx context.Context, id int) (string, error) {
 	args := m.Called(ctx, id)
-	var user *domain.User
-	if args[0] != nil {
-		user = args[0].(*domain.User)
+	var result string
+	if args[0] != "" {
+		result = args[0].(string)
 	}
 
 	var err error
 	if args[1] != nil {
 		err = args[1].(error)
 	}
-	if args[0] == nil && args[1] == nil {
-		return nil, customerrors.UserDoesNotExist
+	if args[0] == "" && args[1] == nil {
+		return "", customerrors.UserDoesNotExist
 	}
-	return user, err
+	return result, err
 }

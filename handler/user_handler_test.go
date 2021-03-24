@@ -18,6 +18,7 @@ import (
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/domain"
 	"github.com/vkhichar/asset-management/handler"
+	"github.com/vkhichar/asset-management/service"
 	mockService "github.com/vkhichar/asset-management/service/mocks"
 )
 
@@ -263,30 +264,20 @@ func TestUserHandler_ListUsersHandler_When_ListUsersReturnsNil(t *testing.T) {
 	assert.JSONEq(t, string(expectedErr), rr.Body.String())
 }
 
-func TestUserHandler_UpdateUsersHandler_When_IdInvalid(t *testing.T) {
-	body := fmt.Sprintf(`{"name": "fatema", "password": "12345"}`)
-	request, err := http.NewRequest("PUT", "/users/AB", strings.NewReader(body))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	resp := httptest.NewRecorder()
-	mockUserService := &mockService.MockUserService{}
-	r := mux.NewRouter()
-	r.HandleFunc("/users/{id}", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
-	r.ServeHTTP(resp, request)
-	expectedErr := string(`{"error":"Error while parameter conversion"}`)
-	assert.JSONEq(t, string(expectedErr), resp.Body.String())
-}
 func TestUserHandler_UpdateUsersHandler_When_UpdateUsersReturnsError(t *testing.T) {
 	id := 1
 	name := "fatema"
 	password := "12345"
 	body := fmt.Sprintf(`{"name": "fatema", "password": "12345"}`)
-	request, err := http.NewRequest("PUT", "/users/1", strings.NewReader(body))
+	request, err := http.NewRequest("PUT", "/profile", strings.NewReader(body))
 	userReq := contract.UpdateUserRequest{
 		Name:     &name,
 		Password: &password,
+	}
+
+	claims := &service.Claims{
+		UserID:  1,
+		IsAdmin: false,
 	}
 
 	if err != nil {
@@ -296,8 +287,11 @@ func TestUserHandler_UpdateUsersHandler_When_UpdateUsersReturnsError(t *testing.
 	mockUserService := &mockService.MockUserService{}
 	mockUserService.On("UpdateUser", mock.Anything, id, userReq).Return(nil, errors.New("something went wrong"))
 	r := mux.NewRouter()
-	r.HandleFunc("/users/{id}", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
-	r.ServeHTTP(resp, request)
+	r.HandleFunc("/profile", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
+	context := context.WithValue(request.Context(), "claims", claims)
+	r.ServeHTTP(resp, request.WithContext(context))
+
+	//r.ServeHTTP(resp, request)
 	expectedErr := string(`{"error":"something went wrong"}`)
 	assert.JSONEq(t, expectedErr, resp.Body.String())
 }
@@ -307,7 +301,7 @@ func TestUserHandler_UpdateUsersHandler_When_Success(t *testing.T) {
 	name := "fatema"
 	password := "12345"
 	body := fmt.Sprintf(`{"name": "fatema", "password": "12345"}`)
-	request, err := http.NewRequest("PUT", "/users/1", strings.NewReader(body))
+	request, err := http.NewRequest("PUT", "/profile", strings.NewReader(body))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -337,13 +331,18 @@ func TestUserHandler_UpdateUsersHandler_When_Success(t *testing.T) {
 		CreatedAt: timeNow,
 		UpdatedAt: timeNow,
 	}
+	claims := &service.Claims{
+		UserID:  1,
+		IsAdmin: false,
+	}
 
 	resp := httptest.NewRecorder()
 	mockUserService := &mockService.MockUserService{}
 	mockUserService.On("UpdateUser", mock.Anything, id, userReq).Return(userResp, nil)
 	r := mux.NewRouter()
-	r.HandleFunc("/users/{id}", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
-	r.ServeHTTP(resp, request)
+	r.HandleFunc("/profile", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
+	context := context.WithValue(request.Context(), "claims", claims)
+	r.ServeHTTP(resp, request.WithContext(context))
 
 	assert.JSONEq(t, string(expectedUserResp), resp.Body.String())
 }
@@ -353,7 +352,7 @@ func TestUserHandler_UpdateUsersHandler_When_Nil(t *testing.T) {
 	name := "fatema"
 	password := "12345"
 	body := fmt.Sprintf(`{"name": "fatema", "password": "12345"}`)
-	request, err := http.NewRequest("PUT", "/users/1", strings.NewReader(body))
+	request, err := http.NewRequest("PUT", "/profile", strings.NewReader(body))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -367,7 +366,7 @@ func TestUserHandler_UpdateUsersHandler_When_Nil(t *testing.T) {
 	mockUserService := &mockService.MockUserService{}
 	mockUserService.On("UpdateUser", mock.Anything, id, userReq).Return(nil, nil)
 	r := mux.NewRouter()
-	r.HandleFunc("/users/{id}", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
+	r.HandleFunc("/profile", handler.UpdateUsersHandler(mockUserService)).Methods("PUT")
 	r.ServeHTTP(resp, request)
 	expectedErr := string(`{"error":"User for this id does not exist"}`)
 
@@ -376,7 +375,7 @@ func TestUserHandler_UpdateUsersHandler_When_Nil(t *testing.T) {
 
 func TestUserHandler_DeleteUserHandler_When_DeleteUserReturnsError(t *testing.T) {
 	id := 1
-	request, err := http.NewRequest("DELETE", "/users/1", nil)
+	request, err := http.NewRequest("DELETE", "/profile", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -384,9 +383,9 @@ func TestUserHandler_DeleteUserHandler_When_DeleteUserReturnsError(t *testing.T)
 	resp := httptest.NewRecorder()
 	mockUserService := &mockService.MockUserService{}
 
-	mockUserService.On("DeleteUser", mock.Anything, id).Return(nil, errors.New("something went wrong"))
+	mockUserService.On("DeleteUser", mock.Anything, id).Return("", errors.New("something went wrong"))
 	r := mux.NewRouter()
-	r.HandleFunc("/users/{id}", handler.DeleteUserHandler(mockUserService)).Methods("DELETE")
+	r.HandleFunc("/profile", handler.DeleteUserHandler(mockUserService)).Methods("DELETE")
 	r.ServeHTTP(resp, request)
 
 	expectedErr := `{"error":"something went wrong"}`
@@ -396,7 +395,7 @@ func TestUserHandler_DeleteUserHandler_When_DeleteUserReturnsError(t *testing.T)
 
 func TestUserHandler_DeleteUserHandler_When_DeleteUserReturnsNil(t *testing.T) {
 	id := 1
-	request, err := http.NewRequest("DELETE", "/users/1", nil)
+	request, err := http.NewRequest("DELETE", "/profile", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -404,9 +403,9 @@ func TestUserHandler_DeleteUserHandler_When_DeleteUserReturnsNil(t *testing.T) {
 	resp := httptest.NewRecorder()
 	mockUserService := &mockService.MockUserService{}
 
-	mockUserService.On("DeleteUser", mock.Anything, id).Return(nil, nil)
+	mockUserService.On("DeleteUser", mock.Anything, id).Return("", nil)
 	r := mux.NewRouter()
-	r.HandleFunc("/users/{id}", handler.DeleteUserHandler(mockUserService)).Methods("DELETE")
+	r.HandleFunc("/profile", handler.DeleteUserHandler(mockUserService)).Methods("DELETE")
 	r.ServeHTTP(resp, request)
 
 	expectedErr := `{"error":"no user found"}`
@@ -415,7 +414,7 @@ func TestUserHandler_DeleteUserHandler_When_DeleteUserReturnsNil(t *testing.T) {
 }
 
 func TestUserHandler_DeleteUserHandler_When_DeleteUserHasErrorWhileParsingId(t *testing.T) {
-	request, err := http.NewRequest("DELETE", "/users/AB", nil)
+	request, err := http.NewRequest("DELETE", "/profile", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -423,7 +422,7 @@ func TestUserHandler_DeleteUserHandler_When_DeleteUserHasErrorWhileParsingId(t *
 	resp := httptest.NewRecorder()
 	mockUserService := &mockService.MockUserService{}
 	r := mux.NewRouter()
-	r.HandleFunc("/users/{id}", handler.DeleteUserHandler(mockUserService)).Methods("DELETE")
+	r.HandleFunc("/profile", handler.DeleteUserHandler(mockUserService)).Methods("DELETE")
 	r.ServeHTTP(resp, request)
 
 	expectedErr := `{"error":"Enter id in valid format"}`
@@ -433,32 +432,22 @@ func TestUserHandler_DeleteUserHandler_When_DeleteUserHasErrorWhileParsingId(t *
 
 func TestUserHandler_DeleteUserHandler_When_Success(t *testing.T) {
 	id := 1
-	request, err := http.NewRequest("DELETE", "/users/1", nil)
+	request, err := http.NewRequest("DELETE", "/profile", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	timeNow := time.Now()
-
-	user := domain.User{
-		ID:        1,
-		Name:      "Dummy",
-		Email:     "dummy@email",
-		Password:  "12345",
-		IsAdmin:   true,
-		CreatedAt: timeNow,
-		UpdatedAt: timeNow,
-	}
+	result := "User successfully deleted"
 
 	resp := httptest.NewRecorder()
 	mockUserService := &mockService.MockUserService{}
 
-	mockUserService.On("DeleteUser", mock.Anything, id).Return(&user, nil)
+	mockUserService.On("DeleteUser", mock.Anything, id).Return(result, nil)
 	r := mux.NewRouter()
-	r.HandleFunc("/users/{id}", handler.DeleteUserHandler(mockUserService)).Methods("DELETE")
+	r.HandleFunc("/profile", handler.DeleteUserHandler(mockUserService)).Methods("DELETE")
 	r.ServeHTTP(resp, request)
 
-	expectedUser, _ := json.Marshal(user)
+	expectedResult, _ := json.Marshal(result)
 
-	assert.JSONEq(t, string(expectedUser), resp.Body.String())
+	assert.JSONEq(t, string(expectedResult), resp.Body.String())
 }

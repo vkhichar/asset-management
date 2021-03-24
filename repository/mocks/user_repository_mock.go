@@ -78,12 +78,12 @@ func (m *MockUserRepo) UpdateUser(ctx context.Context, id int, req contract.Upda
 
 }
 
-func (m *MockUserRepo) DeleteUser(ctx context.Context, id int) (*domain.User, error) {
+func (m *MockUserRepo) DeleteUser(ctx context.Context, id int) (string, error) {
 	args := m.Called(ctx, id)
 
-	var user *domain.User
-	if args[0] != nil {
-		user = args[0].(*domain.User)
+	var result string
+	if args[0] != "" {
+		result = args[0].(string)
 	}
 
 	var err error
@@ -91,10 +91,10 @@ func (m *MockUserRepo) DeleteUser(ctx context.Context, id int) (*domain.User, er
 		err = args[1].(error)
 	}
 
-	if args[0] == nil && args[1] == nil {
-		return user, customerrors.UserDoesNotExist
+	if args[0] == "" && args[1] == nil {
+		return result, customerrors.UserDoesNotExist
 	}
-	return user, err
+	return result, err
 }
 
 func (m *MockUserRepo) GetUserByID(ctx context.Context, ID int) (*domain.User, error) {
