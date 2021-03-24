@@ -15,8 +15,8 @@ func Routes() *mux.Router {
 	router.HandleFunc("/profile", GetUserByIDHandler(deps.userService)).Methods("GET")
 	router.HandleFunc("/profile", UserAuthenticationHandler(deps.tokenService,
 		UpdateUsersHandler(deps.userService))).Methods("PUT")
-	router.HandleFunc("/profile", UserAuthenticationHandler(deps.tokenService,
-		DeleteUserHandler(deps.userService))).Methods("DELETE")
+	router.HandleFunc("/users/{id}", AuthenticationHandler(deps.tokenService,
+		DeleteUserHandler(deps.userService), true)).Methods("DELETE")
 
 	router.HandleFunc("/assets", CreateAssetHandler(deps.assetService)).Methods("POST")
 	router.HandleFunc("/assets", ListAssetHandler(deps.assetService)).Methods("GET")

@@ -332,9 +332,8 @@ func UpdateUsersHandler(userService service.UserService) http.HandlerFunc {
 func DeleteUserHandler(userService service.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-
-		claims := r.Context().Value("claims")
-		id := claims.(*service.Claims).UserID
+		vars := mux.Vars(r)
+		id, err := strconv.Atoi(vars["id"])
 
 		result, err := userService.DeleteUser(r.Context(), id)
 
