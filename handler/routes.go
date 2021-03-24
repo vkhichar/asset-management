@@ -20,8 +20,8 @@ func Routes() *mux.Router {
 	router.HandleFunc("/assets", ListAssetHandler(deps.assetService)).Methods("GET")
 	router.HandleFunc("/assets/{id}", GetAssetHandler(deps.assetService)).Methods("GET")
 	router.HandleFunc("/assets/{Id}", AuthenticationHandler(deps.tokenService,
-		UpdateAssetHandler(deps.assetService), true).Methods("PUT")
-	router.HandleFunc("/assets/{Id}",AuthenticationHandler(deps.tokenService,
+		UpdateAssetHandler(deps.assetService), true)).Methods("PUT")
+	router.HandleFunc("/assets/{Id}", AuthenticationHandler(deps.tokenService,
 		DeleteAssetHandler(deps.assetService), true)).Methods("DELETE")
 
 	router.HandleFunc("/assets/{asset_id}/maintenance", CreateMaintenanceHandler(deps.assetMaintenanceService)).Methods("POST")
