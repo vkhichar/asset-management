@@ -20,5 +20,3 @@ vendor/
 asset-management
 
 application.yml
-
-dockerfile
