@@ -4,20 +4,20 @@ ENV GO111MODULE=on \
     CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64 \
-    DB_PORT=5432\
-    APP_PORT=9000 \
-    EVENT_SERVICE_URL=http://localhost:9035 \
-    DB_HOST=localhost \
-    DB_USERNAME=postgres \
-    DB_PASSWORD=12345 \
-    DB_NAME=asset_management \
-    EVENT_API_TIMEOUT=3 \
-    JWT_SECRET=secret \
-    TOKEN_EXPIRY=5
+    DB_PORT=\
+    APP_PORT= \
+    EVENT_SERVICE_URL= \
+    DB_HOST= \
+    DB_USERNAME= \
+    DB_PASSWORD= \
+    DB_NAME= \
+    EVENT_API_TIMEOUT= \
+    JWT_SECRET= \
+    TOKEN_EXPIRY=
 
     
 #ARG APP_PORT 
-#ARG  DB_HOST
+#ARG DB_HOST
 #ARG DB_PORT 
 #ARG DB_USERNAME 
 #ARG DB_PASSWORD 

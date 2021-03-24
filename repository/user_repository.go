@@ -140,7 +140,7 @@ func (repo *userRepo) DeleteUser(ctx context.Context, id int) (string, error) {
 	}
 	tx.Commit()
 
-	result := "User successfully deleted"
+	result := "user is successfully deleted"
 
 	return result, nil
 }
