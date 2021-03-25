@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/vkhichar/asset-management/customerrors"
 
 	"github.com/vkhichar/asset-management/contract"
@@ -205,9 +204,9 @@ func GetUserByIDHandler(userService service.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Context-Type", "application/json")
-		params := mux.Vars(r)
 
-		id, err := strconv.Atoi(params["id"])
+		userId := UseId
+		id, err := strconv.Atoi(userId)
 		if err != nil {
 			fmt.Printf("handler: invalid request for id %s", err.Error())
 			w.WriteHeader(http.StatusBadRequest)

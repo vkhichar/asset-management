@@ -94,7 +94,7 @@ func TestGetUserById_When_ReturnError_UserDoesNotExist(t *testing.T) {
 	mockService.On("GetUserByID", mock.Anything, ID).Return(nil, nil)
 
 	r := mux.NewRouter()
-	r.HandleFunc("/users/{id}", handler.GetUserByIDHandler(mockService)).Methods("GET")
+	r.HandleFunc("/profile", handler.GetUserByIDHandler(mockService)).Methods("GET")
 
 	r.ServeHTTP(response, req)
 

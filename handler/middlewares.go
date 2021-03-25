@@ -10,6 +10,9 @@ import (
 	"github.com/vkhichar/asset-management/service"
 )
 
+var Token string
+var UserId string
+
 func AuthenticationHandler(tokenService service.TokenService, next http.HandlerFunc, adminApi bool) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token, err := ReadToken(r)
@@ -17,13 +20,13 @@ func AuthenticationHandler(tokenService service.TokenService, next http.HandlerF
 			WriteErrorResponse(w, err)
 			return
 		}
-		claims, err := VerifyToken(tokenService, token, adminApi)
+		Claims, err := VerifyToken(tokenService, token, adminApi)
 		if err != nil {
 			WriteErrorResponse(w, err)
 			return
 		}
-
-		context := context.WithValue(r.Context(), "claims", claims)
+		context := context.WithValue(r.Context(), "claims", Claims)
+		ReadUserId()
 		next.ServeHTTP(w, r.WithContext(context))
 	})
 
@@ -65,6 +68,9 @@ func UserAuthenticationHandler(tokenService service.TokenService, next http.Hand
 			WriteErrorResponse(w, err)
 			return
 		}
+		Token = token
+		ReadUserId()
+
 		claims, err := tokenService.ValidateToken(token)
 		if err != nil {
 			fmt.Printf("handler: %s\n", err.Error())
