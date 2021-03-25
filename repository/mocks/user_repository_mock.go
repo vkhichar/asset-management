@@ -13,7 +13,7 @@ type MockUserRepo struct {
 	mock.Mock
 }
 
-func (m *MockUserRepo) FindUser(ctx context.Context, email string) (*domain.User, error) {
+func (m *MockUserRepo) FindUser(ctx context.Context, email, password string) (*domain.User, error) {
 	args := m.Called(ctx, email)
 
 	var user *domain.User

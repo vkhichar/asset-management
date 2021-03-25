@@ -119,10 +119,6 @@ func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param *domain.Asse
 	)
 
 	if err != nil {
-		if err == customerrors.NoAssetsExist {
-			fmt.Printf("Asset Repository: No asset exist : %s", err.Error())
-			return nil, err
-		}
 		fmt.Printf("error in asset repository")
 		return nil, err
 	}

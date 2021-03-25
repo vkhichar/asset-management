@@ -167,7 +167,18 @@ func (e *eventSvc) PostAssetEventCreateAsset(ctx context.Context, asset *domain.
 		return "", err
 	}
 
-	return string(body), nil
+	var responseObj contract.CreateAssetEventResponse
+
+	errJsonUnmar := json.Unmarshal(body, &responseObj)
+
+	if errJsonUnmar != nil {
+		fmt.Printf("Event service: Error while json unmarshal. Error: %s", errJsonUnmar.Error())
+		return "", errJsonUnmar
+	}
+
+	eventId := strconv.Itoa(responseObj.Id)
+
+	return eventId, nil
 }
 
 func (evSvc *eventSvc) PostUpdateUserEvent(ctx context.Context, user *domain.User) (string, error) {

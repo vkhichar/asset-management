@@ -68,10 +68,6 @@ func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, er
 func (service *assetService) CreateAsset(ctx context.Context, assetParam *domain.Asset) (*domain.Asset, error) {
 	asset, err := service.assetRepo.CreateAsset(ctx, assetParam)
 	if err != nil {
-		if err == customerrors.NoAssetsExist {
-			fmt.Printf("Asset service: asset does not exist: %s", err.Error())
-			return nil, err
-		}
 		fmt.Printf("asset_service error while creating asset: %s", err.Error())
 		return nil, err
 	}
@@ -81,8 +77,7 @@ func (service *assetService) CreateAsset(ctx context.Context, assetParam *domain
 		fmt.Printf("asset service: error during post asset event: %s", err.Error())
 		return nil, err
 	}
-	fmt.Println(id)
-
+	fmt.Printf("Asset created with id: %s", id)
 	return asset, err
 }
 
