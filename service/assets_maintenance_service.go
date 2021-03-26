@@ -85,5 +85,16 @@ func (service *assetMaintenanceService) GetAllForAssetId(ctx context.Context, as
 }
 
 func (service *assetMaintenanceService) UpdateMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
-	return service.assetMaintainRepo.UpdateMaintenanceActivity(ctx, req)
+	activity, err := service.assetMaintainRepo.UpdateMaintenanceActivity(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	id, err := service.eventSvc.PostMaintenanceActivity(ctx, *activity)
+
+	if err != nil {
+		fmt.Println("Failed to submit event: ", err)
+	} else {
+		fmt.Println("Successfully submitted event ", id)
+	}
+	return activity, nil
 }

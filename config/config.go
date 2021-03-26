@@ -8,12 +8,10 @@ import (
 )
 
 type configs struct {
-	jwtConfig       JwtConfig
-	appPort         int
-	dbConfig        DBConfig
-	eventApiConfig  EventApiConfig
-	eventServiceUrl string
-	eventApiTimeout int
+	jwtConfig      JwtConfig
+	appPort        int
+	dbConfig       DBConfig
+	eventApiConfig EventApiConfig
 }
 
 type DBConfig struct {
