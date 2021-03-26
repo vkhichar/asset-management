@@ -21,12 +21,14 @@ type AssetMaintenanceService interface {
 type assetMaintenanceService struct {
 	assetMaintainRepo repository.AssetMaintenanceRepo
 	eventSvc          EventService
+	assetRepo         repository.AssetRepository
 }
 
-func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo, es EventService) AssetMaintenanceService {
+func NewAssetForMaintenance(repo repository.AssetMaintenanceRepo, es EventService, assetRepo repository.AssetRepository) AssetMaintenanceService {
 	return &assetMaintenanceService{
 		assetMaintainRepo: repo,
 		eventSvc:          es,
+		assetRepo:         assetRepo,
 	}
 }
 
@@ -75,6 +77,10 @@ func (service *assetMaintenanceService) DeleteMaintenanceActivity(ctx context.Co
 }
 
 func (service *assetMaintenanceService) GetAllForAssetId(ctx context.Context, assetId uuid.UUID) ([]domain.MaintenanceActivity, error) {
+	_, err := service.assetRepo.GetAsset(ctx, assetId)
+	if err != nil {
+		return nil, err
+	}
 	return service.assetMaintainRepo.GetAllByAssetId(ctx, assetId)
 }
 

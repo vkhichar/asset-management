@@ -149,7 +149,7 @@ func TestGetAssetHandler_When_AssetDoesNotExist(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expectedErr := string(`{"error":"No assets exist"}`)
+	expectedErr := string(`{"error":"no assets exist"}`)
 	mockAssetService := &mockService.MockAssetService{}
 	mockAssetService.On("GetAsset", mock.Anything, id).Return(nil, customerrors.NoAssetsExist)
 

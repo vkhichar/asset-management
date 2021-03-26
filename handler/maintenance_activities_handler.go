@@ -148,7 +148,7 @@ func DeleteMaintenanceActivityHandler(service service.AssetMaintenanceService) h
 		}
 		err = service.DeleteMaintenanceActivity(r.Context(), id)
 		if err != nil {
-			WriteErrorResponse(w, errors.New("Something went wrong"))
+			WriteErrorResponse(w, errors.New("something went wrong"))
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
@@ -167,9 +167,13 @@ func ListMaintenanceActivitiesByAsserId(service service.AssetMaintenanceService)
 		}
 
 		activities, err := service.GetAllForAssetId(r.Context(), assetId)
+		if err == customerrors.NoAssetsExist {
+			WriteErrorResponse(w, customerrors.ErrNotFound)
+			return
+		}
 
 		if err != nil {
-			WriteErrorResponse(w, errors.New("Something went wrong"))
+			WriteErrorResponse(w, errors.New("something went wrong"))
 			return
 		}
 		w.WriteHeader(http.StatusOK)
@@ -213,13 +217,13 @@ func UpdateMaintenanceActivity(service service.AssetMaintenanceService) http.Han
 
 		activity, err := service.UpdateMaintenanceActivity(r.Context(), *activityDomain)
 
-		if err == customerrors.ErrNotFound {
+		if err == customerrors.MaintenanceIdDoesNotExist {
 			WriteErrorResponse(w, customerrors.ErrNotFound)
 			return
 		}
 
 		if err != nil {
-			WriteErrorResponse(w, errors.New("Something went wrong"))
+			WriteErrorResponse(w, errors.New("something went wrong"))
 			return
 		}
 
