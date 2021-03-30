@@ -26,3 +26,22 @@ $ ./seed.sh postgres 1234 asset_management
 6. Run the server
 $ ./asset-management
 ```
+# How to use Makefile 
+
+1.to build
+$ make build
+
+2.to test 
+$ make test
+
+3.to formate your code use
+$ make fmt
+
+4.to migrate database migrations
+$ make migrate
+
+5.to rollback database migrations
+$ make rollback
+
+6.to start server
+$ make startapp
