@@ -27,8 +27,10 @@ $ ./seed.sh postgres 1234 asset_management
 $ ./asset-management
 ```
 # How to use Makefile 
+```
 
 1.to build
+
 $ make build
 
 2.to test 
@@ -45,3 +47,4 @@ $ make rollback
 
 6.to start server
 $ make startapp
+```
