@@ -185,10 +185,7 @@ func TestAssetService_UpdateAsset_When_Success(t *testing.T) {
 	if errParseDate != nil {
 		fmt.Printf("Error While Parsing %s", errParseDate.Error())
 	}
-	cost, errParseFloat := strconv.ParseFloat("5000", 32)
-	if errParseFloat != nil {
-		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
-	}
+	PurchaseCost := 5000.00
 	m := make(map[string]interface{})
 	m["RAM"] = "8GB"
 	m["HDD"] = "1TB"
@@ -202,7 +199,7 @@ func TestAssetService_UpdateAsset_When_Success(t *testing.T) {
 		Status:         "active",
 		Category:       "Laptop",
 		PurchaseAt:     dat,
-		PurchaseCost:   cost,
+		PurchaseCost:   PurchaseCost,
 		Name:           "Dell Latitude E5550",
 		Specifications: b,
 	}
@@ -215,8 +212,10 @@ func TestAssetService_UpdateAsset_When_Success(t *testing.T) {
 	}
 	Specifications := jsr
 	Status := "active"
+
 	req := contract.UpdateRequest{
 		Status:         &Status,
+		PurchaseCost:   &PurchaseCost,
 		Specifications: Specifications,
 	}
 	mockAssetRepo := &mockRepo.MockAssetRepo{}
@@ -389,7 +388,11 @@ func TestAssetService_UpdateAsset_When_ReturnsError(t *testing.T) {
 	if errParseDate != nil {
 		fmt.Printf("Error While Parsing %s", errParseDate.Error())
 	}
-	cost, errParseFloat := strconv.ParseFloat("5000", 32)
+	cost, errParseFloat := strconv.ParseFloat("5000.00", 32)
+	if errParseFloat != nil {
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
+	}
+	PurchaseCost, errParseFloat := strconv.ParseFloat("5000.00", 32)
 	if errParseFloat != nil {
 		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
 	}
@@ -425,6 +428,7 @@ func TestAssetService_UpdateAsset_When_ReturnsError(t *testing.T) {
 	Specifications := n
 	req := contract.UpdateRequest{
 		Status:         &Status,
+		PurchaseCost:   &PurchaseCost,
 		Specifications: Specifications,
 	}
 
@@ -492,9 +496,14 @@ func TestAssetService_UpdateAsset_When_ReturnsNil(t *testing.T) {
 	if errMarshal != nil {
 		fmt.Printf("Error While Marshaling %s", errMarshal.Error())
 	}
+	PurchaseCost, errParseFloat := strconv.ParseFloat("5000.00", 32)
+	if errParseFloat != nil {
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
+	}
 	Specifications := b
 	req := contract.UpdateRequest{
 		Status:         &Status,
+		PurchaseCost:   &PurchaseCost,
 		Specifications: Specifications,
 	}
 	mockEventSvc := &mockEventSvc.MockEventService{}

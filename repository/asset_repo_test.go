@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/google/uuid"
@@ -69,10 +70,15 @@ func TestAssetRepository_UpdateAssetsRepo_When_ReturnsError(t *testing.T) {
 	m["HDD"] = "500GB"
 	m["Genration"] = "i8"
 	b, _ := json.Marshal(m)
+	PurchaseCost, errParseFloat := strconv.ParseFloat("5000.00", 32)
+	if errParseFloat != nil {
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
+	}
 	specifications := b
 
 	req := contract.UpdateRequest{
 		Status:         &status,
+		PurchaseCost:   &PurchaseCost,
 		Specifications: specifications,
 	}
 
@@ -125,10 +131,15 @@ func TestAssetRepository_UpdateAssetsRepo_When_Success(t *testing.T) {
 	m["HDD"] = "1TB"
 	m["Genration"] = "i8"
 	b, _ := json.Marshal(m)
+	PurchaseCost, errParseFloat := strconv.ParseFloat("5000.00", 32)
+	if errParseFloat != nil {
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
+	}
 	specifications := b
 
 	req := contract.UpdateRequest{
 		Status:         &status,
+		PurchaseCost:   &PurchaseCost,
 		Specifications: specifications,
 	}
 

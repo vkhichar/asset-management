@@ -87,7 +87,7 @@ func (repo *assetAllocationsRepo) AssetDeallocation(ctx context.Context, asset_i
 		fmt.Println("error while getting date")
 		return nil, err
 	}
-	err = repo.db.Get(&ID, getAssetIDQuery, asset_id)
+	//err = repo.db.Get(&ID, getAssetIDQuery, asset_id)
 
 	tx := repo.db.MustBegin()
 	tx.MustExec(assetDeallocateQuery, time.Now(), ID)

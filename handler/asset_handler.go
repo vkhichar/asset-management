@@ -100,7 +100,8 @@ func UpdateAssetHandler(asset service.AssetService) http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-
+		fmt.Println("Handler:", req.Status)
+		fmt.Println("Handler:", req.PurchaseCost)
 		asset, err := asset.UpdateAsset(r.Context(), Id, req)
 
 		if err != nil {
@@ -112,6 +113,19 @@ func UpdateAssetHandler(asset service.AssetService) http.HandlerFunc {
 				if err != nil {
 					fmt.Printf("handler:Something went wrong while Marshaling,%s", err.Error())
 					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				w.Write(responseBytes)
+				return
+			}
+			if err == customerrors.ErrBadRequest {
+				fmt.Println("handler: something went wrong")
+
+				w.WriteHeader(http.StatusNotFound)
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "invalid input"})
+				if err != nil {
+					fmt.Printf("handler:Something went wrong while Marshaling,%s", err.Error())
+					w.WriteHeader(http.StatusBadRequest)
 					return
 				}
 				w.Write(responseBytes)
@@ -147,6 +161,7 @@ func ListAssetHandler(asset service.AssetService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		asset, err := asset.ListAssets(r.Context())
+		//time.Sleep(8 * time.Second)
 
 		if err == customerrors.NoAssetsExist {
 			fmt.Println("handler: No assets exist")
