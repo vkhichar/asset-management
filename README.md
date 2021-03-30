@@ -30,7 +30,6 @@ $ ./asset-management
 ```
 
 1.to build
-
 $ make build
 
 2.to test 
