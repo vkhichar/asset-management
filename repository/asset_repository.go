@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	newrelic "github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
@@ -49,8 +50,10 @@ func (repo *assetRepo) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.A
 	if err != nil {
 		return nil, customerrors.NoAssetsExist
 	}
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
 	tx := repo.db.MustBegin()
-	tx.MustExec(getAssetDeletefun, sample, Id)
+	tx.MustExecContext(ctx, getAssetDeletefun, sample, Id)
 	tx.Commit()
 	err = repo.db.Get(&asset, getAsset, Id)
 	// fmt.Println(err)
@@ -64,6 +67,7 @@ func (repo *assetRepo) UpdateAsset(ctx context.Context, Id uuid.UUID, req contra
 	var m domain.Asset
 	var asset domain.Asset
 	sample := "retired"
+
 	err := repo.db.Get(&m, getAssetName, Id, sample)
 
 	if err != nil {
@@ -81,8 +85,9 @@ func (repo *assetRepo) UpdateAsset(ctx context.Context, Id uuid.UUID, req contra
 	}
 
 	tx := repo.db.MustBegin()
-
-	tx.MustExec(UpdateAssetDetails, *req.Status, req.Specifications, Id)
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
+	tx.MustExecContext(ctx, UpdateAssetDetails, *req.Status, req.Specifications, Id)
 	tx.Commit()
 	err = repo.db.Get(&asset, getAsset, Id)
 	if err != nil {
@@ -93,8 +98,9 @@ func (repo *assetRepo) UpdateAsset(ctx context.Context, Id uuid.UUID, req contra
 
 func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 	var as []domain.Asset
-
-	err := repo.db.Select(&as, getAssetDetails)
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
+	err := repo.db.SelectContext(ctx, &as, getAssetDetails)
 
 	if err == sql.ErrNoRows {
 		fmt.Println("In repo.", as)
@@ -108,7 +114,9 @@ func (repo *assetRepo) ListAssets(ctx context.Context) ([]domain.Asset, error) {
 
 func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param *domain.Asset) (*domain.Asset, error) {
 	var asset domain.Asset
-	err := repo.db.Get(&asset, createAssetQuery,
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
+	err := repo.db.GetContext(ctx, &asset, createAssetQuery,
 		asset_param.Id,
 		asset_param.Status,
 		asset_param.Category,
@@ -132,8 +140,9 @@ func (repo *assetRepo) CreateAsset(ctx context.Context, asset_param *domain.Asse
 
 func (repo *assetRepo) GetAsset(ctx context.Context, Id uuid.UUID) (*domain.Asset, error) {
 	var asset domain.Asset
-
-	err := repo.db.Get(&asset, getAssetByIDQuery, Id)
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
+	err := repo.db.GetContext(ctx, &asset, getAssetByIDQuery, Id)
 
 	if err != nil {
 		if err == sql.ErrNoRows {

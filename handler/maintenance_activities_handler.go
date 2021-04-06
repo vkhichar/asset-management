@@ -18,6 +18,12 @@ import (
 func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		// defer txn.End()
+		// segment := newrelic.Segment{}
+		// segment.Name = "mySegmentName"
+		// segment.StartTime = txn.StartSegmentNow()
+		// ... code you want to time here ...
+
 		vars := mux.Vars(r)
 
 		assetId, eror := uuid.Parse(vars["asset_id"])
@@ -32,7 +38,7 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 		}
 		var req contract.AssetMaintenanceReq
 		err := json.NewDecoder(r.Body).Decode(&req)
-
+		// segment.End()
 		if err != nil {
 			fmt.Printf("handler: error while decoding request for creating maintenance activity for assets: %s", err.Error())
 
@@ -53,10 +59,10 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 		}
 		createAssetMaintenance, err := req.ConvertReqFormat(assetId)
 		if err != nil {
-			fmt.Printf("handler: incorrect date format: %s", err.Error())
+			fmt.Println("handler: incorrect date format or started date cannot be after present date")
 
 			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "incorrect date format"})
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "incorrect date format or started date cannot be after present date"})
 			w.Write(responseBytes)
 			return
 		}
@@ -92,6 +98,7 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 		w.WriteHeader(http.StatusCreated)
 		w.Write(responseBytes)
 		return
+
 	}
 }
 

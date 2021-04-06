@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	newrelic "github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
@@ -59,8 +60,9 @@ func (repo *assetAllocationsRepo) CreateAssetAllocation(ctx context.Context, req
 	} else {
 		return nil, customerrors.AssetAlreadyAllocated
 	}
-
-	err = repo.db.Get(&assetAllocated, createAssetAllocation, req.UserId, req.AssetId, req.AllocatedBy, time.Now())
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
+	err = repo.db.GetContext(ctx, &assetAllocated, createAssetAllocation, req.UserId, req.AssetId, req.AllocatedBy, time.Now())
 	repo.db.MustBegin().Commit()
 	if err != nil {
 		return nil, err
@@ -88,9 +90,10 @@ func (repo *assetAllocationsRepo) AssetDeallocation(ctx context.Context, asset_i
 		return nil, err
 	}
 	err = repo.db.Get(&ID, getAssetIDQuery, asset_id)
-
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
 	tx := repo.db.MustBegin()
-	tx.MustExec(assetDeallocateQuery, time.Now(), ID)
+	tx.MustExecContext(ctx, assetDeallocateQuery, time.Now(), ID)
 	tx.Commit()
 	var msg = "asset dellocated successfully"
 

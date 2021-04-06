@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/vkhichar/asset-management/config"
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/customerrors"
@@ -268,6 +269,8 @@ func (evSvc *eventSvc) PostAssetMaintenanceActivityEvent(ctx context.Context, re
 		fmt.Printf("Event service request: error:%s", err.Error())
 		return "", err
 	}
+	txn := newrelic.FromContext(ctx)               //
+	s := newrelic.StartExternalSegment(txn, reqst) //
 
 	resp, err := evSvc.client.Do(reqst)
 	if err != nil {
@@ -279,6 +282,9 @@ func (evSvc *eventSvc) PostAssetMaintenanceActivityEvent(ctx context.Context, re
 		fmt.Println("Error while creating event")
 		return "", errors.New("Event not created")
 	}
+	s.Response = resp //
+	s.End()           //
+
 	body, errRead := ioutil.ReadAll(resp.Body)
 	if errRead != nil {
 		fmt.Printf("Event service read: error:%s", errRead.Error())
