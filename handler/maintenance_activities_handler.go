@@ -53,10 +53,10 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 		}
 		createAssetMaintenance, err := req.ConvertReqFormat(assetId)
 		if err != nil {
-			fmt.Printf("handler: incorrect date format: %s", err.Error())
+			fmt.Println("handler: incorrect date format or started date cannot be after present date")
 
 			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "incorrect date format"})
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "incorrect date format or started date cannot be after present date"})
 			w.Write(responseBytes)
 			return
 		}
@@ -92,6 +92,7 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 		w.WriteHeader(http.StatusCreated)
 		w.Write(responseBytes)
 		return
+
 	}
 }
 

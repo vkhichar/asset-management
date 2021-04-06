@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	newrelic "github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/vkhichar/asset-management/contract"
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
@@ -43,7 +44,9 @@ func NewUserRepository() UserRepository {
 
 func (repo *userRepo) FindUser(ctx context.Context, email string) (*domain.User, error) {
 	var user domain.User
-	err := repo.db.Get(&user, getUserByEmailQuery, email)
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
+	err := repo.db.GetContext(ctx, &user, getUserByEmailQuery, email)
 	if err == sql.ErrNoRows {
 		fmt.Printf("repository: couldn't find user for email: %s", email)
 
@@ -59,7 +62,9 @@ func (repo *userRepo) FindUser(ctx context.Context, email string) (*domain.User,
 
 func (repo *userRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 	var user []domain.User
-	err := repo.db.Select(&user, selectAllUsers)
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
+	err := repo.db.SelectContext(ctx, &user, selectAllUsers)
 
 	if err == sql.ErrNoRows {
 		fmt.Printf("repository: No users present")
@@ -76,8 +81,9 @@ func (repo *userRepo) ListUsers(ctx context.Context) ([]domain.User, error) {
 
 func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain.User, error) {
 	var newUser domain.User
-
-	err := repo.db.Get(&newUser, createUserByQuery, user.Name, user.Email, user.Password, user.IsAdmin)
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
+	err := repo.db.GetContext(ctx, &newUser, createUserByQuery, user.Name, user.Email, user.Password, user.IsAdmin)
 
 	if err != nil {
 		return nil, err
@@ -90,7 +96,9 @@ func (repo *userRepo) CreateUser(ctx context.Context, user domain.User) (*domain
 func (repo *userRepo) GetUserByID(ctx context.Context, id int) (*domain.User, error) {
 
 	var newUser domain.User
-	err := repo.db.Get(&newUser, getUserByIDQuery, id)
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
+	err := repo.db.GetContext(ctx, &newUser, getUserByIDQuery, id)
 
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -118,9 +126,10 @@ func (repo *userRepo) UpdateUser(ctx context.Context, id int, req contract.Updat
 	if req.Password == nil {
 		req.Password = &tempUser.Password
 	}
-
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
 	tx := repo.db.MustBegin()
-	tx.MustExec(updateUserColumns, *req.Name, *req.Password, time.Now(), id)
+	tx.MustExecContext(ctx, updateUserColumns, *req.Name, *req.Password, time.Now(), id)
 	tx.Commit()
 
 	err = repo.db.Get(&user, getUserByIDQuery, id)
@@ -144,9 +153,10 @@ func (repo *userRepo) DeleteUser(ctx context.Context, id int) (*domain.User, err
 	if err != nil {
 		return nil, err
 	}
-
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
 	tx := repo.db.MustBegin()
-	tx.MustExec(deleteUserById, id)
+	tx.MustExecContext(ctx, deleteUserById, id)
 	tx.Commit()
 
 	return &user, nil
