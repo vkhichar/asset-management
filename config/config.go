@@ -8,8 +8,10 @@ import (
 )
 
 type configs struct {
+	ipAddress       string
 	jwtConfig       JwtConfig
 	appPort         int
+	eventAppPort    int
 	dbConfig        DBConfig
 	eventServiceUrl string
 	apiTimeout      int
@@ -41,6 +43,19 @@ func Init() error {
 	}
 
 	config.appPort = port
+
+	eventPortStr := os.Getenv("EVENT_PORT")
+	eventPort, err := strconv.Atoi(eventPortStr)
+	if err != nil {
+		fmt.Printf("config: couldn't convert event_port from string to int: %s", err.Error())
+		eventPort = 9035
+	}
+
+	ipAddressStr := os.Getenv("IP_ADDRESS")
+
+	config.appPort = port
+	config.eventAppPort = eventPort
+	config.ipAddress = ipAddressStr
 	config.dbConfig = initDBConfig()
 
 	config.eventServiceUrl = os.Getenv("EVENT_SERVICE_URL")
@@ -51,7 +66,7 @@ func Init() error {
 	timeout, err := strconv.Atoi(os.Getenv("EVENT_API_TIMEOUT"))
 	if err != nil {
 		fmt.Println("config: Invalid timeout value: ", err)
-		timeout = 3 // in seconds
+		timeout = 3
 	}
 	config.apiTimeout = timeout
 	config.jwtConfig = initJwtConfig()
@@ -61,6 +76,7 @@ func Init() error {
 func initDBConfig() DBConfig {
 	cfg := DBConfig{
 		Host:     os.Getenv("DB_HOST"),
+		Port:     0,
 		Username: os.Getenv("DB_USERNAME"),
 		Password: os.Getenv("DB_PASSWORD"),
 		Name:     os.Getenv("DB_NAME"),
@@ -78,6 +94,14 @@ func initDBConfig() DBConfig {
 
 func GetAppPort() string {
 	return strconv.Itoa(config.appPort)
+}
+
+func GetEventAppPort() string {
+	return strconv.Itoa(config.eventAppPort)
+}
+
+func GetIpAddress() string {
+	return config.ipAddress
 }
 
 func GetDBConfig() DBConfig {

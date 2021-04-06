@@ -68,20 +68,17 @@ func (service *assetService) ListAssets(ctx context.Context) ([]domain.Asset, er
 func (service *assetService) CreateAsset(ctx context.Context, assetParam *domain.Asset) (*domain.Asset, error) {
 	asset, err := service.assetRepo.CreateAsset(ctx, assetParam)
 	if err != nil {
-		if err == customerrors.NoAssetsExist {
-			fmt.Printf("Asset service: asset does not exist: %s", err.Error())
-			return nil, err
-		}
-		fmt.Printf("asset_service error while creating asset: %s", err.Error())
+		fmt.Printf("asset_service error while creating asset: %s\n", err.Error())
 		return nil, err
 	}
 
-	id, err := service.eventSvc.PostAssetEventCreateAsset(ctx, asset)
+	id, err := service.eventSvc.PostCreateAssetEvent(ctx, asset)
 	if err != nil {
-		fmt.Printf("asset service: error during post asset event: %s", err.Error())
-		return nil, err
+		fmt.Printf("asset service: error during post create asset event: %s\n", err.Error())
+		return asset, err
+	} else {
+		fmt.Println("New event created successfully:", id)
 	}
-	fmt.Println(id)
 
 	return asset, err
 }

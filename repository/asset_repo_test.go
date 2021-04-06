@@ -168,6 +168,8 @@ func TestAssetRepository_DeleteRepo_When_Success(t *testing.T) {
 	tx.MustExec("insert into assets(id,status,category,purchase_at,purchase_cost,name,specifications) values($1,$2,$3,$4,$5,$6,$7)", Id, "active", "Laptop", "01/07/2020", 500, "Dell Latitude E5550", `{"RAM":"4GB","HDD":"500GB","Generation":"i8"}`)
 	tx.Commit()
 
+	fmt.Println("below")
+
 	assetRepo := repository.NewAssetRepository()
 
 	asset, err := assetRepo.DeleteAsset(ctx, Id)

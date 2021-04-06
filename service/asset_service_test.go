@@ -173,6 +173,61 @@ func TestAssetService_CreateAsset_When_PostAssetEventCreateAssetReturnsError(t *
 	assert.Nil(t, dbAsset)
 }
 
+func TestAssetService_When_HTTPostReturnsSuccess(t *testing.T) {
+	ctx := context.Background()
+	defer gock.Off()
+	service.InitEnv()
+
+	gock.New(config.GetEventServiceUrl()).Post(service.EventResource).Reply(200).JSON(map[string]int{"id": 123})
+
+	m := make(map[string]interface{})
+	m["ram"] = "4GB"
+	m["brand"] = "acer"
+	b, _ := json.Marshal(m)
+
+	obj := domain.Asset{
+		Id:             uuid.New(),
+		Status:         "retired",
+		Category:       "Laptops",
+		PurchaseAt:     time.Now(),
+		PurchaseCost:   50000.00,
+		Name:           "aspire-5",
+		Specifications: b,
+	}
+
+	eventSvc := service.NewEventService()
+	id, err := eventSvc.PostCreateAssetEvent(ctx, &obj)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "123", id)
+}
+
+func TestPostAssetService_When_HTTPostReturnsError(t *testing.T) {
+	ctx := context.Background()
+
+	gock.New(config.GetEventServiceUrl()).Post("/events").Reply(400)
+
+	m := make(map[string]interface{})
+	m["ram"] = "4GB"
+	m["brand"] = "acer"
+	b, _ := json.Marshal(m)
+
+	obj := domain.Asset{
+		Id:             uuid.New(),
+		Status:         "retired",
+		Category:       "Laptops",
+		PurchaseAt:     time.Now(),
+		PurchaseCost:   50000.00,
+		Name:           "aspire-5",
+		Specifications: b,
+	}
+
+	eventSvc := service.NewEventService()
+	id, err := eventSvc.PostCreateAssetEvent(ctx, &obj)
+
+	assert.NotEqual(t, "123", id)
+	assert.NotNil(t, err)
+}
 func TestAssetService_UpdateAsset_When_Success(t *testing.T) {
 	ctx := context.Background()
 	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")

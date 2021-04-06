@@ -527,7 +527,7 @@ func TestUserService_DeleteUser_When_DeleteUserReturnsError(t *testing.T) {
 
 func TestUserService_DeleteUser_When_DeleteUserReturnsNil(t *testing.T) {
 	ctx := context.Background()
-	id := 4
+	id := 12
 
 	mockUserRepo := &mockRepo.MockUserRepo{}
 	mockTokenService := &mockService.MockTokenService{}
@@ -598,8 +598,7 @@ func TestUserService_PostUserEvent_When_HTTPostReturnsError(t *testing.T) {
 
 	service.InitEnv()
 
-	gock.New(config.GetEventServiceUrl()).Post("/events").
-		Reply(400)
+	gock.New(config.GetEventServiceUrl()).Post("/events").Reply(400)
 
 	user := domain.User{
 		ID:       1,
