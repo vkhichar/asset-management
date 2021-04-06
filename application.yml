@@ -11,8 +11,6 @@ export IP_ADDRESS="http://localhost:"
 export EVENT_SERVICE_URL="http://localhost:9035"
 export EVENT_API_TIMEOUT="3"
 export JWT_SECRET="secret" # change it
-<<<<<<< HEAD
 export TOKEN_EXPIRY="5" # in minutes
-=======
 export TOKEN_EXPIRY="5" # in minutes
->>>>>>> 929ca5c83f6fd54520f29fdf612988965efd084a
+
