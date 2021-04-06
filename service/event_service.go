@@ -107,36 +107,6 @@ func (e *eventSvc) PostCreateUserEvent(ctx context.Context, user *domain.User) (
 		return "", err
 	}
 
-	// client := http.Client{
-	// 	Timeout: 3 * time.Second,
-	// }
-
-	// resp, err := client.Do(re)
-
-	// if err != nil {
-	// 	fmt.Printf("Error in event service while getting response in client.do: %s", err.Error())
-	// 	return "", err
-	// }
-	// defer resp.Body.Close()
-	// body, err := ioutil.ReadAll(resp.Body)
-	// if err != nil {
-	// 	fmt.Printf("Error in event service :%s", err.Error())
-
-	// }
-
-	// var respObj contract.CreateUserEventResponse
-
-	// errJsonUnmar := json.Unmarshal(body, &respObj)
-
-	// if errJsonUnmar != nil {
-	// 	fmt.Printf("Event service: Error while json unmarshal. Error: %s", errJsonUnmar.Error())
-	// 	return "", errJsonUnmar
-	// }
-
-	// eventId := strconv.Itoa(respObj.Id)
-
-	// return eventId, nil
-
 }
 
 func (e *eventSvc) PostAssetEvent(ctx context.Context, asset *domain.Asset) (string, error) {
@@ -203,25 +173,6 @@ func (e *eventSvc) PostAssetEvent(ctx context.Context, asset *domain.Asset) (str
 		return "", err
 	}
 
-	// 	resp, errPost := client.Do(rec)
-	// 	if errPost != nil {
-	// 		fmt.Printf("Event service: Error while sending Post request to event. Error: %s", errPost.Error())
-	// 		return "", errPost
-	// 	}
-
-	// 	body, errReadAll := ioutil.ReadAll(resp.Body)
-	// 	if errReadAll != nil {
-	// 		fmt.Printf("Error While Performing ReadAll %s", errReadAll.Error())
-	// 		return "", errReadAll
-	// 	}
-	// 	var responseObj contract.AssetEventResponse
-	// 	errJsonMarshal := json.Unmarshal(body, &responseObj)
-	// 	if errJsonMarshal != nil {
-	// 		fmt.Printf("Event Service : Error While UnMarshaling :%s", errJsonMarshal.Error())
-	// 		return "", errJsonMarshal
-	// 	}
-	// 	eventId := strconv.Itoa(responseObj.ID)
-	// 	return eventId, nil
 }
 
 func (e *eventSvc) PostCreateAssetEvent(ctx context.Context, asset *domain.Asset) (string, error) {
@@ -351,37 +302,6 @@ func (evSvc *eventSvc) PostUpdateUserEvent(ctx context.Context, user *domain.Use
 		return "", err
 	}
 
-	// req.Header.Add("Content-type", "application/json")
-	// resp, errPost := evSvc.client.Do(req)
-	// if errPost != nil {
-	// 	fmt.Printf("Event service: Error while sending Post request to event. Error: %s", errPost.Error())
-	// 	return "", errPost
-	// }
-
-	// if resp.StatusCode != http.StatusOK {
-	// 	fmt.Printf("Event Service: Event not created. %d", resp.StatusCode)
-	// 	return "", errors.New("Event not created")
-	// }
-
-	// body, errBodyRead := ioutil.ReadAll(resp.Body)
-	// defer resp.Body.Close()
-
-	// if errBodyRead != nil {
-	// 	fmt.Printf("Event service: Error while reading response body. Error: %s", errBodyRead.Error())
-	// 	return "", errBodyRead
-	// }
-	// var responseObj contract.UpdateUserEventResponse
-
-	// errJsonUnmar := json.Unmarshal(body, &responseObj)
-
-	// if errJsonUnmar != nil {
-	// 	fmt.Printf("Event service: Error while json unmarshal. Error: %s", errJsonUnmar.Error())
-	// 	return "", errJsonUnmar
-	// }
-
-	// eventId := strconv.Itoa(responseObj.Id)
-
-	// return eventId, nil
 }
 
 func (service *eventSvc) PostMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (string, error) {
@@ -395,27 +315,6 @@ func (service *eventSvc) PostMaintenanceActivity(ctx context.Context, req domain
 	eventReqBody, _ := json.Marshal(contract.NewEventRequest(AssetMaintenanceEvent, reqBody))
 
 	httpreq, err := http.NewRequest("POST", config.GetEventServiceUrl()+EventResource, bytes.NewBuffer(eventReqBody))
-	// httpreq.Header.Add("Content-type", "application/json")
-	// res, err := service.client.Do(httpreq)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return "", err
-	// }
-
-	// if res.StatusCode != http.StatusOK {
-	// 	fmt.Println("Failed to create event due to ", res.StatusCode)
-	// 	return "", errors.New("Event not created")
-	// }
-
-	// resBody, err := ioutil.ReadAll(res.Body)
-	// defer res.Body.Close()
-
-	// if err != nil {
-	// 	fmt.Println("Failed to read response\n", err)
-	// 	return "", err
-	// }
-
-	// return string(resBody), err
 
 	resultCh := make(chan []byte)
 	var resp *http.Response
@@ -469,28 +368,6 @@ func (evSvc *eventSvc) PostAssetMaintenanceActivityEvent(ctx context.Context, re
 		fmt.Printf("Event service request: error:%s", err.Error())
 		return "", err
 	}
-
-	// resp, err := evSvc.client.Do(reqst)
-	// if err != nil {
-	// 	fmt.Printf("Event service error while getting response from client.Do: error:%s", err.Error())
-	// 	return "", customerrors.ResponseTimeLimitExceeded
-	// }
-
-	// if resp.StatusCode != http.StatusOK {
-	// 	fmt.Println("Error while creating event")
-	// 	return "", errors.New("Event not created")
-	// }
-	// body, errRead := ioutil.ReadAll(resp.Body)
-	// if errRead != nil {
-	// 	fmt.Printf("Event service read: error:%s", errRead.Error())
-	// 	return "", errRead
-	// }
-
-	// errJsonUnmarshl := json.Unmarshal(body, &contract.CreateMaintenanceActivityEvent)
-	// if errJsonUnmarshl != nil {
-	// 	fmt.Printf("Event service error in unmarshaling: error:%s", errJsonUnmarshl.Error())
-	// 	return "", errJsonUnmarshl
-	// }
 
 	resultCh := make(chan []byte)
 	var resp *http.Response

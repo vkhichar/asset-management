@@ -22,6 +22,7 @@ var (
 	AssetDoesNotExist         = errors.New("asset for this id does not exist")
 	AssetCannotBeAllocated    = errors.New("this asset is either retired or is under maintenance")
 	AssetAlreadyAllocated     = errors.New("this asset is already allocated to another user")
+
 	ErrorInvalidPurchaseDate  = errors.New("purchase date should be on or before current day")
 	ErrorInvalidAssetCategory = errors.New("Not a valid asset category")
 )

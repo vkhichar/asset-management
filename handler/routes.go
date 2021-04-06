@@ -11,6 +11,7 @@ func Routes() *mux.Router {
 
 	router.HandleFunc("/users", AuthenticationHandler(deps.tokenService,
 		CreateUserHandler(deps.userService), true)).Methods("POST")
+
 	router.HandleFunc("/users", AuthenticationHandler(deps.tokenService, ListUsersHandler(deps.userService), true)).Methods("GET")
 	router.HandleFunc("/profile", GetUserByIDHandler(deps.userService)).Methods("GET")
 	router.HandleFunc("/profile", UserAuthenticationHandler(deps.tokenService,
