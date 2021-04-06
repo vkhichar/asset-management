@@ -228,6 +228,12 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 
 		if err != nil {
 			fmt.Printf("handler: error while converting to object of type domain.Asset, error: %s", err.Error())
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+			if err != nil {
+				fmt.Printf(err.Error())
+				return
+			}
+			w.Write(responseBytes)
 			return
 		}
 

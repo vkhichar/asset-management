@@ -196,7 +196,7 @@ func TestAssetService_When_HTTPostReturnsSuccess(t *testing.T) {
 	}
 
 	eventSvc := service.NewEventService()
-	id, err := eventSvc.PostAssetEventCreateAsset(ctx, &obj)
+	id, err := eventSvc.PostCreateAssetEvent(ctx, &obj)
 
 	assert.Nil(t, err)
 	assert.Equal(t, "123", id)
@@ -223,12 +223,11 @@ func TestPostAssetService_When_HTTPostReturnsError(t *testing.T) {
 	}
 
 	eventSvc := service.NewEventService()
-	id, err := eventSvc.PostAssetEventCreateAsset(ctx, &obj)
+	id, err := eventSvc.PostCreateAssetEvent(ctx, &obj)
 
 	assert.NotEqual(t, "123", id)
 	assert.NotNil(t, err)
 }
-
 func TestAssetService_UpdateAsset_When_Success(t *testing.T) {
 	ctx := context.Background()
 	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
@@ -277,8 +276,9 @@ func TestAssetService_UpdateAsset_When_Success(t *testing.T) {
 	}
 	mockAssetRepo := &mockRepo.MockAssetRepo{}
 	mockEventSvc := &mockEventSvc.MockEventService{}
-
+	eventId := "120"
 	mockAssetRepo.On("UpdateAsset", ctx, Id, req).Return(&asset, nil)
+	mockEventSvc.On("PostAssetEvent", ctx, &asset).Return(eventId, nil)
 	assetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
 	DBasset, err := assetService.UpdateAsset(ctx, Id, req)
 	if err != nil {
@@ -437,9 +437,17 @@ func TestAssetService_UpdateAsset_When_ReturnsError(t *testing.T) {
 	if errParse != nil {
 		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
 	}
-	mockAssetRepo := &mockRepo.MockAssetRepo{}
 
-	Status := "active"
+	layout := "2006-01-02T15:04:05.000Z"
+	str := "2014-11-12T11:45:26.371Z"
+	dat, errParseDate := time.Parse(layout, str)
+	if errParseDate != nil {
+		fmt.Printf("Error While Parsing %s", errParseDate.Error())
+	}
+	cost, errParseFloat := strconv.ParseFloat("5000", 32)
+	if errParseFloat != nil {
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
+	}
 	m := make(map[string]interface{})
 	m["RAM"] = "4GB"
 	m["HDD"] = "1TB"
@@ -447,21 +455,43 @@ func TestAssetService_UpdateAsset_When_ReturnsError(t *testing.T) {
 	if errMarshal != nil {
 		fmt.Printf("Error While Marshaling %s", errMarshal.Error())
 	}
-	Specifications := b
+
+	asset := domain.Asset{
+
+		Id:           Id,
+		Status:       "active",
+		Category:     "Laptop",
+		PurchaseAt:   dat,
+		PurchaseCost: cost,
+
+		Name:           "Dell Latitude E5550",
+		Specifications: b,
+	}
+	mockAssetRepo := &mockRepo.MockAssetRepo{}
+	mockEventSvc := &mockEventSvc.MockEventService{}
+	Status := "active"
+	ms := make(map[string]interface{})
+	m["RAM"] = "4GB"
+	m["HDD"] = "1TB"
+	n, errMarshal := json.Marshal(ms)
+	if errMarshal != nil {
+		fmt.Printf("Error While Marshaling %s", errMarshal.Error())
+	}
+	Specifications := n
 	req := contract.UpdateRequest{
 		Status:         &Status,
 		Specifications: Specifications,
 	}
 
 	mockAssetRepo.On("UpdateAsset", ctx, Id, req).Return(nil, errors.New("some DB error"))
-	mockEventSvc := &mockEventSvc.MockEventService{}
+	mockEventSvc.On("PostAssetEvent", ctx, &asset).Return("", errors.New("some DB error"))
 
 	AssetService := service.NewAssetService(mockAssetRepo, mockEventSvc)
-	asset, err := AssetService.UpdateAsset(ctx, Id, req)
+	dbasset, err := AssetService.UpdateAsset(ctx, Id, req)
 	if err != nil {
 		fmt.Printf("Something went Wrong %s", err.Error())
 	}
-	assert.Nil(t, asset)
+	assert.Nil(t, dbasset)
 	assert.Error(t, err)
 	assert.Equal(t, "some DB error", err.Error())
 
@@ -534,4 +564,97 @@ func TestAssetService_UpdateAsset_When_ReturnsNil(t *testing.T) {
 
 	assert.Nil(t, asset)
 	assert.NotNil(t, err)
+}
+
+func TestAssetService_PostAssetEvent_When_Success(t *testing.T) {
+	ctx := context.Background()
+	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParse != nil {
+		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
+	}
+	layout := "2006-01-02T15:04:05.000Z"
+	str := "2014-11-12T11:45:26.371Z"
+	dat, errParseDate := time.Parse(layout, str)
+	if errParseDate != nil {
+		fmt.Printf("Error While Parsing %s", errParseDate.Error())
+	}
+	cost, errParseFloat := strconv.ParseFloat("5000", 32)
+	if errParseFloat != nil {
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
+	}
+	m := make(map[string]interface{})
+	m["RAM"] = "8GB"
+	m["HDD"] = "1TB"
+	b, errMarshal := json.Marshal(m)
+	if errMarshal != nil {
+		fmt.Printf("Error while Marshaling %s", errMarshal.Error())
+	}
+
+	gock.New(config.GetEventServiceUrl()).
+		Post("/events").
+		Reply(200).
+		JSON(map[string]int{"id": 120})
+	asset := domain.Asset{
+
+		Id:             Id,
+		Status:         "active",
+		Category:       "Laptop",
+		PurchaseAt:     dat,
+		PurchaseCost:   cost,
+		Name:           "Dell Latitude E5550",
+		Specifications: b,
+	}
+
+	eventService := service.NewEventService()
+	id, err := eventService.PostAssetEvent(ctx, &asset)
+
+	assert.Nil(t, err)
+	assert.JSONEq(t, "120", id)
+}
+
+func TestAssetService_PostAssetEvent_When_ReturnsError(t *testing.T) {
+	ctx := context.Background()
+	Id, errParse := uuid.Parse("ffb4b1a4-7bf5-11ee-9339-0242ac130002")
+	if errParse != nil {
+		fmt.Printf("Error While Parsing String to UUID %s", errParse.Error())
+	}
+	layout := "2006-01-02T15:04:05.000Z"
+	str := "2014-11-12T11:45:26.371Z"
+	dat, errParseDate := time.Parse(layout, str)
+	if errParseDate != nil {
+		fmt.Printf("Error While Parsing %s", errParseDate.Error())
+	}
+	cost, errParseFloat := strconv.ParseFloat("5000", 32)
+	if errParseFloat != nil {
+		fmt.Printf("Error While Parsing %s", errParseFloat.Error())
+	}
+	m := make(map[string]interface{})
+	m["RAM"] = "8GB"
+	m["HDD"] = "1TB"
+	b, errMarshal := json.Marshal(m)
+	if errMarshal != nil {
+		fmt.Printf("Error while Marshaling %s", errMarshal.Error())
+	}
+	defer gock.Off()
+
+	gock.New(config.GetEventServiceUrl()).
+		Post("/events").
+		Reply(400)
+	asset := domain.Asset{
+
+		Id:             Id,
+		Status:         "active",
+		Category:       "Laptop",
+		PurchaseAt:     dat,
+		PurchaseCost:   cost,
+		Name:           "Dell Latitude E5550",
+		Specifications: b,
+	}
+
+	eventService := service.NewEventService()
+	eventId, err := eventService.PostAssetEvent(ctx, &asset)
+
+	assert.Equal(t, "", eventId)
+	assert.NotNil(t, err)
+
 }

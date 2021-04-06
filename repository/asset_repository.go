@@ -53,7 +53,7 @@ func (repo *assetRepo) DeleteAsset(ctx context.Context, Id uuid.UUID) (*domain.A
 	tx.MustExec(getAssetDeletefun, sample, Id)
 	tx.Commit()
 	err = repo.db.Get(&asset, getAsset, Id)
-	fmt.Println(err)
+	// fmt.Println(err)
 	if err != nil {
 		return nil, err
 	}

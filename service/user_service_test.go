@@ -378,6 +378,7 @@ func TestUserService_UpdateUser_When_Success(t *testing.T) {
 	}
 
 	mockUserRepo.On("UpdateUser", ctx, id, req).Return(user, nil)
+
 	mockEventService.On("PostUpdateUserEvent", ctx, user).Return("", nil)
 
 	userService := service.NewUserService(mockUserRepo, mockTokenService, mockEventService)
@@ -609,6 +610,53 @@ func TestUserService_PostUserEvent_When_HTTPostReturnsError(t *testing.T) {
 
 	eventService := service.NewEventService()
 	eventId, err := eventService.PostUpdateUserEvent(ctx, &user)
+
+	assert.NotNil(t, err)
+	assert.Equal(t, "", eventId)
+}
+
+func TestEventService_PostCreateUserEvent_When_HTTPostReturnsSuccess(t *testing.T) {
+	ctx := context.Background()
+	defer gock.Off()
+
+	service.InitEnv()
+
+	gock.New(config.GetEventServiceUrl()).Post(service.EventResource).
+		Reply(200).JSON(map[string]int{"id": 21})
+
+	user := domain.User{
+		ID:       1,
+		Name:     "Dummy",
+		Email:    "dummy@email",
+		Password: "12345",
+		IsAdmin:  true,
+	}
+
+	eventService := service.NewEventService()
+	eventId, err := eventService.PostCreateUserEvent(ctx, &user)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "21", eventId)
+}
+
+func TestEventService_PostCreateUserEvent_When_HTTPostReturnsError(t *testing.T) {
+	ctx := context.Background()
+
+	service.InitEnv()
+
+	gock.New(config.GetEventServiceUrl()).Post("/events").
+		Reply(400)
+
+	user := domain.User{
+		ID:       1,
+		Name:     "Dummy",
+		Email:    "dummy@email",
+		Password: "12345",
+		IsAdmin:  true,
+	}
+
+	eventService := service.NewEventService()
+	eventId, err := eventService.PostCreateUserEvent(ctx, &user)
 
 	assert.NotNil(t, err)
 	assert.Equal(t, "", eventId)

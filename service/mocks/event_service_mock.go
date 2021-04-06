@@ -11,6 +11,20 @@ type MockEventService struct {
 	mock.Mock
 }
 
+func (m *MockEventService) PostAssetMaintenanceActivityEvent(ctx context.Context, resBody *domain.MaintenanceActivity) (string, error) {
+	args := m.Called(ctx, resBody)
+
+	var EventMaintenanceActivity string
+	if args[0] != nil {
+		EventMaintenanceActivity = args[0].(string)
+	}
+	var err error
+	if args[1] != nil {
+		err = args[1].(error)
+	}
+	return EventMaintenanceActivity, err
+}
+
 func (m *MockEventService) PostCreateUserEvent(ctx context.Context, user *domain.User) (string, error) {
 
 	args := m.Called(ctx, user)
@@ -26,7 +40,7 @@ func (m *MockEventService) PostCreateUserEvent(ctx context.Context, user *domain
 	return newUser, err
 }
 
-func (m *MockEventService) PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error) {
+func (m *MockEventService) PostCreateAssetEvent(ctx context.Context, asset *domain.Asset) (string, error) {
 	args := m.Called(ctx, asset)
 
 	var eventID string
@@ -44,11 +58,24 @@ func (m *MockEventService) PostAssetEventCreateAsset(ctx context.Context, asset 
 func (m *MockEventService) PostUpdateUserEvent(ctx context.Context, user *domain.User) (string, error) {
 	args := m.Called(ctx, user)
 
+	var EventId string
+	if args[0] != "" {
+		EventId = args[0].(string)
+	}
+	var err error
+	if args[1] != nil {
+		err = args[1].(error)
+	}
+	return EventId, err
+}
+
+func (m *MockEventService) PostAssetEvent(ctx context.Context, asset *domain.Asset) (string, error) {
+	args := m.Called(ctx, asset)
+
 	var eventId string
 	if args[0] != "" {
 		eventId = args[0].(string)
 	}
-
 	var err error
 	if args[1] != nil {
 		err = args[1].(error)

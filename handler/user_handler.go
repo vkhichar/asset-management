@@ -170,20 +170,6 @@ func CreateUserHandler(userService service.UserService) http.HandlerFunc {
 
 		user, err := userService.CreateUser(r.Context(), createdUser)
 
-		if err == customerrors.ErrInvalidEmailPassword {
-			fmt.Printf("handler: invalid email or password for email: %s", req.Email)
-
-			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, invalidErr := json.Marshal(contract.ErrorResponse{Error: "invalid email or password"})
-
-			if invalidErr != nil {
-				fmt.Fprintf(w, "handler: error while marshaling invalid email or password for email")
-				return
-			}
-			w.Write(responseBytes)
-			return
-		}
-
 		if err != nil {
 			fmt.Printf("handler: error while creating user for email: %s, error: %s", req.Email, err.Error())
 
@@ -288,21 +274,8 @@ func UpdateUsersHandler(userService service.UserService) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 
-		params := mux.Vars(r)
-		id, errInConversion := strconv.Atoi(params["id"])
-
-		if errInConversion != nil {
-			fmt.Printf("handler: Error while parameter conversion. Error: %s", errInConversion)
-			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "Error while parameter conversion"})
-			if err != nil {
-				fmt.Printf("handler: Error while Marshal,%s", err)
-				return
-			}
-			w.Write(responseBytes)
-			return
-
-		}
+		claims := r.Context().Value("claims")
+		id := claims.(*service.Claims).UserID
 
 		var req contract.UpdateUserRequest
 		err := json.NewDecoder(r.Body).Decode(&req)
@@ -360,21 +333,8 @@ func DeleteUserHandler(userService service.UserService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		params := mux.Vars(r)
-		id, parseErr := strconv.Atoi(params["id"])
-
-		if parseErr != nil {
-			fmt.Println("Handler: Error while parsing Id")
-			w.WriteHeader(http.StatusBadRequest)
-			responseBytes, jsonErr := json.Marshal(contract.ErrorResponse{Error: "Enter id in valid format"})
-			if jsonErr != nil {
-				fmt.Printf("handler: Error while converting error to json. Error: %s", jsonErr)
-				return
-			}
-			w.Write(responseBytes)
-			return
-
-		}
+		claims := r.Context().Value("claims")
+		id := claims.(*service.Claims).UserID
 
 		user, err := userService.DeleteUser(r.Context(), id)
 
