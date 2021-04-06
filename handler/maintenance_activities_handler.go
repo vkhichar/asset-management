@@ -18,12 +18,6 @@ import (
 func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		// defer txn.End()
-		// segment := newrelic.Segment{}
-		// segment.Name = "mySegmentName"
-		// segment.StartTime = txn.StartSegmentNow()
-		// ... code you want to time here ...
-
 		vars := mux.Vars(r)
 
 		assetId, eror := uuid.Parse(vars["asset_id"])
@@ -38,7 +32,7 @@ func CreateMaintenanceHandler(assetMaintenanceService service.AssetMaintenanceSe
 		}
 		var req contract.AssetMaintenanceReq
 		err := json.NewDecoder(r.Body).Decode(&req)
-		// segment.End()
+
 		if err != nil {
 			fmt.Printf("handler: error while decoding request for creating maintenance activity for assets: %s", err.Error())
 
