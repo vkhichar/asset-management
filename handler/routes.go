@@ -25,6 +25,7 @@ func Routes() *mux.Router {
 	router.HandleFunc("/assets/{id}", GetAssetHandler(deps.assetService)).Methods("GET")
 	router.HandleFunc("/assets/{Id}", UpdateAssetHandler(deps.assetService)).Methods("PUT")
 	router.HandleFunc("/assets/{Id}", DeleteAssetHandler(deps.assetService)).Methods("DELETE")
+	router.HandleFunc("/assets/export", ExportAssetToCSVHandler(deps.assetService)).Methods("GET")
 
 	router.HandleFunc("/assets/{asset_id}/maintenance", CreateMaintenanceHandler(deps.assetMaintenanceService)).Methods("POST")
 	router.HandleFunc("/maintenance_activities/{id}", DetailedMaintenanceActivityHandler(deps.assetMaintenanceService)).Methods("GET")
@@ -45,7 +46,6 @@ func Routes() *mux.Router {
 
 	router.HandleFunc("/assets/{asset_id}/deallocate", AuthenticationHandler(deps.tokenService,
 		AssetDeAllocationHandler(deps.assetAllocationService), true)).Methods("DELETE")
-	router.HandleFunc("/assets/export", AuthenticationHandler(deps.tokenService,
-		ExportAssetToCSVHandler(deps.assetService), true)).Methods("GET")
+
 	return router
 }
