@@ -21,11 +21,12 @@ func Routes() *mux.Router {
 
 	router.HandleFunc("/assets", AuthenticationHandler(deps.tokenService,
 		CreateAssetHandler(deps.assetService), true)).Methods("POST")
+
+	router.HandleFunc("/assets/export", ExportAssetToCSVHandler(deps.assetService)).Methods("GET")
 	router.HandleFunc("/assets", ListAssetHandler(deps.assetService)).Methods("GET")
 	router.HandleFunc("/assets/{id}", GetAssetHandler(deps.assetService)).Methods("GET")
 	router.HandleFunc("/assets/{Id}", UpdateAssetHandler(deps.assetService)).Methods("PUT")
 	router.HandleFunc("/assets/{Id}", DeleteAssetHandler(deps.assetService)).Methods("DELETE")
-	router.HandleFunc("/assets/export", ExportAssetToCSVHandler(deps.assetService)).Methods("GET")
 
 	router.HandleFunc("/assets/{asset_id}/maintenance", CreateMaintenanceHandler(deps.assetMaintenanceService)).Methods("POST")
 	router.HandleFunc("/maintenance_activities/{id}", DetailedMaintenanceActivityHandler(deps.assetMaintenanceService)).Methods("GET")
