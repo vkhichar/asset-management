@@ -16,7 +16,7 @@ func Routes(app *newrelic.Application) *mux.Router {
 	router.HandleFunc(newrelic.WrapHandleFunc(app, "/users/{id}", GetUserByIDHandler(deps.userService))).Methods("GET")
 	router.HandleFunc(newrelic.WrapHandleFunc(app, "/users/{id}", UpdateUsersHandler(deps.userService))).Methods("PUT")
 	router.HandleFunc(newrelic.WrapHandleFunc(app, "/users/{id}", DeleteUserHandler(deps.userService))).Methods("DELETE")
-
+	router.HandleFunc("/assets/csv", CsvAssetHandler(deps.assetService)).Methods("POST") ////
 	router.HandleFunc(newrelic.WrapHandleFunc(app, "/assets", CreateAssetHandler(deps.assetService))).Methods("POST")
 	router.HandleFunc(newrelic.WrapHandleFunc(app, "/assets", ListAssetHandler(deps.assetService))).Methods("GET")
 	router.HandleFunc(newrelic.WrapHandleFunc(app, "/assets/{id}", GetAssetHandler(deps.assetService))).Methods("GET")

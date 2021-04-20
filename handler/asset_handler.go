@@ -1,10 +1,17 @@
 package handler
 
 import (
+	"bufio"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"regexp"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -195,6 +202,7 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		var req contract.CreateAssetRequest
+
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			fmt.Printf("handler: error while decoding request for create asset: %s", err.Error())
@@ -208,11 +216,11 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			w.Write(responseBytes)
 			return
 		}
-
+		fmt.Println("219########", req.Specifications) /////////
 		err = req.Validate()
 		if err != nil {
 			fmt.Printf("handler: invalid request for create asset: Check for proper fields ")
-			fmt.Printf(err.Error())
+			fmt.Println(err.Error())
 
 			w.WriteHeader(http.StatusBadRequest)
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
@@ -225,7 +233,6 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		}
 
 		toAsset, err := req.ConvertToAsset()
-
 		if err != nil {
 			fmt.Printf("handler: error while converting to object of type domain.Asset, error: %s", err.Error())
 			return
@@ -327,5 +334,131 @@ func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseBytes)
 		return
+	}
+}
+
+////////////////////////////////////
+
+func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		r.ParseMultipartForm(10 << 20)
+		// FormFile returns the first file for the given key `myFile`
+		// it also returns the FileHeader so we can get the Filename,
+		// the Header and the size of the file
+		file, handler, err := r.FormFile("myFile")
+		if err != nil {
+			fmt.Println("Error Retrieving the File")
+			fmt.Println(err)
+			return
+		}
+		defer file.Close()
+		fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+		fmt.Printf("File Size: %+v\n", handler.Size)
+		fmt.Printf("MIME Header: %+v\n", handler.Header)
+
+		// Create a temporary file within our temp-images directory that follows
+		// a particular naming pattern
+		tempFile, err := ioutil.TempFile("", "upload-*.csv") // "" this means it creates in default location
+		fmt.Println(tempFile.Name())
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer tempFile.Close()
+
+		// read all of the contents of our uploaded file into a
+		// byte array
+		fileBytes, err := ioutil.ReadAll(file)
+		if err != nil {
+			fmt.Println(err)
+		}
+		// write this byte array to our temporary file
+		tempFile.Write(fileBytes)
+		// return that we have successfully uploaded our file!
+		fmt.Fprintf(w, "CSV File Successfully Uploaded\n")
+		////////////////////////////////////////////////////////////////////////////////////////
+		type specs struct {
+			Ram   string `json:"ram"`
+			Brand string `json:"brand"`
+		}
+
+		// Open the file
+		csvFile, _ := os.Open(tempFile.Name())
+		reader := csv.NewReader(bufio.NewReader(csvFile))
+		var data contract.CreateAssetRequest
+		for {
+			line, error := reader.Read()
+			if error == io.EOF {
+				break
+			} else if error != nil {
+				log.Fatal(error)
+			}
+			price, _ := strconv.ParseFloat(line[3], 64)
+
+			data.Status = line[0]
+			data.Category = line[1]
+			data.PurchaseAt = line[2]
+			data.PurchaseCost = price
+			data.AssetName = line[4]
+			fmt.Println("raaaam", line[5])
+			fmt.Println("braaand", line[6])
+			emp := &specs{Ram: line[5], Brand: line[6]}
+			val, err := json.Marshal(emp)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			data.Specifications = val
+
+			////////////////////////////////////////
+
+			err = data.Validate()
+			if err != nil {
+				fmt.Printf("handler: invalid request for create asset: Check for proper fields ")
+				fmt.Printf(err.Error())
+
+				w.WriteHeader(http.StatusBadRequest)
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+				if err != nil {
+					fmt.Printf(err.Error())
+					return
+				}
+				w.Write(responseBytes)
+				return
+			}
+
+			toAsset, err := data.ConvertToAsset()
+			if err != nil {
+				fmt.Printf("handler: error while converting to object of type domain.Asset, error: %s", err.Error())
+				return
+			}
+
+			returnedAsset, err := assetService.CreateAsset(r.Context(), &toAsset)
+
+			if err != nil {
+				fmt.Printf("handler: error while creating asset, error: %s", err.Error())
+				fmt.Printf(err.Error())
+				w.WriteHeader(http.StatusInternalServerError)
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+				if err != nil {
+					fmt.Printf(err.Error())
+					return
+				}
+				w.Write(responseBytes)
+				return
+			}
+
+			responseBytes, err := json.Marshal(contract.CreateAssetResponse{ID: returnedAsset.Id, Status: returnedAsset.Status, Category: returnedAsset.Category, PurchaseAt: returnedAsset.PurchaseAt.String(), PurchaseCost: returnedAsset.PurchaseCost, Name: returnedAsset.Name, Specifications: returnedAsset.Specifications})
+			if err != nil {
+				fmt.Printf("asset_handler: error while marshalling, %s", err.Error())
+				return
+			}
+
+			w.WriteHeader(http.StatusOK)
+			w.Write(responseBytes)
+			fmt.Fprintf(w, "\n")
+
+		}
 	}
 }
