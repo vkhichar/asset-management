@@ -40,7 +40,7 @@ func (m *MockEventService) PostCreateUserEvent(ctx context.Context, user *domain
 	return newUser, err
 }
 
-func (m *MockEventService) PostAssetEventCreateAsset(ctx context.Context, asset *domain.Asset) (string, error) {
+func (m *MockEventService) PostCreateAssetEvent(ctx context.Context, asset *domain.Asset) (string, error) {
 	args := m.Called(ctx, asset)
 
 	var eventID string

@@ -35,21 +35,18 @@ func TestAssetRepository_CreateAsset_When_Success(t *testing.T) {
 	db := repository.GetDB()
 
 	tx := db.MustBegin()
-	tx.MustExec("delete from assets")
+	tx.MustExec("DELETE FROM maintenance_activities")
+	tx.MustExec("DELETE FROM assets")
 	tx.Commit()
 
 	assetRepo := repository.NewAssetRepository()
 
 	asset, err := assetRepo.CreateAsset(ctx, &dummy)
 
-	fmt.Println()
 	db.Get(&assetExpected, "SELECT * FROM assets WHERE id = $1", id)
-	fmt.Println(assetExpected)
 
 	assert.Equal(t, &assetExpected, asset)
 	assert.Nil(t, err)
-
-	fmt.Println()
 }
 
 func TestAssetRepository_CreateAsset_When_ReturnsError(t *testing.T) {
@@ -74,7 +71,8 @@ func TestAssetRepository_CreateAsset_When_ReturnsError(t *testing.T) {
 	db := repository.GetDB()
 
 	tx := db.MustBegin()
-	tx.MustExec("delete from assets")
+	tx.MustExec("DELETE FROM maintenance_activities")
+	tx.MustExec("DELETE FROM assets")
 	tx.Commit()
 
 	assetRepo := repository.NewAssetRepository()
@@ -106,9 +104,7 @@ func TestAssetRepository_GetAsset_When_Success(t *testing.T) {
 
 	asset, err := assetRepo.GetAsset(ctx, id)
 
-	fmt.Println()
 	db.Get(&assetExpected, "SELECT * FROM assets WHERE id = $1", id)
-	fmt.Println(assetExpected)
 
 	assert.NotNil(t, asset)
 	assert.Equal(t, &assetExpected, asset)
@@ -128,10 +124,8 @@ func TestAssetRepository_GetAsset_When_ReturnsError(t *testing.T) {
 
 	asset, err := assetRepo.GetAsset(ctx, id)
 
-	fmt.Println()
 	assert.Nil(t, asset)
 	assert.NotNil(t, err)
-	fmt.Println()
 }
 
 func TestAssetRepository_GetAsset_When_AssetDoesNotExist(t *testing.T) {
@@ -148,5 +142,4 @@ func TestAssetRepository_GetAsset_When_AssetDoesNotExist(t *testing.T) {
 
 	assert.Nil(t, asset)
 	assert.NotNil(t, err)
-	fmt.Println()
 }

@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
+	"time"
 
+	"github.com/gocarina/gocsv"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/vkhichar/asset-management/contract"
@@ -228,6 +231,12 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 
 		if err != nil {
 			fmt.Printf("handler: error while converting to object of type domain.Asset, error: %s", err.Error())
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+			if err != nil {
+				fmt.Printf(err.Error())
+				return
+			}
+			w.Write(responseBytes)
 			return
 		}
 
@@ -251,7 +260,6 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			fmt.Printf("asset_handler: error while marshalling, %s", err.Error())
 			return
 		}
-
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseBytes)
 		return
@@ -327,5 +335,58 @@ func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseBytes)
 		return
+	}
+}
+
+func ExportAssetToCSVHandler(asset service.AssetService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		assetList, err := asset.ExportAssetsToCSV(r.Context())
+
+		if err == customerrors.NoAssetsExist {
+			fmt.Println("handler: No assets exist")
+
+			w.WriteHeader(http.StatusNotFound)
+			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "no asset found"})
+			if err != nil {
+
+				fmt.Printf("handler: Something went wrong while Marshaling: %s", err.Error())
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			w.Write(responseBytes)
+			return
+		}
+		if err != nil {
+			fmt.Printf("handler:Error while Searching for Assets, %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			responseBytes, _ := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+			w.Write(responseBytes)
+			return
+		}
+
+		responseString, err := gocsv.MarshalString(assetList)
+
+		if err != nil {
+
+			fmt.Printf("handler: Something Went Wrong while Marshaling assets: %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Add("Content-Disposition", "attachment;filename = asset_list.csv")
+		http.ServeContent(w, r, "asset_list.csv", time.Now(), bytes.NewReader([]byte(responseString)))
+
+		responseBytes, err := json.Marshal(contract.SuccessResponse{Success: "csv file downloaded successfully!"})
+		if err != nil {
+			fmt.Printf("asset_handler: error while marshalling, %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(responseBytes)
+		return
+
 	}
 }

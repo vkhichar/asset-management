@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,16 +12,20 @@ import (
 	"github.com/vkhichar/asset-management/domain"
 )
 
-type assetStatus string
+type assetCategory string
 
 const (
-	statusActive           assetStatus = "active"
-	statusRetired          assetStatus = "retired"
-	statusUnderMaintenance assetStatus = "undermaintenance"
+	categoryLaptop  = "laptop"
+	categoryMouse   = "mouse"
+	cateoryKeyboard = "keyboard"
+	categoryMonitor = "monitor"
+	categoryCPU     = "cpu"
+	categoryPrinter = "printer"
 )
 
+const PurchaseDateRegex = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
+
 type CreateAssetRequest struct {
-	Status         string          `json:"status"`
 	Category       string          `json:"category"`
 	PurchaseAt     string          `json:"purchase_at"`
 	PurchaseCost   float64         `json:"purchase_cost"`
@@ -29,29 +34,41 @@ type CreateAssetRequest struct {
 }
 
 func (req CreateAssetRequest) ConvertToAsset() (domain.Asset, error) {
-	t, err := time.Parse("02/01/2006", req.PurchaseAt)
+
+	t, err := time.Parse("02-01-2006", req.PurchaseAt)
 
 	if err != nil {
-		fmt.Printf("create asset request: %s", err.Error())
+		fmt.Printf("create asset request convert to asset: %s", err.Error())
 		return domain.Asset{}, err
 	}
 
 	tempAsset := domain.Asset{
-		uuid.New(),
-		req.Status,
-		req.Category,
-		t,
-		req.PurchaseCost,
-		req.AssetName,
-		req.Specifications,
+		Id:             uuid.New(),
+		Status:         "active",
+		Category:       req.Category,
+		PurchaseAt:     t,
+		PurchaseCost:   req.PurchaseCost,
+		Name:           req.AssetName,
+		Specifications: req.Specifications,
 	}
 	return tempAsset, nil
 }
 
 func (req CreateAssetRequest) Validate() error {
 
-	if req.PurchaseAt == "" {
-		return errors.New("Purchase At filed required")
+	if matched, _ := regexp.MatchString(PurchaseDateRegex, req.PurchaseAt); !matched {
+		return errors.New("Invalid purchase_at date format")
+	}
+
+	t, err := time.Parse("02-01-2006", req.PurchaseAt)
+	if err != nil {
+		fmt.Printf("create asset request validate: %s", err.Error())
+		return err
+	}
+
+	if t.After(time.Now()) {
+		fmt.Println("create asset request: purchase date should be on or before current date")
+		return customerrors.ErrorInvalidPurchaseDate
 	}
 
 	if req.AssetName == "" {
@@ -72,12 +89,16 @@ func (req CreateAssetRequest) Validate() error {
 		return errors.New("Purchase Cost required")
 	}
 
-	contractStatus := req.Status
-
-	if contractStatus == string(statusActive) || contractStatus == string(statusRetired) || contractStatus == string(statusUnderMaintenance) {
-		return nil
-	} else {
-		return customerrors.ErrInvalidAssetStatus
+	switch req.Category {
+	case categoryLaptop:
+	case categoryCPU:
+	case categoryMonitor:
+	case categoryMouse:
+	case cateoryKeyboard:
+	case categoryPrinter:
+	default:
+		return customerrors.ErrorInvalidAssetCategory
 	}
 
+	return nil
 }
