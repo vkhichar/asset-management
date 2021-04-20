@@ -45,6 +45,7 @@ func Routes() *mux.Router {
 
 	router.HandleFunc("/assets/{asset_id}/deallocate", AuthenticationHandler(deps.tokenService,
 		AssetDeAllocationHandler(deps.assetAllocationService), true)).Methods("DELETE")
-	// router.HandleFunc("/assets/{asset_id}/deallocate", AssetDeAllocationHandler(deps.assetAllocationService)).Methods("DELETE")
+	router.HandleFunc("/assets/export", AuthenticationHandler(deps.tokenService,
+		ExportAssetToCSVHandler(deps.assetService), true)).Methods("GET")
 	return router
 }
