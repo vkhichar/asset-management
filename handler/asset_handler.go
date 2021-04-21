@@ -363,6 +363,7 @@ func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		fmt.Println(tempFile.Name())
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 		defer tempFile.Close()
 
@@ -371,16 +372,16 @@ func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		fileBytes, err := ioutil.ReadAll(file)
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 		// write this byte array to our temporary file
 		tempFile.Write(fileBytes)
 		// return that we have successfully uploaded our file!
 		fmt.Fprintf(w, "CSV File Successfully Uploaded\n")
-		////////////////////////////////////////////////////////////////////////////////////////
-		type specs struct {
-			Ram   string `json:"ram"`
-			Brand string `json:"brand"`
-		}
+		////////////////////////////////////////////////////////
+		// type specs struct {
+		// 	Specs string `json:""`
+		// }
 
 		// Open the file
 		csvFile, _ := os.Open(tempFile.Name())
@@ -389,10 +390,14 @@ func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		for {
 			line, error := reader.Read()
 			if error == io.EOF {
+
 				break
 			} else if error != nil {
+
 				log.Fatal(error)
+
 			}
+
 			price, _ := strconv.ParseFloat(line[3], 64)
 
 			data.Status = line[0]
@@ -400,16 +405,8 @@ func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			data.PurchaseAt = line[2]
 			data.PurchaseCost = price
 			data.AssetName = line[4]
-			fmt.Println("raaaam", line[5])
-			fmt.Println("braaand", line[6])
-			emp := &specs{Ram: line[5], Brand: line[6]}
-			val, err := json.Marshal(emp)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
 
-			data.Specifications = val
+			data.Specifications = []byte(line[5])
 
 			////////////////////////////////////////
 
@@ -455,7 +452,7 @@ func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
 				return
 			}
 
-			w.WriteHeader(http.StatusOK)
+			//w.WriteHeader(http.StatusOK)
 			w.Write(responseBytes)
 			fmt.Fprintf(w, "\n")
 
