@@ -12,6 +12,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -346,21 +347,21 @@ func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		// FormFile returns the first file for the given key `myFile`
 		// it also returns the FileHeader so we can get the Filename,
 		// the Header and the size of the file
-		file, handler, err := r.FormFile("myFile")
+		file, _, err := r.FormFile("myFile")
 		if err != nil {
 			fmt.Println("Error Retrieving the File")
 			fmt.Println(err)
 			return
 		}
 		defer file.Close()
-		fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-		fmt.Printf("File Size: %+v\n", handler.Size)
-		fmt.Printf("MIME Header: %+v\n", handler.Header)
+		//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+		//fmt.Printf("File Size: %+v\n", handler.Size)
+		//fmt.Printf("MIME Header: %+v\n", handler.Header)
 
 		// Create a temporary file within our temp-images directory that follows
 		// a particular naming pattern
 		tempFile, err := ioutil.TempFile("", "upload-*.csv") // "" this means it creates in default location
-		fmt.Println(tempFile.Name())
+		// fmt.Println(tempFile.Name())
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -405,9 +406,11 @@ func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			data.PurchaseAt = line[2]
 			data.PurchaseCost = price
 			data.AssetName = line[4]
-
-			data.Specifications = []byte(line[5])
-
+			s := strings.ReplaceAll(line[5], ":", "\":\"")
+			ss := strings.ReplaceAll(s, ",", "\",\"")
+			val := "{\"" + ss + "\"}"
+			data.Specifications = []byte(val)
+			//fmt.Println("val", val)
 			////////////////////////////////////////
 
 			err = data.Validate()
