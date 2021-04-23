@@ -592,3 +592,41 @@ func TestAssetHandler_Delete_When_ReturnsNil(t *testing.T) {
 	assert.JSONEq(t, expectedErr, rr.Body.String())
 
 }
+
+// func TestAssetHandler_CsvAssetHandler_When_Success(t *testing.T) {
+// 	ctx := context.Background()
+// 	myFile, err := os.Open("../assets_test.csv")
+// 	id, _ := uuid.Parse("1f0c173d-3b70-4efa-9d76-1e40083650a4")
+// 	date := "28-02-2020"
+// 	tym, err := time.Parse("02-01-2006", date)
+// 	val := "{\"ram\":\"5GB\",\"brand\":\"HP\"}"
+// 	obj := domain.Asset{
+// 		Id:             id,
+// 		Status:         "active",
+// 		Category:       "laptop",
+// 		PurchaseAt:     tym,
+// 		PurchaseCost:   10000,
+// 		Name:           "HP-lappy",
+// 		Specifications: []byte(val),
+// 	}
+// 	expectedOut := `{"id":"1f0c173d-3b70-4efa-9d76-1e40083650a4","status":"active","category":"laptop","purchase_at":"29-02-2020","purchase_cost":10000,"name":"HP-lappy","specifications":{"ram":"5GB","brand":"HP"}}`
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	defer myFile.Close()
+// 	req, err := http.NewRequest("POST", "/assets/csv", myFile)
+// 	req.Header.Add("Content-type", "multipart/form-data")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+
+// 	mockAssetService := &mockService.MockAssetService{}
+// 	mockAssetService.On("CreateAsset", ctx, obj).Return(&obj, nil)
+
+// 	resp := httptest.NewRecorder()
+// 	handler := http.HandlerFunc(handler.CsvAssetHandler(mockAssetService))
+// 	handler.ServeHTTP(resp, req)
+
+// 	assert.JSONEq(t, expectedOut, resp.Body.String())
+// 	assert.NoError(t, err)
+// }

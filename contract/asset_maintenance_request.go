@@ -21,6 +21,11 @@ func (req AssetMaintenanceReq) ConvertReqFormat(assetId uuid.UUID) (domain.Maint
 		maintenanceAct := domain.MaintenanceActivity{}
 		return maintenanceAct, err
 	}
+	if t.After(time.Now()) {
+		maintenanceAct := domain.MaintenanceActivity{}
+		return maintenanceAct, errors.New("date cant be after present")
+	}
+
 	tempCreateAssetMaintenance := domain.MaintenanceActivity{
 		AssetId:     assetId,
 		Cost:        req.Cost,

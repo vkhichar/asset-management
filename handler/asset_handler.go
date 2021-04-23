@@ -1,10 +1,15 @@
 package handler
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -195,6 +200,7 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 
 		var req contract.CreateAssetRequest
+
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			fmt.Printf("handler: error while decoding request for create asset: %s", err.Error())
@@ -212,7 +218,7 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		err = req.Validate()
 		if err != nil {
 			fmt.Printf("handler: invalid request for create asset: Check for proper fields ")
-			fmt.Printf(err.Error())
+			fmt.Println(err.Error())
 
 			w.WriteHeader(http.StatusBadRequest)
 			responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
@@ -225,7 +231,6 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		}
 
 		toAsset, err := req.ConvertToAsset()
-
 		if err != nil {
 			fmt.Printf("handler: error while converting to object of type domain.Asset, error: %s", err.Error())
 			return
@@ -327,5 +332,93 @@ func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Write(responseBytes)
 		return
+	}
+}
+
+func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		r.ParseMultipartForm(10 << 20)
+		file, _, err := r.FormFile("myFile")
+		if err != nil {
+			fmt.Println("Error Retrieving the File")
+			fmt.Println(err)
+			return
+		}
+		defer file.Close()
+
+		fmt.Fprintf(w, "CSV File Successfully Uploaded\n")
+
+		reader := csv.NewReader(file)
+		var data contract.CreateAssetRequest
+		for {
+			line, error := reader.Read()
+			if error == io.EOF {
+
+				break
+			} else if error != nil {
+
+				log.Fatal(error)
+
+			}
+
+			price, _ := strconv.ParseFloat(line[3], 64)
+
+			data.Status = line[0]
+			data.Category = line[1]
+			data.PurchaseAt = line[2]
+			data.PurchaseCost = price
+			data.AssetName = line[4]
+			s := strings.ReplaceAll(line[5], ":", "\":\"")
+			ss := strings.ReplaceAll(s, ",", "\",\"")
+			val := "{\"" + ss + "\"}"
+			data.Specifications = []byte(val)
+
+			err = data.Validate()
+			if err != nil {
+				fmt.Printf("handler: invalid request for create asset: Check for proper fields ")
+				fmt.Printf(err.Error())
+
+				w.WriteHeader(http.StatusBadRequest)
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: err.Error()})
+				if err != nil {
+					fmt.Printf(err.Error())
+					return
+				}
+				w.Write(responseBytes)
+				return
+			}
+
+			toAsset, err := data.ConvertToAsset()
+			if err != nil {
+				fmt.Printf("handler: error while converting to object of type domain.Asset, error: %s", err.Error())
+				return
+			}
+
+			returnedAsset, err := assetService.CreateAsset(r.Context(), &toAsset)
+
+			if err != nil {
+				fmt.Printf("handler: error while creating asset, error: %s", err.Error())
+				fmt.Printf(err.Error())
+				w.WriteHeader(http.StatusInternalServerError)
+				responseBytes, err := json.Marshal(contract.ErrorResponse{Error: "something went wrong"})
+				if err != nil {
+					fmt.Printf(err.Error())
+					return
+				}
+				w.Write(responseBytes)
+				return
+			}
+
+			responseBytes, err := json.Marshal(contract.CreateAssetResponse{ID: returnedAsset.Id, Status: returnedAsset.Status, Category: returnedAsset.Category, PurchaseAt: returnedAsset.PurchaseAt.String(), PurchaseCost: returnedAsset.PurchaseCost, Name: returnedAsset.Name, Specifications: returnedAsset.Specifications})
+			if err != nil {
+				fmt.Printf("asset_handler: error while marshalling, %s", err.Error())
+				return
+			}
+
+			w.Write(responseBytes)
+			fmt.Fprintf(w, "\n")
+
+		}
 	}
 }

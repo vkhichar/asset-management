@@ -51,6 +51,7 @@ func (service *assetMaintenanceService) CreateAssetMaintenance(ctx context.Conte
 		return assetsMaintenance, errEvent
 
 	}
+
 	fmt.Println("Event created with id:", eventID)
 	return assetsMaintenance, nil
 }

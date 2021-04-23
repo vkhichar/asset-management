@@ -84,7 +84,7 @@ func TestPostAssetMaintenanceActivityEvent_When_HTTPostReturnsSuccess(t *testing
 
 func TestPostAssetMaintenanceActivityEvent_When_HTTPostReturnsError(t *testing.T) {
 	ctx := context.Background()
-
+	defer gock.Off()
 	service.InitEnv()
 
 	gock.New(config.GetEventServiceUrl()).Post("/events").

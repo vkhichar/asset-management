@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	newrelic "github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/vkhichar/asset-management/customerrors"
 	"github.com/vkhichar/asset-management/domain"
 )
@@ -46,8 +47,10 @@ func NewAssetMaintainRepository() AssetMaintenanceRepo {
 
 func (repo *assetMaintainRepo) InsertMaintenanceActivity(ctx context.Context, req domain.MaintenanceActivity) (*domain.MaintenanceActivity, error) {
 	var maintenanceActivity domain.MaintenanceActivity
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
 
-	err := repo.db.Get(&maintenanceActivity, createMaintainActivityByQuery, req.AssetId, req.Cost, req.StartedAt, req.Description)
+	err := repo.db.GetContext(ctx, &maintenanceActivity, createMaintainActivityByQuery, req.AssetId, req.Cost, req.StartedAt, req.Description)
 
 	if err != nil {
 		fmt.Printf("repolayer:Failed to insert asset maintenance activities due to %s", err.Error())
@@ -58,8 +61,9 @@ func (repo *assetMaintainRepo) InsertMaintenanceActivity(ctx context.Context, re
 
 func (repo *assetMaintainRepo) DetailedMaintenanceActivity(ctx context.Context, activityId int) (*domain.MaintenanceActivity, error) {
 	var maintenanceActivity domain.MaintenanceActivity
-
-	err := repo.db.Get(&maintenanceActivity, detailedMaintainActivityByQuery, activityId)
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
+	err := repo.db.GetContext(ctx, &maintenanceActivity, detailedMaintainActivityByQuery, activityId)
 	if err == sql.ErrNoRows {
 
 		fmt.Printf("repository: activity not present")
@@ -83,7 +87,9 @@ func (repo *assetMaintainRepo) DetailedMaintenanceActivity(ctx context.Context, 
 }
 
 func (repo *assetMaintainRepo) DeleteMaintenanceActivity(ctx context.Context, activityId int) error {
-	_, err := repo.db.Exec(deleteById, activityId)
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
+	_, err := repo.db.ExecContext(ctx, deleteById, activityId)
 	if err != nil {
 		fmt.Printf("repository: Failed to delete activity due to %s", err.Error())
 		return errors.New("Failed to delete activity")
@@ -93,7 +99,9 @@ func (repo *assetMaintainRepo) DeleteMaintenanceActivity(ctx context.Context, ac
 
 func (repo *assetMaintainRepo) GetAllByAssetId(ctx context.Context, assetId uuid.UUID) ([]domain.MaintenanceActivity, error) {
 	var activities []domain.MaintenanceActivity
-	err := repo.db.Select(&activities, getAllByAssetId, assetId)
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
+	err := repo.db.SelectContext(ctx, &activities, getAllByAssetId, assetId)
 	if err != nil {
 		fmt.Printf("repository: Failed to fetch asset maintenance activities due to %s", err.Error())
 		return nil, errors.New("Failed to fetch asset maintenance activities")
@@ -108,6 +116,8 @@ func (repo *assetMaintainRepo) UpdateMaintenanceActivity(ctx context.Context, re
 		fmt.Printf("Repository: Failed to begin trasanction: %s", err.Error())
 		return nil, errors.New("Failed to update maintenance activity ")
 	}
+	txn := newrelic.FromContext(ctx)
+	ctx = newrelic.NewContext(ctx, txn)
 	tx.ExecContext(ctx, updateQuery, req.Cost, req.EndedAt, req.Description, req.ID)
 	res, err := tx.ExecContext(ctx, updateQuery, req.Cost, req.EndedAt, req.Description, req.ID)
 	if err != nil {
