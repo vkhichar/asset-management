@@ -181,7 +181,7 @@ func TestMaintenanceActivitiesHandler_DetailedMaintenanceActivityHandler_When_Se
 	}
 	rr := httptest.NewRecorder()
 	id := 1
-	expectedErr := string(`{"error":"something went wrong"}`)
+	expectedErr := (`{"error":"something went wrong"}`)
 
 	mockAssetMaintenanceService := &mockService.MockMaintenanceActivityService{}
 	mockAssetMaintenanceService.On("DetailedMaintenanceActivity", mock.Anything, id).Return(nil, errors.New("something went wrong"))

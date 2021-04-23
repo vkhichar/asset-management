@@ -1,15 +1,12 @@
 package handler
 
 import (
-	"bufio"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -217,7 +214,7 @@ func CreateAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			w.Write(responseBytes)
 			return
 		}
-		fmt.Println("219########", req.Specifications) /////////
+
 		err = req.Validate()
 		if err != nil {
 			fmt.Printf("handler: invalid request for create asset: Check for proper fields ")
@@ -338,15 +335,10 @@ func GetAssetHandler(assetService service.AssetService) http.HandlerFunc {
 	}
 }
 
-////////////////////////////////////
-
 func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		r.ParseMultipartForm(10 << 20)
-		// FormFile returns the first file for the given key `myFile`
-		// it also returns the FileHeader so we can get the Filename,
-		// the Header and the size of the file
 		file, _, err := r.FormFile("myFile")
 		if err != nil {
 			fmt.Println("Error Retrieving the File")
@@ -354,39 +346,10 @@ func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			return
 		}
 		defer file.Close()
-		//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
-		//fmt.Printf("File Size: %+v\n", handler.Size)
-		//fmt.Printf("MIME Header: %+v\n", handler.Header)
 
-		// Create a temporary file within our temp-images directory that follows
-		// a particular naming pattern
-		tempFile, err := ioutil.TempFile("", "upload-*.csv") // "" this means it creates in default location
-		// fmt.Println(tempFile.Name())
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		defer tempFile.Close()
-
-		// read all of the contents of our uploaded file into a
-		// byte array
-		fileBytes, err := ioutil.ReadAll(file)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		// write this byte array to our temporary file
-		tempFile.Write(fileBytes)
-		// return that we have successfully uploaded our file!
 		fmt.Fprintf(w, "CSV File Successfully Uploaded\n")
-		////////////////////////////////////////////////////////
-		// type specs struct {
-		// 	Specs string `json:""`
-		// }
 
-		// Open the file
-		csvFile, _ := os.Open(tempFile.Name())
-		reader := csv.NewReader(bufio.NewReader(csvFile))
+		reader := csv.NewReader(file)
 		var data contract.CreateAssetRequest
 		for {
 			line, error := reader.Read()
@@ -410,8 +373,6 @@ func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
 			ss := strings.ReplaceAll(s, ",", "\",\"")
 			val := "{\"" + ss + "\"}"
 			data.Specifications = []byte(val)
-			//fmt.Println("val", val)
-			////////////////////////////////////////
 
 			err = data.Validate()
 			if err != nil {
@@ -455,7 +416,6 @@ func CsvAssetHandler(assetService service.AssetService) http.HandlerFunc {
 				return
 			}
 
-			//w.WriteHeader(http.StatusOK)
 			w.Write(responseBytes)
 			fmt.Fprintf(w, "\n")
 
